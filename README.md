@@ -1,8 +1,9 @@
 # stock-quant 本地量化
 ## 环境依赖安装
-- Python3
+- Python3 [官网](https://www.python.org/downloads/macos/)
 ```
-MacOS:[官网](https://www.python.org/downloads/macos/)下载python3安装包，直接安装即可，也可以配置多个版本的python3环境，支持自由切换，切换方式查看环境初始化部分
+MacOS:官网下载python3安装包，直接安装即可，也可以配置多个版本的python3环境，支持自由切换，
+切换方式查看环境初始化部分
 ```
 
 ## 环境初始化

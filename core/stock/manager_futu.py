@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import futu as ft
@@ -166,7 +167,7 @@ class TestIndicatorFetcher:
             return []
 
 
-def get_user_selected_stock_list(group_name="特别关注"):
+def get_user_selected_stock_list(group_name="港股"):
     fetcher = TestIndicatorFetcher()
     try:
         stock_list = fetcher.get_user_selected_stock_list(group_name)
@@ -225,9 +226,22 @@ def get_single_hk_stock_history(stock_code, start_date, end_date, adjust_type=ft
 
 
 if __name__ == "__main__":
-    get_single_hk_stock_history(
-        stock_code="HK.00700",
-        start_date="2021-01-01",
-        end_date="2025-10-17",
-        adjust_type=ft.AuType.QFQ
-    )
+
+    # get_single_hk_stock_history(
+    #     stock_code="HK.00700",
+    #     start_date="2021-01-01",
+    #     end_date="2025-10-17",
+    #     adjust_type=ft.AuType.QFQ
+    # )
+
+    end_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    start_time = (datetime.datetime.now() - datetime.timedelta(days=365*5)).strftime("%Y-%m-%d")
+
+    stock_list = get_user_selected_stock_list()
+    for stock_code in stock_list:
+        get_single_hk_stock_history(
+            stock_code=stock_code,
+            start_date="2021-01-01",
+            end_date="2025-10-17",
+            adjust_type=ft.AuType.QFQ
+        )

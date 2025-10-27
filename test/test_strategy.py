@@ -12,17 +12,17 @@ logger = create_log('test_strategy')
 if __name__ == "__main__":
 
     # k线数据获取
-    end_date = datetime.datetime.now().strftime("%Y-%m-%d")
-    start_time = (datetime.datetime.now() - datetime.timedelta(days=365*4)).strftime("%Y-%m-%d")
-
-    stock_list = get_user_selected_stock_list()
-    for stock_code in stock_list:
-        get_single_hk_stock_history(
-            stock_code=stock_code,
-            start_date=start_time,
-            end_date=end_date,
-            adjust_type=ft.AuType.QFQ
-        )
+    # end_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    # start_time = (datetime.datetime.now() - datetime.timedelta(days=365*4)).strftime("%Y-%m-%d")
+    #
+    # stock_list = get_user_selected_stock_list()
+    # for stock_code in stock_list:
+    #     get_single_hk_stock_history(
+    #         stock_code=stock_code,
+    #         start_date=start_time,
+    #         end_date=end_date,
+    #         adjust_type=ft.AuType.QFQ
+    #     )
 
 
     # 设置CSV路径

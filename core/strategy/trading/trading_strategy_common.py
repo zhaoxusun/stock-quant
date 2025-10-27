@@ -76,7 +76,7 @@ class EnhancedVolumeStrategy(bt.Strategy):
         # 单笔交易百分比（买） = 单笔交易费用（ 单笔交易股票价格 * 单笔交易量） / 总资产
         ('max_single_buy_percent', 0.2),
         # 单笔交易百分比（卖） = 单笔交易费用（ 单笔交易股票价格 * 单笔交易量） / 总资产
-        ('max_single_sell_percent', 0.70),
+        ('max_single_sell_percent', 0.3),
     )
 
     def __init__(self):

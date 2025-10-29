@@ -1,7 +1,7 @@
 [English](./README.md) | [简体中文](./README_zh-CN.md)
 
 ---
-# stock-quant 本地量化
+# stock-quant 本地回测
 ## 环境依赖安装
 - Python3 [官网](https://www.python.org/downloads/macos/)
 ```

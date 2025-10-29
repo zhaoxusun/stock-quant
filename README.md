@@ -1,7 +1,7 @@
 [English](./README.md) | [简体中文](./README_zh-CN.md)
 
 ---
-# stock-quant Local Quantization
+# stock-quant Local Backtest
 ## Environment Dependencies Installation
 - Python3 [官网](https://www.python.org/downloads/macos/)
 ```

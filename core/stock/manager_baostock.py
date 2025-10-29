@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import baostock as bs
@@ -141,9 +142,12 @@ def get_single_cn_stock_history(stock_code, start_date, end_date, adjust_type = 
 
 
 if __name__ == "__main__":
+    end_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    start_time = (datetime.datetime.now() - datetime.timedelta(days=365 * 4)).strftime("%Y-%m-%d")
+
     get_single_cn_stock_history(
         stock_code="sh.600519",
-        start_date="2023-01-01",
-        end_date="2025-10-13",
+        start_date=start_time,
+        end_date=end_date,
         adjust_type='2'
     )

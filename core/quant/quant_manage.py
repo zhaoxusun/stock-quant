@@ -61,14 +61,8 @@ def run_backtest_enhanced_volume_strategy(csv_path, init_cash=settings.INIT_CASH
     cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name="trade_analyzer")
 
     # 启动回测
-    logger.info("=" * 60)
     logger.info(f"【回测启动】初始资金：{cerebro.broker.getcash():,.2f} 港元")
-    try:
-        start_date = data.p.dataname.index[0].date()
-        end_date = data.p.dataname.index[-1].date()
-        logger.info(f"回测周期：{start_date} ~ {end_date}")
-    except Exception:
-        pass
+    logger.info(f"【回测周期】：{data.p.dataname.index[0].date()} ~ {data.p.dataname.index[-1].date()}")
     logger.info("=" * 60)
 
     # 执行回测
@@ -81,7 +75,6 @@ def run_backtest_enhanced_volume_strategy(csv_path, init_cash=settings.INIT_CASH
     strategy = results[0]
 
     # 打印回测结果
-    logger.info("=" * 60)
     logger.info("【回测结果汇总】")
     logger.info("=" * 60)
 

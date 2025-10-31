@@ -108,11 +108,11 @@ class EnhancedVolumeStrategy(bt.Strategy):
 
         # 执行交易信号
         if not np.isnan(self.indicator.lines.enhanced_buy_signal[0]):
-            logger.info(f'*** 增强买入信号 ***: {self.data.close[0]}')
+            logger.info(f'*** 增强买入信号 时间：{self.data.datetime.date(0)} 价格：{self.data.close[0]} ***')
             self.trading_strategy_buy()
             self.buy_signals_count += 1
         elif not np.isnan(self.indicator.lines.enhanced_sell_signal[0]):
-            logger.info(f'*** 增强卖出信号 ***: {self.data.close[0]}')
+            logger.info(f'*** 增强卖出信号 时间：{self.data.datetime.date(0)} 价格：{self.data.close[0]} ***')
             self.trading_strategy_sell()
             self.sell_signals_count += 1
         # TODO 暂不执行普通的买入信号和普通卖出信号
@@ -192,7 +192,7 @@ class EnhancedVolumeStrategy(bt.Strategy):
                 logger.info(
                     f"持仓有限，持仓股数={current_position_size}，预卖出股数={sell_size}，小于最小交易单位={self.min_order_size}，无法卖出")
         else:
-            logger.info("当前无持仓，不执行卖出操作")
+            logger.info("【卖出挂单失败，当前无持仓，不执行卖出操作】")
 
     def notify_order(self, order):
         """订单状态通知，每笔订单状态改变都会触发"""
@@ -222,7 +222,7 @@ class EnhancedVolumeStrategy(bt.Strategy):
         if not trade.isclosed:
             return
 
-        logger.info(f'交易利润: 毛利润={trade.pnl:.2f}, 净利润={trade.pnlcomm:.2f}')
+        logger.info(f'【已清仓，交易利润】: 毛利润={trade.pnl:.2f}, 净利润={trade.pnlcomm:.2f}')
 
     def calculate_commission(self, size, price):
         """使用原生方法计算总手续费"""

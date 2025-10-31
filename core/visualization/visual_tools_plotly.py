@@ -602,12 +602,12 @@ def plotly_draw(kline_csv_path=None, signal_records=None, trade_records=None, as
         trade_records = get_sample_trade_records()
     if asset_records is None:
         asset_records = get_sample_asset_records()
-    logger.info(f"买/卖信号记录：")
-    logger.info(f"\n{signal_records}")
-    logger.info(f"交易记录：")
-    logger.info(f"\n{trade_records}")
-    logger.info(f"资产记录：")
-    logger.info(f"\n{asset_records}")
+    logger.debug(f"买/卖信号记录：")
+    logger.debug(f"\n{signal_records}")
+    logger.debug(f"交易记录：")
+    logger.debug(f"\n{trade_records}")
+    logger.debug(f"资产记录：")
+    logger.debug(f"\n{asset_records}")
 
     # 4. 筛选有效的日期
     valid_signals = filter_valid_dates(df, signal_records)

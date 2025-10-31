@@ -1,6 +1,6 @@
 import numpy as np
 from common.logger import create_log
-from core.strategy.indicator.indicator_strategy_common import EnhancedVolumeIndicator
+from core.strategy.indicator.volume.enhanced_volume import EnhancedVolumeIndicator
 from core.strategy.trading.common import StrategyBase
 
 logger = create_log("trade_strategy_volume")

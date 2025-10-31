@@ -1,7 +1,7 @@
 [English](./README.md) | [简体中文](./README_zh-CN.md)
 
 ---
-# stock-quant Local Backtest
+# Stock Quant - Local Backtest
 ## Environment Dependencies Installation
 - Python3 [官网](https://www.python.org/downloads/macos/)
 ```
@@ -9,7 +9,7 @@ MacOS: Download the Python3 installation package from the official website and i
 For switching methods, see the Environment Initialization section.
 ```
 
-## 环境初始化
+## Environment initialization
 - Python3.13（Recommended）
 ```
 python3.13 -m venv venv13 

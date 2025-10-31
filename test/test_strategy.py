@@ -1,6 +1,6 @@
 from common.logger import create_log
 from core.quant.quant_manage import run_backtest_enhanced_volume_strategy, run_backtest_enhanced_volume_strategy_multi
-from core.strategy.trading.volume.trading_strategy_volume import EnhancedVolumeStrategy
+from core.strategy.trading.volume.enhanced_volume import EnhancedVolumeStrategy
 from settings import stock_data_root
 from core.stock.manager_futu import get_user_selected_stock_list, get_single_hk_stock_history
 import futu as ft

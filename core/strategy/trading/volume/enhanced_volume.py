@@ -35,7 +35,6 @@ class EnhancedVolumeStrategy(StrategyBase):
         #     logger.info(f'主卖出信号: {self.data.close[0]}')
         #     self.trading_strategy_sell()
         #     self.sell_signals_count += 1
-        self.asset_record_manager.add_asset_record(date=self.data.datetime.date(0), total_assets=self.broker.getvalue())
 
     def trading_strategy_buy(self):
         # 计算可用于购买的资金
@@ -66,9 +65,8 @@ class EnhancedVolumeStrategy(StrategyBase):
                 # 计算并打印手续费
                 trade_commission = self.calculate_commission(buy_size, price)
                 if trade_commission:
-                    logger.info(f"【理论交易手续费】: {trade_commission['total_commission']:.8f}")
+                    logger.info(f"【理论交易手续费】: {trade_commission['total_commission']:.2f}")
                 self.order = self.buy(size=buy_size, price=price)
-                self.trade_record_manager.add_signal_record(self.data.datetime.date(0), 'B', 'strong_buy', buy_size)
             else:
                 logger.info(f"资金有限，预购买股数={buy_size}，小于最小交易单位={self.min_order_size}，无法购买")
         else:
@@ -96,9 +94,8 @@ class EnhancedVolumeStrategy(StrategyBase):
                 # 计算并打印手续费
                 trade_commission = self.calculate_commission(sell_size, price)
                 if trade_commission:
-                    logger.info(f"【理论交易手续费】: {trade_commission['total_commission']:.8f}")
+                    logger.info(f"【理论交易手续费】: {trade_commission['total_commission']:.2f}")
                 self.order = self.sell(size=sell_size, price=price)
-                self.trade_record_manager.add_signal_record(self.data.datetime.date(0), 'S', 'strong_sell', sell_size)
             else:
                 logger.info(
                     f"持仓有限，持仓股数={current_position_size}，预卖出股数={sell_size}，小于最小交易单位={self.min_order_size}，无法卖出")

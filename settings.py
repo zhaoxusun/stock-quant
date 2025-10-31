@@ -16,6 +16,7 @@ data_root = project_root / 'data'
 stock_data_root = data_root / 'stock'
 log_root = project_root / 'log'
 html_root = project_root / 'html'
+result_root = project_root / 'result'
 
 
 # 交易策略相关参数

@@ -6,19 +6,33 @@ import settings
 
 logger = create_log("trade_strategy_common")
 
+
 class TradeRecordManager:
     def __init__(self):
         self.trade_records = []
 
-    def add_signal_record(self, date, action, signal_type, shares):
-        self.trade_records.append(TradeRecord(date, action, signal_type, shares))
+    def add_trade_record(self, trade_id, date, action, price, size, total_amount, commission, order_type, status):
+        self.trade_records.append(
+            TradeRecord(trade_id, date, action, price, size, total_amount, commission, order_type, status))
 
     def transform_to_dataframe(self):
         return pd.DataFrame([record.__dict__ for record in self.trade_records])
 
 
 class TradeRecord:
-    def __init__(self, date, action, signal_type, shares):
+    """
+    :param trade_id: 交易唯一标识
+    :param date: 交易日期
+    :param action: 交易动作
+    :param price: 交易价格
+    :param size: 交易数量
+    :param total_amount: 交易总金额
+    :param commission: 佣金费用
+    :param order_type: 订单类型
+    :param status: 订单状态
+    """
+
+    def __init__(self, trade_id, date, action, price, size, total_amount, commission, order_type, status):
         if type(date) is datetime.date:
             # 将datetime.date转换为pandas Timestamp
             self.date = pd.Timestamp(date)
@@ -28,10 +42,16 @@ class TradeRecord:
             self.date = pd.Timestamp(date)
             # self.date = date
         else:
+            logger.info(type(date))
             raise ValueError('date must be datetime.date or str')
+        self.trade_id = trade_id
         self.action = action
-        self.signal_type = signal_type
-        self.shares = shares
+        self.price = price
+        self.size = size
+        self.total_amount = total_amount
+        self.commission = commission
+        self.order_type = order_type
+        self.status = status
 
 
 class AssetRecordManager:
@@ -114,18 +134,42 @@ class StrategyBase(bt.Strategy):
             return
 
         if order.status in [order.Completed]:
+            # 计算并记录实际佣金
+            actual_commission = self.calculate_commission(order.executed.size, order.executed.price)
+            order_date = self.data.datetime.date(0)
             if order.isbuy():
                 logger.info(
                     f'【买入挂单成交】: 实际执行价格={order.executed.price:.2f}（含滑点）, 数量={order.executed.size}')
                 self.executed_buys_count += 1
+                self.trade_record_manager.add_trade_record(
+                    trade_id=order.ref,
+                    date=order_date,
+                    action='B',
+                    price=order.executed.price,
+                    size=abs(order.executed.size),
+                    total_amount=order.executed.price * order.executed.size,
+                    commission=actual_commission['total_commission'],  # 实际佣金在notify_trade中计算
+                    order_type='buy',
+                    status=order.status
+                )
             elif order.issell():
                 logger.info(
                     f'【卖出挂单成交】: 实际执行价格={order.executed.price:.2f}（含滑点）, 数量={order.executed.size}')
                 self.executed_sells_count += 1
-            # 计算并记录实际佣金
-            actual_commission = self.calculate_commission(order.executed.size, order.executed.price)
-            logger.info(f"【实际交易手续费】: {actual_commission['total_commission']:.8f}")
+                self.trade_record_manager.add_trade_record(
+                    trade_id=order.ref,
+                    date=order_date,
+                    action='S',
+                    price=order.executed.price,
+                    size=abs(order.executed.size),
+                    total_amount=order.executed.price * order.executed.size,
+                    commission=actual_commission['total_commission'],  # 实际佣金在notify_trade中计算
+                    order_type='sell',
+                    status=order.status
+                )
 
+            self.asset_record_manager.add_asset_record(date=order_date, total_assets=self.broker.getvalue())
+            logger.info(f"【实际交易手续费】: {actual_commission['total_commission']:.2f}")
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:
             logger.info('订单 取消/保证金不足/拒绝')
 

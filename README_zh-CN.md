@@ -55,7 +55,7 @@ if __name__ == "__main__":
 回测日志会输出到logs目录下
 回测图表会输出到html目录下（历史k线、策略触发信号、策略交易记录、持仓记录、资金记录）
 ```
-![demo_result](./resource/img/result/demo_result_tencent_stock.png)
+![demo_result](https://zhaoxusun.github.io/stock-quant/resource/img/result/demo_result_tencent_stock.png)
 ### 4. 策略参数调整
 ```
 调整策略信号参数（只标记交易信号，不交易）：settings文件中修改交易策略相关参数

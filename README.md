@@ -57,7 +57,7 @@ Backtest logs will be output to the logs directory
 Backtest charts will be output to the html directory (historical K-line, strategy trigger signals, 
 strategy trading records, position records, fund records)
 ```
-![demo_result](https://zhaoxusun.github.io/stock-quant/resource/img/result/demo_result_tencent_stock.png)
+![demo_result](./resource/img/result/demo_result_tencent_stock.png)
 ### 4. Strategy Parameter Adjustment
 ```
 Adjust strategy signal parameters (only mark trading signals, no trading): Modify trading strategy-related 

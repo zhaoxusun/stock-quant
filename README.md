@@ -35,7 +35,7 @@ pip install -r requirements-7.txt
 - Get data by referring to the following code
   - core/stock/manage_akshare.py
   - core/stock/manage_futu.py
-  - core/stock/manage_usstock.py
+  - core/stock/manage_baostock.py
 
 ```
 csv data format

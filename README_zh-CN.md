@@ -35,7 +35,7 @@ pip install -r requirements-7.txt
 - 获取数据可参考如下代码
   - core/stock/manage_akshare.py
   - core/stock/manage_futu.py
-  - core/stock/manage_usstock.py
+  - core/stock/manage_baostock.py
 
 ```
 csv数据格式

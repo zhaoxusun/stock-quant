@@ -34,6 +34,55 @@ pip install -r requirements-7.txt
 运行core/stock/manager_xxxx，获取k线数据
 ```
 ### 2. 回测运行
+
+#### 2.1 准备数据（csv格式）
+- 获取数据可参考如下代码
+  - core/stock/manage_akshare.py
+  - core/stock/manage_futu.py
+  - core/stock/manage_usstock.py
+
+```
+csv数据格式
+A股数据格式
+date,open,high,low,close,volume,amount,stock_code,stock_name,market
+2021-11-01,0.81,0.82,0.81,0.82,54463399,54086664.0,SH.510210,上证指数ETF,CN
+2021-11-02,0.82,0.82,0.8,0.81,71456299,70368907.0,SH.510210,上证指数ETF,CN
+2021-11-03,0.81,0.81,0.8,0.8,36854399,36085912.0,SH.510210,上证指数ETF,CN
+2021-11-04,0.81,0.81,0.8,0.81,47489699,46692877.0,SH.510210,上证指数ETF,CN
+
+港股数据格式
+date,open,high,low,close,volume,amount,stock_code,stock_name,market
+2021-11-01,432.36,432.75,421.29,425.76,22649546,10654645504.0,00700,港股00700,HK
+2021-11-02,434.49,437.79,416.64,420.32,33005998,15457739520.0,00700,港股00700,HK
+2021-11-03,418.38,426.15,414.3,425.18,19362664,8976079360.0,00700,港股00700,HK
+2021-11-04,431.19,437.6,429.84,436.63,16440685,7856704512.0,00700,港股00700,HK
+2021-11-05,428.09,430.22,421.49,423.62,20019234,9394663936.0,00700,港股00700,HK
+2021-11-08,416.44,420.32,410.04,420.13,22340751,10272692480.0,00700,港股00700,HK
+
+美股数据格式
+date,open,high,low,close,volume,amount,stock_code,stock_name,market
+2021-11-01,434.07,434.46,431.96,433.88,2914779.0,,US.IVV,IVV,US
+2021-11-02,434.02,435.99,433.86,435.7,3282790.0,,US.IVV,IVV,US
+2021-11-03,435.08,438.91,434.62,438.55,2916130.0,,US.IVV,IVV,US
+2021-11-04,439.15,440.8,438.78,440.69,3039933.0,,US.IVV,IVV,US
+```
+
+#### 2.2 运行回测（两种方式）
+
+##### 2.2.1 带前端页面
+- 启动前端页面
+  - frontend/frontend_app.py
+- 前端页面上执行回测
+  - 选择要回测的股票（支持A股、港股、美股）
+  - 点击“回测”按钮，即可执行回测
+  - ![index_page](https://zhaoxusun.github.io/stock-quant/resource/img/index.png)
+  - 回测结果会在前端页面上展示
+  - ![result_page](https://zhaoxusun.github.io/stock-quant/resource/img/backtest_result_1.png)
+  - ![result_page](https://zhaoxusun.github.io/stock-quant/resource/img/backtest_result_2.png)
+
+##### 2.2.2 直接运行代码（不带前端页面）
+- 代码启动回测
+  - 参考如下代码
 ```
 from common.logger import create_log
 from core.quant.quant_manage import run_backtest_enhanced_volume_strategy, run_backtest_enhanced_volume_strategy_multi

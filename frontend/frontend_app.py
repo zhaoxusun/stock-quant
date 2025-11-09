@@ -7,6 +7,8 @@ from flask_cors import CORS
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from core.strategy.strategy_manager import global_strategy_manager
+
 # 添加项目根目录到Python路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -17,6 +19,9 @@ from core.strategy.trading.volume.enhanced_volume import EnhancedVolumeStrategy
 from settings import stock_data_root, html_root
 from core.visualization.visual_tools_plotly import prepare_continuous_dates, filter_valid_dates, calculate_holdings
 from common.util_csv import load_stock_data
+
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
 
 # 初始化Flask应用
 app = Flask(__name__)
@@ -30,7 +35,8 @@ DATA_SOURCES = ['akshare', 'baostock', 'futu']
 @app.route('/')
 def index():
     """主页，显示数据源和股票选择界面"""
-    return render_template('index.html', data_sources=DATA_SOURCES)
+    strategies = global_strategy_manager.get_strategy_names()
+    return render_template('index.html', data_sources=DATA_SOURCES, strategies=strategies)
 
 
 @app.route('/get_stocks/<source>')
@@ -73,6 +79,12 @@ def run_backtest():
         stock_file = data.get('stock_file')
         is_batch = data.get('is_batch', False)
         init_cash = float(data.get('init_cash', 5000000))
+        strategy_name = data.get('strategy')
+
+        # 验证策略名称
+        strategy_class = global_strategy_manager.get_strategy(strategy_name)
+        if not strategy_class:
+            return jsonify({'error': f'Invalid strategy: {strategy_name}'}), 400
 
         if source not in DATA_SOURCES:
             return jsonify({'error': 'Invalid data source'}), 400
@@ -80,7 +92,7 @@ def run_backtest():
         if is_batch:
             # 批量回测
             folder_path = stock_data_root / source
-            run_backtest_enhanced_volume_strategy_multi(str(folder_path), EnhancedVolumeStrategy, init_cash)
+            run_backtest_enhanced_volume_strategy_multi(str(folder_path), strategy_class, init_cash)
             return jsonify({'success': True, 'message': 'Batch backtest completed'})
         else:
             # 单个股票回测
@@ -88,12 +100,12 @@ def run_backtest():
                 return jsonify({'error': 'Stock file is required'}), 400
 
             file_path = stock_data_root / source / stock_file
-            run_backtest_enhanced_volume_strategy(str(file_path), EnhancedVolumeStrategy, init_cash)
+            run_backtest_enhanced_volume_strategy(str(file_path), strategy_class, init_cash)
 
-            # 构建回测结果的HTML路径
-            relative_path = f"{source}/{stock_file.rsplit('.', 1)[0]}"
+            # 构建回测结果的HTML路径，添加策略名称作为最后一层
+            relative_path = f"{source}/{stock_file.rsplit('.', 1)[0]}/{strategy_class.__name__}"
             # 查找最新的回测结果文件
-            result_dir = html_root / relative_path
+            result_dir = html_root / source / stock_file.rsplit('.', 1)[0] / strategy_class.__name__
             if os.path.exists(result_dir):
                 files = sorted(os.listdir(result_dir), reverse=True)
                 if files:
@@ -126,6 +138,7 @@ def get_backtest_results():
         stock_filter = request.args.get('stock', '')
         source_filter = request.args.get('source', '')
         date_filter = request.args.get('date', '')
+        strategy_filter = request.args.get('strategy', '')  # 新增：获取策略筛选参数
 
         # 遍历所有数据源
         for source in DATA_SOURCES:
@@ -143,29 +156,39 @@ def get_backtest_results():
 
                     stock_path = source_path / stock_folder
                     if os.path.isdir(stock_path):
-                        # 查找该股票的所有回测结果文件
-                        for file in os.listdir(stock_path):
-                            if file.startswith('stock_with_trades_') and file.endswith('.html'):
-                                # 解析文件名获取时间信息
-                                timestamp_part = file.replace('stock_with_trades_', '').replace('.html', '')
-                                try:
-                                    run_time = datetime.strptime(timestamp_part, '%Y%m%d_%H%M%S')
+                        # 新增：遍历策略文件夹
+                        for strategy_folder in os.listdir(stock_path):
+                            # 应用策略筛选
+                            if strategy_filter and strategy_filter.lower() not in strategy_folder.lower():
+                                continue
 
-                                    # 应用日期筛选（精确到天）
-                                    if date_filter:
-                                        result_date = run_time.strftime('%Y-%m-%d')
-                                        if result_date != date_filter:
+                            strategy_path = stock_path / strategy_folder
+                            if os.path.isdir(strategy_path):
+                                # 在策略文件夹中查找回测结果文件
+                                for file in os.listdir(strategy_path):
+                                    if file.startswith('stock_with_trades_') and file.endswith('.html'):
+                                        # 解析文件名获取时间信息
+                                        timestamp_part = file.replace('stock_with_trades_', '').replace('.html', '')
+                                        try:
+                                            run_time = datetime.strptime(timestamp_part, '%Y%m%d_%H%M%S')
+
+                                            # 应用日期筛选（精确到天）
+                                            if date_filter:
+                                                result_date = run_time.strftime('%Y-%m-%d')
+                                                if result_date != date_filter:
+                                                    continue
+
+                                            results.append({
+                                                'source': source,
+                                                'stock': stock_folder,
+                                                'file': file,
+                                                'strategy': strategy_folder,  # 新增：添加策略名称
+                                                'run_time': run_time.strftime('%Y-%m-%d %H:%M:%S'),
+                                                'path': f"{source}/{stock_folder}/{strategy_folder}/{file}"
+                                                # 更新：路径包含策略名称
+                                            })
+                                        except ValueError:
                                             continue
-
-                                    results.append({
-                                        'source': source,
-                                        'stock': stock_folder,
-                                        'file': file,
-                                        'run_time': run_time.strftime('%Y-%m-%d %H:%M:%S'),
-                                        'path': f"{source}/{stock_folder}/{file}"
-                                    })
-                                except ValueError:
-                                    continue
 
         # 按运行时间排序
         results.sort(key=lambda x: x['run_time'], reverse=True)
@@ -186,7 +209,6 @@ def get_backtest_results():
     except Exception as e:
         logger.error(f"Error getting backtest results: {str(e)}")
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/show_result/<path:file_path>')
 def show_result(file_path):

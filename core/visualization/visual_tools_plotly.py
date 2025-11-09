@@ -606,7 +606,7 @@ def plotly_draw(kline_csv_path, strategy, initial_capital):
     fig = create_trading_chart(stock_info, df_continuous, valid_signals, valid_trades, holdings_data, initial_capital)
     # 7. 保存和显示图表
     relative_path = str(kline_csv_path).replace(str(stock_data_root) + '/', '')
-    html_file_path = html_root /relative_path.rsplit('.', 1)[0]
+    html_file_path = html_root /relative_path.rsplit('.', 1)[0] /strategy.__class__.__name__
     logger.info(f"回测可视化图表将保存至：{html_file_path}，对应股票数据：{kline_csv_path}")
     output_path = save_and_show_chart(fig,html_file_path)
 

@@ -77,7 +77,15 @@
                                 <label for="initCash" class="form-label">初始资金</label>
                                 <input type="number" class="form-control" id="initCash" name="initCash" value="5000000" min="10000" step="10000">
                             </div>
-
+                            <!-- 在回测配置表单中添加策略选择下拉框 -->
+                            <div class="col-md-4">
+                                <label for="strategy" class="form-label">策略选择</label>
+                                <select class="form-select" id="strategy" name="strategy" required>
+                                    {% for strategy_name in strategies %}
+                                    <option value="{{ strategy_name }}">{{ strategy_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                             <!-- 回测按钮 -->
                             <div class="col-md-8 text-right align-self-end">
                                 <button type="submit" class="btn btn-primary btn-lg">开始回测</button>
@@ -132,6 +140,22 @@
                                 </select>
                             </div>
                         </div>
+                        <!-- 新增：策略筛选行 -->
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-3">
+                                <label for="strategyFilter" class="form-label">策略筛选</label>
+                                <select class="form-select" id="strategyFilter">
+                                    <option value="">全部策略</option>
+                                    {% for strategy_name in strategies %}
+                                    <option value="{{ strategy_name }}">{{ strategy_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- 空列用于对齐 -->
+                            <div class="col-md-3"></div>
+                            <div class="col-md-3"></div>
+                            <div class="col-md-3"></div>
+                        </div>
                         <div class="mt-2">
                             <button class="btn btn-primary" onclick="loadResults(1)">筛选</button>
                             <button class="btn btn-secondary" onclick="resetFilters()">重置</button>
@@ -145,13 +169,13 @@
                                 <th>序号</th>
                                 <th>股票</th>
                                 <th>数据源</th>
+                                <th>策略</th>
                                 <th>运行时间</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
                         <tbody id="resultsTable"></tbody>
                     </table>
-
                     <!-- 分页控件 -->
                     <div class="mt-4 d-flex justify-content-between align-items-center">
                         <div>
@@ -218,6 +242,7 @@
             const isBatch = document.getElementById('batchTest').checked;
             const stockFile = document.getElementById('stockFile').value;
             const initCash = document.getElementById('initCash').value;
+            const strategy = document.getElementById('strategy').value;
 
             // 显示加载状态
             const resultCard = document.getElementById('resultCard');
@@ -238,7 +263,8 @@
                     source: source,
                     stock_file: stockFile,
                     is_batch: isBatch,
-                    init_cash: initCash
+                    init_cash: initCash,
+                    strategy: strategy  // 发送策略名称
                 })
             })
             .then(response => response.json())
@@ -273,6 +299,7 @@
             const stockFilter = document.getElementById('stockFilter').value;
             const sourceFilter = document.getElementById('sourceFilter').value;
             const dateFilter = document.getElementById('dateFilter').value;
+            const strategyFilter = document.getElementById('strategyFilter').value;
             const pageSize = document.getElementById('pageSize').value;
 
             // 构建查询参数
@@ -282,6 +309,7 @@
             if (stockFilter) params.append('stock', stockFilter);
             if (sourceFilter) params.append('source', sourceFilter);
             if (dateFilter) params.append('date', dateFilter);
+            if (strategyFilter) params.append('strategy', strategyFilter);
 
             fetch(`/get_backtest_results?${params.toString()}`)
                 .then(response => response.json())
@@ -303,6 +331,7 @@
                             <td>${serialNumber}</td>
                             <td>${result.stock}</td>
                             <td>${result.source}</td>
+                            <td>${result.strategy || '-'}</td>
                             <td>${result.run_time}</td>
                             <td>
                                 <a href="/show_result/${result.path}" target="_blank" class="btn btn-primary btn-sm">
@@ -385,6 +414,7 @@
             document.getElementById('stockFilter').value = '';
             document.getElementById('sourceFilter').value = '';
             document.getElementById('dateFilter').value = '';
+            document.getElementById('strategyFilter').value = '';
             document.getElementById('pageSize').value = '20';
             loadResults(1);
         }

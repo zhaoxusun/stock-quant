@@ -1,6 +1,7 @@
 from common.logger import create_log
 from core.quant.quant_manage import run_backtest_enhanced_volume_strategy, run_backtest_enhanced_volume_strategy_multi
 from core.strategy.trading.volume.enhanced_volume import EnhancedVolumeStrategy
+from core.strategy.trading.volume.single_volume_ import SingleVolumeStrategy
 from settings import stock_data_root
 from core.stock.manager_futu import get_user_selected_stock_list, get_single_hk_stock_history
 import futu as ft
@@ -26,8 +27,9 @@ if __name__ == "__main__":
     #     )
 
     # 启动回测-单个股票
-    # kline_csv_path = stock_data_root / "futu/HK.00175_吉利汽车_20211028_20251027.csv"
-    # run_backtest_enhanced_volume_strategy(kline_csv_path, EnhancedVolumeStrategy)
+    kline_csv_path = stock_data_root / "futu/HK.00700_腾讯控股_20211108_20251105.csv"
+    # run_backtest_enhanced_volume_strategy(kline_csv_path, SingleVolumeStrategy)
+    run_backtest_enhanced_volume_strategy(kline_csv_path, EnhancedVolumeStrategy)
     # 启动回测-批量股票
-    kline_csv_path_folder = stock_data_root / "futu"
-    run_backtest_enhanced_volume_strategy_multi(kline_csv_path_folder, EnhancedVolumeStrategy)
+    kline_csv_path_folder = stock_data_root / "akshare"
+    run_backtest_enhanced_volume_strategy_multi(kline_csv_path_folder, SingleVolumeStrategy)

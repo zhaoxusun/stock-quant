@@ -69,6 +69,7 @@ date,open,high,low,close,volume,amount,stock_code,stock_name,market
 - 启动前端页面
   - frontend/frontend_app.py
 - 前端页面上执行回测
+  - 获取目标股票的历史k线数据（支持A股、港股、美股）
   - 选择要回测的股票（支持A股、港股、美股）
   - 点击“回测”按钮，即可执行回测
   - ![index_page](https://zhaoxusun.github.io/stock-quant/resource/img/index.png)

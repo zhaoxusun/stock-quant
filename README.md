@@ -68,6 +68,7 @@ date,open,high,low,close,volume,amount,stock_code,stock_name,market
 - Start the frontend page
   - frontend/frontend_app.py
 - Execute backtest on the frontend page
+  - Get the historical k-line data of the target stock (supports A-share, HK-share, and US-share)
   - Select the stock to backtest (supports A-share, HK-share, and US-share)
   - Click the "Backtest" button to execute the backtest
   - ![index_page](https://zhaoxusun.github.io/stock-quant/resource/img/index.png)

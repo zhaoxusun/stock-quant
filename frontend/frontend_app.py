@@ -210,10 +210,22 @@ def get_backtest_results():
 
 @app.route('/show_result/<path:result_path>')
 def show_result(result_path):
-    """显示回测结果"""
-    # 这里可以根据实际情况渲染结果页面，或者直接重定向到静态文件
-    # 为了简单起见，我们直接渲染一个包含iframe的页面
-    return render_template('result_viewer.html', result_path=result_path)
+    """显示回测结果图表"""
+    try:
+        # 获取实际文件路径
+        actual_path = os.path.join(html_root, result_path)
+        if not os.path.exists(actual_path):
+            return jsonify({'error': 'Result file not found'}), 404
+
+        # 读取HTML文件内容
+        with open(actual_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+
+        return render_template('result_viewer.html', html_content=html_content, file_path=result_path)
+
+    except Exception as e:
+        logger.error(f"Error showing result: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/static/<path:filename>')

@@ -225,7 +225,7 @@ def get_single_hk_stock_history(stock_code, start_date, end_date, adjust_type=ft
         fetcher.close_connection()
 
 def get_single_cn_stock_history(stock_code, start_date, end_date, adjust_type=ft.AuType.QFQ, output_dir='futu'):
-    get_single_hk_stock_history(stock_code, start_date, end_date, adjust_type, output_dir)
+    return get_single_hk_stock_history(stock_code, start_date, end_date, adjust_type, output_dir)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 import os
 import sys
+import futu as ft
 from datetime import datetime
 import pandas as pd
 from flask import Flask, render_template, request, jsonify, send_from_directory
@@ -7,6 +8,7 @@ from flask_cors import CORS
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from core.stock import manager_baostock, manager_akshare, manager_futu
 from core.strategy.strategy_manager import global_strategy_manager
 
 # 添加项目根目录到Python路径
@@ -19,6 +21,7 @@ from core.strategy.trading.volume.enhanced_volume import EnhancedVolumeStrategy
 from settings import stock_data_root, html_root
 from core.visualization.visual_tools_plotly import prepare_continuous_dates, filter_valid_dates, calculate_holdings
 from common.util_csv import load_stock_data
+# 导入数据获取相关模块
 
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
@@ -148,100 +151,202 @@ def get_backtest_results():
 
             source_path = html_root / source
             if os.path.exists(source_path):
-                # 遍历每个股票的回测结果
-                for stock_folder in os.listdir(source_path):
-                    # 应用股票名称筛选
-                    if stock_filter and stock_filter.lower() not in stock_folder.lower():
+                for stock_dir in os.listdir(source_path):
+                    # 应用股票筛选
+                    if stock_filter and stock_filter.lower() not in stock_dir.lower():
                         continue
 
-                    stock_path = source_path / stock_folder
+                    stock_path = source_path / stock_dir
                     if os.path.isdir(stock_path):
-                        # 新增：遍历策略文件夹
-                        for strategy_folder in os.listdir(stock_path):
+                        for strategy_dir in os.listdir(stock_path):
                             # 应用策略筛选
-                            if strategy_filter and strategy_filter.lower() not in strategy_folder.lower():
+                            if strategy_filter and strategy_dir != strategy_filter:
                                 continue
 
-                            strategy_path = stock_path / strategy_folder
+                            strategy_path = stock_path / strategy_dir
                             if os.path.isdir(strategy_path):
-                                # 在策略文件夹中查找回测结果文件
-                                for file in os.listdir(strategy_path):
-                                    if file.startswith('stock_with_trades_') and file.endswith('.html'):
-                                        # 解析文件名获取时间信息
-                                        timestamp_part = file.replace('stock_with_trades_', '').replace('.html', '')
-                                        try:
-                                            run_time = datetime.strptime(timestamp_part, '%Y%m%d_%H%M%S')
+                                for result_file in os.listdir(strategy_path):
+                                    if result_file.endswith('.html'):
+                                        # 获取文件创建时间
+                                        file_path = strategy_path / result_file
+                                        run_time = datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
 
-                                            # 应用日期筛选（精确到天）
-                                            if date_filter:
-                                                result_date = run_time.strftime('%Y-%m-%d')
-                                                if result_date != date_filter:
-                                                    continue
-
-                                            results.append({
-                                                'source': source,
-                                                'stock': stock_folder,
-                                                'file': file,
-                                                'strategy': strategy_folder,  # 新增：添加策略名称
-                                                'run_time': run_time.strftime('%Y-%m-%d %H:%M:%S'),
-                                                'path': f"{source}/{stock_folder}/{strategy_folder}/{file}"
-                                                # 更新：路径包含策略名称
-                                            })
-                                        except ValueError:
+                                        # 应用日期筛选
+                                        if date_filter and not run_time.startswith(date_filter):
                                             continue
 
-        # 按运行时间排序
+                                        # 构建结果路径
+                                        relative_path = f"{source}/{stock_dir}/{strategy_dir}/{result_file}"
+
+                                        results.append({
+                                            'stock': stock_dir,
+                                            'source': source,
+                                            'strategy': strategy_dir,
+                                            'run_time': run_time,
+                                            'path': relative_path
+                                        })
+
+        # 按运行时间降序排序
         results.sort(key=lambda x: x['run_time'], reverse=True)
 
-        # 分页处理
-        total_results = len(results)
+        # 计算总页数
+        total = len(results)
+        total_pages = (total + page_size - 1) // page_size
+
+        # 分页
         paginated_results = results[start_idx:start_idx + page_size]
 
-        # 返回分页结果和元数据
         return jsonify({
             'results': paginated_results,
-            'total': total_results,
             'page': page,
-            'page_size': page_size,
-            'total_pages': (total_results + page_size - 1) // page_size
+            'total_pages': total_pages,
+            'total': total
         })
 
     except Exception as e:
         logger.error(f"Error getting backtest results: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/show_result/<path:file_path>')
-def show_result(file_path):
-    """显示回测结果图表"""
-    try:
-        # 获取实际文件路径
-        actual_path = os.path.join(html_root, file_path)
-        if not os.path.exists(actual_path):
-            return jsonify({'error': 'Result file not found'}), 404
 
-        # 读取HTML文件内容
-        with open(actual_path, 'r', encoding='utf-8') as f:
-            html_content = f.read()
-
-        return render_template('result_viewer.html', html_content=html_content, file_path=file_path)
-
-    except Exception as e:
-        logger.error(f"Error showing result: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+@app.route('/show_result/<path:result_path>')
+def show_result(result_path):
+    """显示回测结果"""
+    # 这里可以根据实际情况渲染结果页面，或者直接重定向到静态文件
+    # 为了简单起见，我们直接渲染一个包含iframe的页面
+    return render_template('result_viewer.html', result_path=result_path)
 
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
-    """提供静态文件"""
+    """提供静态文件服务"""
     return send_from_directory('static', filename)
 
 
-if __name__ == '__main__':
-    # 确保templates和static目录存在
-    for dir_name in ['templates', 'static']:
-        dir_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), dir_name)
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
+@app.route('/html/<path:filename>')
+def serve_html(filename):
+    """提供HTML结果文件服务"""
+    return send_from_directory('../html', filename)
 
-    # 启动Flask应用
-    app.run(host='0.0.0.0', port=5000, debug=True)
+
+@app.route('/acquire_stock_data', methods=['POST'])
+def acquire_stock_data():
+    """获取股票历史数据"""
+    try:
+        data = request.json
+        market = data.get('market')
+        data_source = data.get('data_source')
+        stock_code = data.get('stock_code')
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        adjust_type = data.get('adjust_type', 'qfq')
+
+        # 参数验证
+        if not all([market, data_source, stock_code, start_date, end_date]):
+            return jsonify({'error': '缺少必要参数'}), 400
+
+        if data_source not in DATA_SOURCES:
+            return jsonify({'error': f'不支持的数据源: {data_source}'}), 400
+
+        logger.info(f"开始获取数据: 市场={market}, 数据源={data_source}, 股票代码={stock_code}")
+
+        # 根据市场和数据源调用不同的数据获取函数
+        success = False
+        if data_source == 'akshare':
+            if market == 'hk':
+                if not stock_code.startswith('HK') :
+                    return jsonify({'error': f'{market}股票代码请保证前缀HK: {stock_code}'}), 400
+                stock_code = stock_code.replace('HK.', '')
+                success = manager_akshare.get_single_hk_stock_history(
+                    stock_code=stock_code,
+                    start_date=start_date,
+                    end_date=end_date,
+                    adjust_type=adjust_type,
+                    output_dir=data_source
+                )
+            elif market == 'us':
+                if not stock_code.startswith('US') :
+                    return jsonify({'error': f'{market}股票代码请保证前缀US: {stock_code}'}), 400
+                stock_code = stock_code.replace('US.', '')
+                success = manager_akshare.get_single_us_history(
+                    stock_code=stock_code,
+                    start_date=start_date,
+                    end_date=end_date,
+                    output_dir=data_source
+                )
+            else:
+                return jsonify({'error': f'暂不支持的市场: {market}'}), 400
+        elif data_source == 'baostock':
+            if adjust_type == 'qfq':
+                adjust_type = '2'
+            elif adjust_type == 'hfq':
+                adjust_type = '3'
+            elif adjust_type == 'bfq':
+                adjust_type = '1'
+            else:
+                return jsonify({'error': f'不支持的调整类型: {adjust_type}'}), 400
+            if market == 'cn':
+                if not stock_code.startswith('SH') and not stock_code.startswith('SZ'):
+                    return jsonify({'error': f'{market}股票代码请保证前缀SH或SZ: {stock_code}'}), 400
+                stock_code = stock_code.replace('SH.', 'sh.')
+                stock_code = stock_code.replace('SZ.', 'sz.')
+                success = manager_baostock.get_single_cn_stock_history(
+                    stock_code=stock_code,
+                    start_date=start_date,
+                    end_date=end_date,
+                    adjust_type=adjust_type,
+                    output_dir=data_source
+                )
+            else:
+                return jsonify({'error': f'暂不支持的市场: {market}'}), 400
+        elif data_source == 'futu':
+            if adjust_type == 'qfq':
+                pass
+            elif adjust_type == 'hfq':
+                pass
+            elif adjust_type == 'bfq':
+                adjust_type = 'None'
+            else:
+                return jsonify({'error': f'不支持的调整类型: {adjust_type}'}), 400
+            if market == 'cn':
+                if not stock_code.startswith('SH') and not stock_code.startswith('SZ'):
+                    return jsonify({'error': f'{market}股票代码请保证前缀SH或SZ: {stock_code}'}), 400
+                success = manager_futu.get_single_cn_stock_history(
+                    stock_code=stock_code,
+                    start_date=start_date,
+                    end_date=end_date,
+                    adjust_type=adjust_type,
+                    output_dir=data_source
+                )
+            elif market == 'hk':
+                if not stock_code.startswith('HK') :
+                    return jsonify({'error': f'{market}股票代码请保证前缀HK: {stock_code}'}), 400
+                success = manager_futu.get_single_hk_stock_history(
+                    stock_code=stock_code,
+                    start_date=start_date,
+                    end_date=end_date,
+                    adjust_type=adjust_type,
+                    output_dir=data_source
+                )
+            else:
+                return jsonify({'error': f'暂不支持的市场: {market}'}), 400
+        else:
+            return jsonify({'error': f'数据源 {data_source} 的数据获取功能尚未实现'}), 400
+
+        if success:
+            return jsonify({
+                'success': True,
+                'message': f'股票数据获取成功！股票代码: {stock_code}'
+            })
+        else:
+            return jsonify({
+                'error': f'股票数据获取失败，请检查股票代码是否正确或稍后重试'
+            }), 500
+
+    except Exception as e:
+        logger.error(f"获取股票数据时出错: {str(e)}")
+        return jsonify({'error': f'获取数据时发生错误: {str(e)}'}), 500
+
+
+if __name__ == '__main__':
+    # 在开发环境中运行，生产环境应使用WSGI服务器
+    app.run(debug=True, host='0.0.0.0', port=5000)

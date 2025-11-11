@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -61,7 +62,20 @@
                                     <option value="">全部类型</option>
                                 </select>
                             </div>
-                            <div class="col-md-3 text-right align-self-end">
+                            <div class="col-md-3">
+                                <label class="form-label">时间筛选</label>
+                                <div class="row">
+                                    <div class="col">
+                                        <input type="date" class="form-control" id="startDate">
+                                    </div>
+                                    <div class="col">
+                                        <input type="date" class="form-control" id="endDate">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-12 text-right">
                                 <button class="btn btn-primary" onclick="analyzeSelectedSignals()">分析信号</button>
                                 <button class="btn btn-secondary ml-2" onclick="resetSignalFilters()">重置筛选</button>
                             </div>
@@ -115,6 +129,10 @@
                                 <div class="stat-value" id="uniqueStocks">0</div>
                             </div>
                         </div>
+                    </div>
+                    <!-- 添加下载按钮 -->
+                    <div class="mt-3 text-right">
+                        <button id="downloadHtmlBtn" class="btn btn-success" style="display: none;">下载HTML报告</button>
                     </div>
                 </div>
             </div>
@@ -187,6 +205,8 @@
             // 为筛选控件添加变化事件监听
             document.getElementById('strategyFilter').addEventListener('change', filterSignalFiles);
             document.getElementById('signalTypeFilter').addEventListener('change', filterSignalFiles);
+            document.getElementById('startDate').addEventListener('change', filterSignalFiles);
+            document.getElementById('endDate').addEventListener('change', filterSignalFiles);
 
             // 点击页面其他地方关闭股票搜索建议
             document.addEventListener('click', function(event) {
@@ -224,7 +244,25 @@
                     }
                 }
             });
+
+            // 添加下载按钮事件监听
+            document.getElementById('downloadHtmlBtn').addEventListener('click', downloadResultsAsHTML);
+
+            // 设置日期输入框的默认值
+            const today = new Date();
+            const oneWeekAgo = new Date(today);
+            oneWeekAgo.setDate(today.getDate() - 7);
+
+            // 格式化日期为YYYY-MM-DD格式
+            const formatDate = (date) => {
+                return date.toISOString().split('T')[0];
+            };
+
+            // 设置默认日期
+            document.getElementById('startDate').value = formatDate(oneWeekAgo);
+            document.getElementById('endDate').value = formatDate(today);
         });
+
 
         // 加载信号文件列表
         function loadSignalFiles() {
@@ -253,8 +291,9 @@
             // 获取所有筛选条件
             const strategyFilter = document.getElementById('strategyFilter').value;
             const stockFilter = document.getElementById('stockFilter').value;
-            // 不使用signalTypeFilter进行过滤
-            // const signalTypeFilter = document.getElementById('signalTypeFilter').value;
+            const signalTypeFilter = document.getElementById('signalTypeFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
 
             // 过滤文件
             let filteredFiles = allSignalFiles;
@@ -269,6 +308,24 @@
                 filteredFiles = filteredFiles.filter(file =>
                     file.stock_info.includes(stockFilter)
                 );
+            }
+
+            // 日期筛选
+            if (startDate) {
+                filteredFiles = filteredFiles.filter(file => {
+                    const fileDate = new Date(file.file_time);
+                    return fileDate >= new Date(startDate);
+                });
+            }
+
+            if (endDate) {
+                filteredFiles = filteredFiles.filter(file => {
+                    const fileDate = new Date(file.file_time);
+                    // 结束日期包含当天
+                    const endDateObj = new Date(endDate);
+                    endDateObj.setHours(23, 59, 59, 999);
+                    return fileDate <= endDateObj;
+                });
             }
 
             // 重新渲染文件列表
@@ -417,7 +474,9 @@
             const filters = {
                 strategy_name: document.getElementById('strategyFilter').value,
                 stock_code: document.getElementById('stockFilter').value,
-                signal_type: document.getElementById('signalTypeFilter').value
+                signal_type: document.getElementById('signalTypeFilter').value,
+                start_date: document.getElementById('startDate').value,
+                end_date: document.getElementById('endDate').value
             };
 
             // 显示加载状态
@@ -427,6 +486,7 @@
             summaryCard.style.display = 'none';
             resultCard.style.display = 'block';
             document.getElementById('signalsTable').innerHTML = '<tr><td colspan="6" class="text-center py-4">分析中，请稍候...</td></tr>';
+            document.getElementById('downloadHtmlBtn').style.display = 'none';
 
             // 发送分析请求
             fetch('/analyze_signals', {
@@ -448,6 +508,7 @@
                     document.getElementById('sellSignals').textContent = data.data.summary.sell_signals;
                     document.getElementById('uniqueStocks').textContent = data.data.summary.unique_stocks;
                     summaryCard.style.display = 'block';
+                    document.getElementById('downloadHtmlBtn').style.display = 'inline-block';
 
                     // 保存所有信号数据
                     allSignalsData = data.data.signals;
@@ -457,13 +518,20 @@
                     renderPageData();
                     // 更新总记录数
                     document.getElementById('totalSignalResults').textContent = data.data.summary.total_signals;
+
+                    // 显示成功通知
+                    showNotification('success', `信号分析完成，共找到 ${data.data.summary.total_signals} 条信号`);
                 } else {
                     document.getElementById('signalsTable').innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">${data.message || '分析失败'}</td></tr>`;
+                    // 显示错误通知
+                    showNotification('error', data.message || '信号分析失败');
                 }
             })
             .catch(error => {
                 console.error('分析信号失败:', error);
                 document.getElementById('signalsTable').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">分析失败</td></tr>';
+                // 显示错误通知
+                showNotification('error', '信号分析过程中发生错误');
             });
         }
 
@@ -614,11 +682,228 @@
             document.getElementById('strategyFilter').value = '';
             document.getElementById('stockFilter').value = '';
             document.getElementById('signalTypeFilter').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
             document.getElementById('stockSuggestions').style.display = 'none';
 
             // 重新显示所有文件
             renderSignalFiles(allSignalFiles);
             updateSelectAllCheckbox();
+        }
+
+        // 消息通知函数
+        function showNotification(type, message) {
+            // 创建通知元素
+            const notification = document.createElement('div');
+            notification.className = `notification ${type} position-fixed top-20 right-4 z-50 p-4 rounded shadow-lg transition-all duration-300 transform translate-x-full`;
+            notification.innerHTML = `
+                <div class="d-flex items-center">
+                    <span class="mr-2">${type === 'success' ? '✓' : '✗'}</span>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            // 添加到body
+            document.body.appendChild(notification);
+
+            // 显示通知
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 10);
+
+            // 自动关闭
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                // 移除元素
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 5000);
+        }
+
+        // 下载HTML报告
+        function downloadResultsAsHTML() {
+            if (!allSignalsData || allSignalsData.length === 0) {
+                showNotification('error', '没有可下载的信号数据');
+                return;
+            }
+
+            // 获取当前筛选条件
+            const strategyFilter = document.getElementById('strategyFilter').value;
+            const stockFilter = document.getElementById('stockFilter').value;
+            const signalTypeFilter = document.getElementById('signalTypeFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            // 获取摘要信息
+            const totalSignals = document.getElementById('totalSignals').textContent;
+            const buySignals = document.getElementById('buySignals').textContent;
+            const sellSignals = document.getElementById('sellSignals').textContent;
+            const uniqueStocks = document.getElementById('uniqueStocks').textContent;
+
+            // 创建HTML内容
+            const htmlContent = `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信号分析报告 - ${new Date().toLocaleString()}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { background-color: #2a2a2a; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .stats-container { display: flex; justify-content: space-around; margin-bottom: 30px; flex-wrap: wrap; }
+        .stat-box {
+            text-align: center;
+            padding: 15px;
+            background: #3a3a3a;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            margin: 10px;
+            flex: 1;
+            min-width: 200px;
+            color: #e0e0e0;
+        }
+        .stat-value { font-size: 1.8rem; font-weight: bold; margin: 5px 0; }
+        .price-up { color: #ff6b6b; }
+        .price-down { color: #4ecdc4; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #3a3a3a;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            color: #e0e0e0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #555;
+        }
+        th {
+            background-color: #4a4a4a;
+            color: #fff;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #404040;
+        }
+        .filters {
+            background: #3a3a3a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            color: #e0e0e0;
+        }
+        .timestamp { text-align: right; color: #999; margin-top: 10px; font-size: 0.9rem; }
+        h1, h2, h3 { color: #fff; }
+        strong { color: #ccc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>信号分析报告</h1>
+            <p>此报告包含根据筛选条件分析的信号数据</p>
+        </div>
+
+        <div class="filters">
+            <h3>筛选条件</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>策略：</strong>${strategyFilter || '全部策略'}
+                </div>
+                <div class="col-md-4">
+                    <strong>股票：</strong>${stockFilter || '全部股票'}
+                </div>
+                <div class="col-md-4">
+                    <strong>信号类型：</strong>${signalTypeFilter || '全部类型'}
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <strong>起始时间：</strong>${startDate || '不限制'}
+                </div>
+                <div class="col-md-6">
+                    <strong>结束时间：</strong>${endDate || '不限制'}
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <div>总信号数</div>
+                <div class="stat-value">${totalSignals}</div>
+            </div>
+            <div class="stat-box">
+                <div>买入信号</div>
+                <div class="stat-value price-up">${buySignals}</div>
+            </div>
+            <div class="stat-box">
+                <div>卖出信号</div>
+                <div class="stat-value price-down">${sellSignals}</div>
+            </div>
+            <div class="stat-box">
+                <div>涉及股票数</div>
+                <div class="stat-value">${uniqueStocks}</div>
+            </div>
+        </div>
+
+        <h2>信号详情</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>信号类型</th>
+                    <th>描述</th>
+                    <th>股票信息</th>
+                    <th>数据源</th>
+                    <th>策略</th>
+                </tr>
+            </thead>
+            <tbody>
+${allSignalsData.map(signal => {
+    let signalTypeClass = signal.signal_type && signal.signal_type.includes('buy') ? 'price-up' :
+                         (signal.signal_type && signal.signal_type.includes('sell') ? 'price-down' : '');
+    return `                <tr>
+                    <td>${signal.date || '-'}</td>
+                    <td class="${signalTypeClass}">${signal.signal_type || '-'}</td>
+                    <td>${signal.description || '-'}</td>
+                    <td>${signal.stock_info || '-'}</td>
+                    <td>${signal.data_source || '-'}</td>
+                    <td>${signal.strategy_name || '-'}</td>
+                </tr>`;
+}).join('\n')}
+            </tbody>
+        </table>
+
+        <div class="timestamp">
+            报告生成时间：${new Date().toLocaleString()}
+        </div>
+    </div>
+</body>
+</html>
+            `;
+
+            // 创建下载链接
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `信号分析报告_${new Date().toLocaleString('zh-CN').replace(/[\/\s:]/g, '_')}.html`;
+            document.body.appendChild(a);
+            a.click();
+
+            // 清理
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // 显示下载成功通知
+            showNotification('success', 'HTML报告下载成功');
         }
     </script>
 </body>

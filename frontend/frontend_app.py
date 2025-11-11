@@ -454,6 +454,13 @@ def analyze_signals():
             if 'signal_type' in filters and filters['signal_type']:
                 combined_df = combined_df[combined_df['signal_type'] == filters['signal_type']]
 
+            # 添加时间范围筛选
+            if 'start_date' in filters and filters['start_date']:
+                combined_df = combined_df[combined_df['date'] >= filters['start_date']]
+
+            if 'end_date' in filters and filters['end_date']:
+                combined_df = combined_df[combined_df['date'] <= filters['end_date']]
+
         # 按时间倒序排序
         combined_df = combined_df.sort_values(by='date', ascending=False)
 
@@ -473,7 +480,6 @@ def analyze_signals():
     except Exception as e:
         logger.error(f"分析信号失败: {str(e)}")
         return jsonify({'success': False, 'message': str(e)})
-
 
 @app.route('/get_signal_metadata')
 def get_signal_metadata():
@@ -521,7 +527,6 @@ def get_signal_metadata():
     except Exception as e:
         logger.error(f"获取信号元数据失败: {str(e)}")
         return jsonify({'success': False, 'message': str(e)})
-
 
 if __name__ == '__main__':
     # 在开发环境中运行，生产环境应使用WSGI服务器

@@ -594,3 +594,33 @@ input:checked + .slider:before {
         padding: 10px 10px;
     }
 }
+/* 通知样式 */
+.notification {
+    min-width: 280px;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    font-weight: 500;
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification.success {
+    background-color: rgba(46, 204, 113, 0.95);
+    color: white;
+}
+
+.notification.error {
+    background-color: rgba(231, 76, 60, 0.95);
+    color: white;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

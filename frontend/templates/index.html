@@ -383,11 +383,11 @@
                 if (data.success) {
                     messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
                 } else {
-                    messageDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    messageDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
                 }
             })
             .catch(error => {
-                messageDiv.innerHTML = `<div class="alert alert-danger">获取数据失败：${error.message}</div>`;
+                messageDiv.innerHTML = `<div class="alert alert-danger">获取数据失败：${data.message}</div>`;
             });
         });
 
@@ -399,7 +399,9 @@
             if (source) {
                 fetch(`/get_stocks/${source}`)
                     .then(response => response.json())
-                    .then(stocks => {
+                    .then(data => {
+                        // 从响应数据中提取股票列表
+                        stocks = data.data.stocks;
                         // 清空现有选项
                         stockSelect.innerHTML = '';
 
@@ -414,7 +416,7 @@
                         // 根据回测类型设置股票选择的禁用状态
                         updateStockSelectState();
                     })
-                    .catch(error => console.error('Error loading stocks:', error));
+                    .catch(error => console.error('Error loading stocks:', data.message));
             } else {
                 stockSelect.innerHTML = '';
             }
@@ -483,11 +485,11 @@
                     // 刷新历史结果列表
                     loadResults(1);
                 } else {
-                    resultMessage.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    resultMessage.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
                 }
             })
             .catch(error => {
-                resultMessage.innerHTML = `<div class="alert alert-danger">回测失败：${error.message}</div>`;
+                resultMessage.innerHTML = `<div class="alert alert-danger">回测失败：${data.message}</div>`;
             });
         });
 
@@ -512,8 +514,8 @@
                 .then(response => response.json())
                 .then(data => {
                     // 处理可能的错误
-                    if (data.error) {
-                        console.error('Error loading results:', data.error);
+                    if (!data.success) {
+                        console.error('Error loading results:', data.message);
                         return;
                     }
 
@@ -521,7 +523,7 @@
                     resultsTable.innerHTML = '';
 
                     // 显示结果数据
-                    data.results.forEach((result, index) => {
+                    data.data.results.forEach((result, index) => {
                         const row = document.createElement('tr');
                         const serialNumber = (page - 1) * pageSize + index + 1;
                         row.innerHTML = `
@@ -540,12 +542,12 @@
                     });
 
                     // 更新总记录数
-                    document.getElementById('totalResults').textContent = data.total;
+                    document.getElementById('totalResults').textContent = data.data.total;
 
                     // 生成分页控件
-                    renderPagination(data.page, data.total_pages);
+                    renderPagination(data.data.page, data.data.total_pages);
                 })
-                .catch(error => console.error('Error loading results:', error));
+                .catch(error => console.error('Error loading results:', data.message));
         }
 
         // 生成分页控件

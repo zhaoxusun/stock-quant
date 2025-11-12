@@ -1,7 +1,7 @@
 import os
 import sys
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, send_from_directory
 from flask_cors import CORS
 from flask import make_response
 import json
@@ -44,11 +44,17 @@ def index():
 def get_stocks(source):
     """获取指定数据源下的所有股票文件"""
     if source not in DATA_SOURCES:
-        return jsonify({'error': 'Invalid data source'}), 400
+        error_response_data = {'success': False, 'message': f'Invalid data source', 'data':{}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
 
     source_path = stock_data_root / source
     if not os.path.exists(source_path):
-        return jsonify({'error': 'Source directory not found'}), 404
+        error_response_data = {'success': False, 'message': f'Source directory not found', 'data':{}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
 
     stocks = []
     try:
@@ -66,9 +72,20 @@ def get_stocks(source):
                     })
     except Exception as e:
         logger.error(f"Error reading stocks: {str(e)}")
-        return jsonify({'error': str(e)}), 500
-
-    return jsonify(stocks)
+        error_response_data = {'success': False, 'message': f'Error reading stocks: {str(e)}', 'data':{}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+    response_data = {
+        'success': True,
+        'message': f'Found {len(stocks)} stocks',
+        'data':{
+            'stocks': stocks
+        }
+    }
+    response = make_response(json.dumps(response_data, ensure_ascii=False))
+    response.headers['Content-Type'] = 'application/json; charset=utf-8'
+    return response
 
 
 @app.route('/run_backtest', methods=['POST'])
@@ -85,20 +102,36 @@ def run_backtest():
         # 验证策略名称
         strategy_class = global_strategy_manager.get_strategy(strategy_name)
         if not strategy_class:
-            return jsonify({'error': f'Invalid strategy: {strategy_name}'}), 400
+            error_response_data = {'success': False, 'message': f'Invalid strategy: {strategy_name}', 'data':{}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
 
         if source not in DATA_SOURCES:
-            return jsonify({'error': 'Invalid data source'}), 400
+            error_response_data = {'success': False, 'message': f'Invalid data source', 'data':{}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
 
         if is_batch:
             # 批量回测
             folder_path = stock_data_root / source
             run_backtest_enhanced_volume_strategy_multi(str(folder_path), strategy_class, init_cash)
-            return jsonify({'success': True, 'message': 'Batch backtest completed'})
+            response_data = {
+                'success': True,
+                'message': 'Batch backtest completed',
+                'data':{}
+            }
+            response = make_response(json.dumps(response_data, ensure_ascii=False))
+            response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return response
         else:
             # 单个股票回测
             if not stock_file:
-                return jsonify({'error': 'Stock file is required'}), 400
+                error_response_data = {'success': False, 'message': f'Stock file is required', 'data':{}}
+                error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+                error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                return error_response
 
             file_path = stock_data_root / source / stock_file
             run_backtest_enhanced_volume_strategy(str(file_path), strategy_class, init_cash)
@@ -112,17 +145,29 @@ def run_backtest():
                 if files:
                     latest_file = files[0]
                     result_path = f"{relative_path}/{latest_file}"
-                    return jsonify({
+
+                    response_data = {
                         'success': True,
                         'message': 'Backtest completed',
-                        'result_path': result_path
-                    })
+                        'data':{
+                            'result_path': result_path
+                        }
+                    }
+                    response = make_response(json.dumps(response_data, ensure_ascii=False))
+                    response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                    return response
 
-            return jsonify({'success': True, 'message': 'Backtest completed, but no result file found'})
+            error_response_data = {'success': False, 'message': f'Backtest completed, but no result file found', 'data':{}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
 
     except Exception as e:
         logger.error(f"Error running backtest: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        error_response_data = {'success': False, 'message': f'Error running backtest: {str(e)}', 'data':{}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
 
 
 @app.route('/get_backtest_results')
@@ -194,16 +239,26 @@ def get_backtest_results():
         # 分页
         paginated_results = results[start_idx:start_idx + page_size]
 
-        return jsonify({
-            'results': paginated_results,
-            'page': page,
-            'total_pages': total_pages,
-            'total': total
-        })
+        response_data = {
+            'success': True,
+            'message': f'Found {total} backtest results',
+            'data':{
+                'results': paginated_results,
+                'page': page,
+                'total_pages': total_pages,
+                'total': total
+            }
+        }
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
 
     except Exception as e:
         logger.error(f"Error getting backtest results: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        error_response_data = {'success': False, 'message': f'Error getting backtest results: {str(e)}', 'data':{}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
 
 
 @app.route('/show_result/<path:result_path>')
@@ -213,7 +268,10 @@ def show_result(result_path):
         # 获取实际文件路径
         actual_path = os.path.join(html_root, result_path)
         if not os.path.exists(actual_path):
-            return jsonify({'error': 'Result file not found'}), 404
+            error_response_data = {'success': False, 'message': 'Result file not found', 'data':{}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
 
         # 读取HTML文件内容
         with open(actual_path, 'r', encoding='utf-8') as f:
@@ -223,7 +281,10 @@ def show_result(result_path):
 
     except Exception as e:
         logger.error(f"Error showing result: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        error_response_data = {'success': False, 'message': f'Error showing result: {str(e)}', 'data':{}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
 
 
 @app.route('/static/<path:filename>')
@@ -252,10 +313,16 @@ def acquire_stock_data():
 
         # 参数验证
         if not all([market, data_source, stock_code, start_date, end_date]):
-            return jsonify({'error': '缺少必要参数'}), 400
+            error_response_data = {'success': False, 'message': '缺少必要参数', 'data':{}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
 
         if data_source not in DATA_SOURCES:
-            return jsonify({'error': f'不支持的数据源: {data_source}'}), 400
+            error_response_data = {'success': False, 'message': f'不支持的数据源: {data_source}', 'data':{}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
 
         logger.info(f"开始获取数据: 市场={market}, 数据源={data_source}, 股票代码={stock_code}")
 
@@ -264,7 +331,10 @@ def acquire_stock_data():
         if data_source == 'akshare':
             if market == 'hk':
                 if not stock_code.startswith('HK') :
-                    return jsonify({'error': f'{market}股票代码请保证前缀HK: {stock_code}'}), 400
+                    error_response_data = {'success': False, 'message': f'{market}股票代码请保证前缀HK: {stock_code}', 'data':{}}
+                    error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+                    error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                    return error_response
                 stock_code = stock_code.replace('HK.', '')
                 success = manager_akshare.get_single_hk_stock_history(
                     stock_code=stock_code,
@@ -275,7 +345,11 @@ def acquire_stock_data():
                 )
             elif market == 'us':
                 if not stock_code.startswith('US') :
-                    return jsonify({'error': f'{market}股票代码请保证前缀US: {stock_code}'}), 400
+                    error_response_data = {'success': False, 'message': f'{market}股票代码请保证前缀US: {stock_code}', 'data':{}}
+                    error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+                    error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                    return error_response
+                    # return jsonify({'error': f'{market}股票代码请保证前缀US: {stock_code}'}), 400
                 stock_code = stock_code.replace('US.', '')
                 success = manager_akshare.get_single_us_history(
                     stock_code=stock_code,
@@ -284,7 +358,10 @@ def acquire_stock_data():
                     output_dir=data_source
                 )
             else:
-                return jsonify({'error': f'暂不支持的市场: {market}'}), 400
+                error_response_data = {'success': False, 'message': f'暂不支持的市场: {market}', 'data':{}}
+                error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+                error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                return error_response
         elif data_source == 'baostock':
             if adjust_type == 'qfq':
                 adjust_type = '2'
@@ -293,10 +370,16 @@ def acquire_stock_data():
             elif adjust_type == 'bfq':
                 adjust_type = '1'
             else:
-                return jsonify({'error': f'不支持的调整类型: {adjust_type}'}), 400
+                error_response_data = {'success': False, 'message': f'不支持的调整类型: {adjust_type}', 'data':{}}
+                error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+                error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                return error_response
             if market == 'cn':
                 if not stock_code.startswith('SH') and not stock_code.startswith('SZ'):
-                    return jsonify({'error': f'{market}股票代码请保证前缀SH或SZ: {stock_code}'}), 400
+                    error_response_data = {'success': False, 'message': f'{market}股票代码请保证前缀SH或SZ: {stock_code}', 'data':{}}
+                    error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+                    error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                    return error_response
                 stock_code = stock_code.replace('SH.', 'sh.')
                 stock_code = stock_code.replace('SZ.', 'sz.')
                 success = manager_baostock.get_single_cn_stock_history(
@@ -307,7 +390,10 @@ def acquire_stock_data():
                     output_dir=data_source
                 )
             else:
-                return jsonify({'error': f'暂不支持的市场: {market}'}), 400
+                error_response_data = {'success': False, 'message': f'暂不支持的市场: {market}', 'data':{}}
+                error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+                error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                return error_response
         elif data_source == 'futu':
             if adjust_type == 'qfq':
                 pass
@@ -316,10 +402,16 @@ def acquire_stock_data():
             elif adjust_type == 'bfq':
                 adjust_type = 'None'
             else:
-                return jsonify({'error': f'不支持的调整类型: {adjust_type}'}), 400
+                error_response_data = {'success': False, 'message': f'不支持的调整类型: {adjust_type}', 'data':{}}
+                error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+                error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                return error_response
             if market == 'cn':
                 if not stock_code.startswith('SH') and not stock_code.startswith('SZ'):
-                    return jsonify({'error': f'{market}股票代码请保证前缀SH或SZ: {stock_code}'}), 400
+                    error_response_data = {'success': False, 'message': f'{market}股票代码请保证前缀SH或SZ: {stock_code}', 'data':{}}
+                    error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+                    error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                    return error_response
                 success = manager_futu.get_single_cn_stock_history(
                     stock_code=stock_code,
                     start_date=start_date,
@@ -329,7 +421,10 @@ def acquire_stock_data():
                 )
             elif market == 'hk':
                 if not stock_code.startswith('HK') :
-                    return jsonify({'error': f'{market}股票代码请保证前缀HK: {stock_code}'}), 400
+                    error_response_data = {'success': False, 'message': f'{market}股票代码请保证前缀HK: {stock_code}', 'data':{}}
+                    error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+                    error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                    return error_response
                 success = manager_futu.get_single_hk_stock_history(
                     stock_code=stock_code,
                     start_date=start_date,
@@ -338,26 +433,39 @@ def acquire_stock_data():
                     output_dir=data_source
                 )
             else:
-                return jsonify({'error': f'暂不支持的市场: {market}'}), 400
+                error_response_data = {'success': False, 'message': f'暂不支持的市场: {market}', 'data':{}}
+                error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+                error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                return error_response
         else:
-            return jsonify({'error': f'数据源 {data_source} 的数据获取功能尚未实现'}), 400
+            error_response_data = {'success': False, 'message': f'数据源 {data_source} 的数据获取功能尚未实现', 'data':{}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
 
         if success:
-            return jsonify({
+            response_data = {
                 'success': True,
-                'message': f'股票数据获取成功！股票代码: {stock_code}'
-            })
+                'message': f'股票数据获取成功！股票代码: {stock_code}',
+                'data':{}
+            }
+            response = make_response(json.dumps(response_data, ensure_ascii=False))
+            response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return response
+
         else:
-            return jsonify({
-                'error': f'股票数据获取失败，请检查股票代码是否正确或稍后重试'
-            }), 500
+            error_response_data = {'success': False, 'message': '股票数据获取失败，请检查股票代码是否正确或稍后重试', 'data':{}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
 
     except Exception as e:
         logger.error(f"获取股票数据时出错: {str(e)}")
-        return jsonify({'error': f'获取数据时发生错误: {str(e)}'}), 500
+        error_response_data = {'success': False, 'message':f'获取数据时发生错误: {str(e)},请检查股票代码是否正确或稍后重试', 'data':{}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
 
-
-# 在现有的路由下方添加信号分析相关的路由
 
 @app.route('/signal_analysis')
 def signal_analysis():
@@ -370,7 +478,10 @@ def get_signal_files():
     """获取所有信号文件信息"""
     try:
         if not os.path.exists(signals_root):
-            return jsonify({'success': False, 'message': '信号目录不存在'})
+            error_response_data = {'success': False, 'message': '信号目录不存在', 'data':{}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
 
         signal_files = []
         # 遍历信号目录
@@ -400,14 +511,20 @@ def get_signal_files():
 
         # 按文件创建时间倒序排序
         signal_files.sort(key=lambda x: x['file_time'], reverse=True)
-        response_data = {'success': True, 'signal_files': signal_files}
+        response_data = {
+            'success': True,
+            'message': f'Found {len(signal_files)} signal files',
+            'data': {
+                'signal_files': signal_files
+            }
+        }
         response = make_response(json.dumps(response_data, ensure_ascii=False))
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return response
 
     except Exception as e:
         logger.error(f"获取信号文件失败: {str(e)}")
-        error_response_data = {'success': False, 'message': str(e)}
+        error_response_data = {'success': False, 'message': str(e), 'data':{}}
         error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response
@@ -447,7 +564,10 @@ def analyze_signals():
             all_signals.append(df)
 
         if not all_signals:
-            return jsonify({'success': False, 'message': '没有找到有效的信号文件'})
+            error_response_data = {'success': False, 'message':'没有找到有效的信号文件', 'data':{}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
 
         # 合并所有信号数据
         combined_df = combine_data(all_signals, True)
@@ -473,25 +593,26 @@ def analyze_signals():
         # 按时间倒序排序
         combined_df = combined_df.sort_values(by='date', ascending=False)
 
-        # 转换为JSON格式
-
-        result = {
-            'signals': combined_df.to_dict('records'),
-            'summary': {
-                'total_signals': len(combined_df),
-                'buy_signals': len(combined_df[combined_df['signal_type'].str.contains('buy')]),
-                'sell_signals': len(combined_df[combined_df['signal_type'].str.contains('sell')]),
-                'unique_stocks': combined_df['stock_info'].nunique(),
-                'unique_strategies': combined_df['strategy_name'].nunique()
+        response_data = {
+            'success': True,
+            'message': f'Found signals success',
+            'data': {
+                'signals': combined_df.to_dict('records'),
+                'summary': {
+                    'total_signals': len(combined_df),
+                    'buy_signals': len(combined_df[combined_df['signal_type'].str.contains('buy')]),
+                    'sell_signals': len(combined_df[combined_df['signal_type'].str.contains('sell')]),
+                    'unique_stocks': combined_df['stock_info'].nunique(),
+                    'unique_strategies': combined_df['strategy_name'].nunique()
+                }
             }
         }
-        response_data = {'success': True, 'data': result}
         response = make_response(json.dumps(response_data, ensure_ascii=False))
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return response
     except Exception as e:
         logger.error(f"分析信号失败: {str(e)}")
-        error_response_data = {'success': False, 'message': str(e)}
+        error_response_data = {'success': False, 'message': str(e), 'data':{}}
         error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response
@@ -501,7 +622,7 @@ def get_signal_metadata():
     """获取信号元数据（用于筛选）"""
     try:
         if not os.path.exists(signals_root):
-            response_data = {'success': False, 'message': '信号目录不存在'}
+            response_data = {'success': False, 'message': '信号目录不存在', 'data':{}}
             response = make_response(json.dumps(response_data, ensure_ascii=False))
             response.headers['Content-Type'] = 'application/json; charset=utf-8'
             return response
@@ -535,18 +656,22 @@ def get_signal_metadata():
                         pass
         response_data = {
             'success': True,
-            'metadata': {
-                'strategies': list(strategies),
-                'stock_codes': list(stock_codes),
-                'signal_types': list(signal_types)
+            'message': 'get signal metadata success',
+            'data':{
+                'metadata': {
+                    'strategies': list(strategies),
+                    'stock_codes': list(stock_codes),
+                    'signal_types': list(signal_types)
+                }
             }
+
         }
         response = make_response(json.dumps(response_data, ensure_ascii=False))
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return response
     except Exception as e:
         logger.error(f"获取信号元数据失败: {str(e)}")
-        error_response_data = {'success': False, 'message': str(e)}
+        error_response_data = {'success': False, 'message': str(e), 'data':{}}
         error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response
@@ -561,7 +686,7 @@ def generate_html_report():
         summary = data.get('summary', {})
 
         if not signals_data:
-            response_data = {'success': False, 'message': '没有可生成报告的信号数据'}
+            response_data = {'success': False, 'message': '没有可生成报告的信号数据', 'data':{}}
             response = make_response(json.dumps(response_data, ensure_ascii=False))
             response.headers['Content-Type'] = 'application/json; charset=utf-8'
             return response
@@ -580,16 +705,19 @@ def generate_html_report():
         response_data = {
             'success': True,
             'message': 'HTML报告生成成功',
-            'html_content': html_content,
-            'file_name': file_name,
+            'data':{
+                'html_content': html_content,
+                'file_name': file_name,
+            }
         }
         response = make_response(json.dumps(response_data, ensure_ascii=False))
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        raise Exception("测试异常")
         return response
 
     except Exception as e:
         logger.error(f"生成HTML报告失败: {str(e)}")
-        error_response_data = {'success': False, 'message': str(e)}
+        error_response_data = {'success': False, 'message': str(e), 'data':{}}
         error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response

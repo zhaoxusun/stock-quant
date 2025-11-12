@@ -271,11 +271,11 @@
                 .then(data => {
                     const container = document.getElementById('signalFilesContainer');
 
-                    if (data.success && data.signal_files) {
+                    if (data.success && data.data.signal_files) {
                         // 保存所有信号文件数据
-                        allSignalFiles = data.signal_files;
+                        allSignalFiles = data.data.signal_files;
                         // 显示所有文件
-                        renderSignalFiles(data.signal_files);
+                        renderSignalFiles(data.data.signal_files);
                     } else {
                         container.innerHTML = `<div class="text-center text-danger py-3">${data.message || '加载信号文件失败'}</div>`;
                     }
@@ -433,12 +433,12 @@
             fetch('/get_signal_metadata')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success && data.metadata) {
+                    if (data.success && data.data.metadata) {
                         const strategyFilter = document.getElementById('strategyFilter');
                         const signalTypeFilter = document.getElementById('signalTypeFilter');
 
                         // 填充策略筛选
-                        data.metadata.strategies.forEach(strategy => {
+                        data.data.metadata.strategies.forEach(strategy => {
                             const option = document.createElement('option');
                             option.value = strategy;
                             option.textContent = strategy;
@@ -446,7 +446,7 @@
                         });
 
                         // 填充信号类型筛选
-                        data.metadata.signal_types.forEach(type => {
+                        data.data.metadata.signal_types.forEach(type => {
                             const option = document.createElement('option');
                             option.value = type;
                             option.textContent = type;
@@ -693,33 +693,120 @@
 
         // 消息通知函数
         function showNotification(type, message) {
-            // 创建通知元素
-            const notification = document.createElement('div');
-            notification.className = `notification ${type} position-fixed top-20 right-4 z-50 p-4 rounded shadow-lg transition-all duration-300 transform translate-x-full`;
-            notification.innerHTML = `
-                <div class="d-flex items-center">
-                    <span class="mr-2">${type === 'success' ? '✓' : '✗'}</span>
-                    <span>${message}</span>
-                </div>
-            `;
+            try {
+                if (!document || !document.body) {
+                    alert(`${type === 'error' ? '错误' : type === 'success' ? '成功' : '信息'}: ${message}`);
+                    return;
+                }
 
-            // 添加到body
-            document.body.appendChild(notification);
+                // 首先尝试找到标题栏元素
+                const navbar = document.querySelector('.navbar.navbar-dark.bg-primary');
 
-            // 显示通知
-            setTimeout(() => {
-                notification.classList.remove('translate-x-full');
-            }, 10);
+                // 创建通知元素
+                const notification = document.createElement('div');
 
-            // 自动关闭
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                // 移除元素
+                if (navbar) {
+                    // 如果找到了标题栏，将通知框放置在标题栏内
+                    notification.className = `notification ${type} absolute z-50`;
+
+                    // 使用与导航栏一致的样式
+                    notification.style.top = '0';
+                    notification.style.right = '0';
+                    notification.style.height = '100%';
+                    notification.style.padding = '0 20px';
+                    notification.style.display = 'flex';
+                    notification.style.alignItems = 'center';
+                    notification.style.justifyContent = 'center';
+                    notification.style.color = 'white';
+                    notification.style.fontSize = '0.9rem';
+                    notification.style.transition = 'all 0.3s ease';
+                    notification.style.boxShadow = 'none'; // 与导航栏保持一致，不使用阴影
+                    notification.style.width = '100%'; // 确保宽度充满
+
+
+                    // 根据类型设置左边框颜色，而不是背景色，以保持导航栏整体外观
+                    notification.style.borderLeft = '3px solid';
+                    if (type === 'success') {
+                        notification.style.borderLeftColor = 'rgba(40, 167, 69, 1)';
+                    } else if (type === 'error') {
+                        notification.style.borderLeftColor = 'rgba(220, 53, 69, 1)';
+                    } else {
+                        notification.style.borderLeftColor = 'rgba(23, 162, 184, 1)';
+                    }
+
+                    // 添加到标题栏，保持标题栏的吸顶效果
+                    navbar.appendChild(notification);
+                } else {
+                    // 如果找不到标题栏，使用降级方案（页面顶部居中，样式与导航栏相似）
+                    notification.className = `notification ${type} fixed top-0 left-0 right-0 z-50 bg-primary`;
+                    notification.style.padding = '10px 20px';
+                    notification.style.textAlign = 'center';
+                    notification.style.color = 'white';
+                    notification.style.fontSize = '0.9rem';
+                    notification.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+                    notification.style.transition = 'all 0.3s ease';
+
+                    // 添加到body
+                    document.body.appendChild(notification);
+                }
+
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center;">
+                        <span style="margin-right: 6px;">${type === 'success' ? '✓' : '✗'}</span>
+                        <span>${message}</span>
+                    </div>
+                `;
+
+                // 添加悬浮效果
+                notification.addEventListener('mouseenter', () => {
+                    if (navbar) {
+                        // 标题栏内的通知框，鼠标悬停时可以略微增加透明度
+                        notification.style.opacity = '0.95';
+                    } else {
+                        // 降级方案的通知框悬浮效果
+                        notification.style.transform = 'translateY(-2px)';
+                        notification.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                    }
+                });
+                notification.addEventListener('mouseleave', () => {
+                    if (navbar) {
+                        // 恢复透明度
+                        notification.style.opacity = '1';
+                    } else {
+                        // 恢复降级方案的通知框样式
+                        notification.style.transform = 'translateY(0)';
+                        notification.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                    }
+                });
+
+                // 确保可见
+                notification.style.opacity = '0';
+
+                // 强制重排
+                notification.offsetHeight;
+
+                // 显示通知
+                notification.style.opacity = '1';
+
+                // 自动关闭
                 setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 5000);
+                    notification.style.opacity = '0';
+                    // 移除元素
+                    setTimeout(() => {
+                        if (navbar && navbar.contains(notification)) {
+                            navbar.removeChild(notification);
+                        } else if (document.body.contains(notification)) {
+                            document.body.removeChild(notification);
+                        }
+                    }, 300);
+                }, 1500);
+            } catch (error) {
+                console.error('显示通知时发生错误:', error);
+                // 降级方案：使用浏览器原生alert
+                alert(`${type === 'error' ? '错误' : type === 'success' ? '成功' : '信息'}: ${message}`);
+            }
         }
+
 
         // 下载HTML报告
         function downloadResultsAsHTML() {
@@ -759,9 +846,6 @@
                 }
             };
 
-            // 显示加载状态
-            showNotification('info', '正在生成HTML报告...', null);
-
             // 调用后端API生成HTML报告
             fetch('/generate_html_report', {
                 method: 'POST',
@@ -774,11 +858,11 @@
             .then(data => {
                 if (data.success) {
                     // 创建下载链接
-                    const blob = new Blob([data.html_content], { type: 'text/html' });
+                    const blob = new Blob([data.data.html_content], { type: 'text/html' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = data.file_name;
+                    a.download = data.data.file_name;
                     document.body.appendChild(a);
                     a.click();
 
@@ -789,8 +873,6 @@
                     // 显示成功通知
                     showNotification('success', 'HTML报告下载成功');
 
-                    // 可选：如果需要也可以调用保存API（但这个新实现中后端已经保存了）
-                    // sendHtmlToBackend(data.html_content, data.file_name);
                 } else {
                     showNotification('error', `生成HTML报告失败: ${data.message}`);
                 }

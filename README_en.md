@@ -2,6 +2,9 @@
 
 ---
 # Stock Quant - Local Backtest
+![Usage GIF](https://zhaoxusun.github.io/stock-quant/resource/img/usage.gif)
+
+
 ## Environment Dependencies Installation
 - Python3 [Download](https://www.python.org/downloads/macos/)
 ```

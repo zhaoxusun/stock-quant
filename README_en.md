@@ -3,6 +3,7 @@
 ---
 # Stock Quant - Local Backtest
 ![Usage GIF](https://zhaoxusun.github.io/stock-quant/resource/img/usage.gif)
+If the video doesn't load, you can check it [here](https://zhaoxusun.github.io/stock-quant/resource/img/usage.gif)
 
 
 ## Environment Dependencies Installation

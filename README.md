@@ -2,6 +2,8 @@
 
 ---
 # 股票量化 - 本地回测
+![演示动图](https://zhaoxusun.github.io/stock-quant/resource/img/usage.gif)
+
 ## 环境依赖安装
 - Python3 [下载](https://www.python.org/downloads/macos/)
 ```

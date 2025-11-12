@@ -77,6 +77,7 @@ date,open,high,low,close,volume,amount,stock_code,stock_name,market
 #### 2.2 直接运行代码（不带前端页面）
 - 代码启动回测
   - 参考如下代码
+
 ```
 from common.logger import create_log
 from core.quant.quant_manage import run_backtest_enhanced_volume_strategy, run_backtest_enhanced_volume_strategy_multi

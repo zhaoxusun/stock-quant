@@ -77,6 +77,7 @@ date,open,high,low,close,volume,amount,stock_code,stock_name,market
 #### 2.2 Direct Code Execution（Without Frontend Page）
 - Run backtest code
   - Refer to the following code
+
 ```
 from common.logger import create_log
 from core.quant.quant_manage import run_backtest_enhanced_volume_strategy, run_backtest_enhanced_volume_strategy_multi

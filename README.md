@@ -2,7 +2,9 @@
 
 ---
 # 股票量化 - 本地回测
-<img src="https://zhaoxusun.github.io/stock-quant/resource/img/usage.gif" alt="演示动图" style="max-width: 100%;" data-canonical-src="" />
+
+![演示动图](https://zhaoxusun.github.io/stock-quant/resource/img/usage.gif)
+如果演示视频没加载出来，可以查看[这里](https://zhaoxusun.github.io/stock-quant/resource/img/usage.gif)
 
 ## 环境依赖安装
 - Python3 [下载](https://www.python.org/downloads/macos/)

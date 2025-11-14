@@ -18,10 +18,11 @@
                         <a class="navbar-brand" href="#">股票量化回测系统</a>
                         <div class="d-flex align-items-center">
                             <div class="navbar-nav me-4">
-                                <a class="nav-link" href="#data-acquisition">数据获取</a>
-                                <a class="nav-link active" href="#backtest">回测</a>
-                                <a class="nav-link" href="#results">历史结果</a>
+                                <a class="nav-link" href="/#data-acquisition">数据获取</a>
+                                <a class="nav-link active" href="/#backtest">回测</a>
+                                <a class="nav-link" href="/#results">历史结果</a>
                                 <a class="nav-link" href="/signal_analysis">信号分析</a>
+                                <a class="nav-link" href="/strategy_code">策略管理</a>
                             </div>
                             <a href="https://github.com/zhaoxusun/stock-quant" target="_blank" class="btn btn-outline-light btn-sm github-link">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
@@ -530,11 +531,16 @@
                             <td>${serialNumber}</td>
                             <td>${result.stock}</td>
                             <td>${result.source}</td>
-                            <td>${result.strategy || '-'}</td>
+                            <td>
+                                ${result.strategy ?
+                                    `<a href="/strategy_code?strategy=${encodeURIComponent(result.strategy)}"
+                                       target="_blank" style="color: #0d6efd; text-decoration: underline;">${result.strategy}</a>` :
+                                    '-'}
+                            </td>
                             <td>${result.run_time}</td>
                             <td>
                                 <a href="/show_result/${result.path}" target="_blank" class="btn btn-primary btn-sm">
-                                    查看
+                                    查看结果
                                 </a>
                             </td>
                         `;

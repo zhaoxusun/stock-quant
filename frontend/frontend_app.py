@@ -2,6 +2,9 @@ import os
 import secrets
 import sys
 from datetime import datetime
+
+from core.strategy.indicator_manager import global_indicator_manager
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -716,6 +719,67 @@ def generate_html_report():
     except Exception as e:
         logger.error(f"生成HTML报告失败: {str(e)}")
         error_response_data = {'success': False, 'message': str(e), 'data':{}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+@app.route('/strategy_code')
+def strategy_code():
+    """策略代码查看页面"""
+    strategies = global_strategy_manager.get_strategy_names()
+    indicators = global_indicator_manager.get_indicator_names()
+    return render_template('strategy_code.html', strategies=strategies, indicators=indicators)
+
+
+@app.route('/get_strategy_code/<strategy_name>')
+def get_strategy_code(strategy_name):
+    """获取策略代码"""
+    try:
+        code_info = global_strategy_manager.get_strategy_source_code(strategy_name)
+        if not code_info:
+            error_response_data = {'success': False, 'message': f'Strategy not found: {strategy_name}', 'data': {}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
+
+        response_data = {
+            'success': True,
+            'message': 'Strategy code retrieved successfully',
+            'data': code_info
+        }
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"Error getting strategy code: {str(e)}")
+        error_response_data = {'success': False, 'message': f'Error getting strategy code: {str(e)}', 'data': {}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
+@app.route('/get_indicator_code/<indicator_name>')
+def get_indicator_code(indicator_name):
+    """获取指标类的源代码"""
+    try:
+        indicator_info = global_indicator_manager.get_indicator_source_code(indicator_name)
+        if not indicator_info:
+            error_response_data = {'success': False, 'message': f'Indicator not found: {indicator_name}', 'data': {}}
+            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return error_response
+
+        response_data = {
+            'success': True,
+            'message': 'Indicator code retrieved successfully',
+            'data': indicator_info
+        }
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"Error getting indicator code: {str(e)}")
+        error_response_data = {'success': False, 'message': f'Error getting indicator code: {str(e)}', 'data': {}}
         error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response

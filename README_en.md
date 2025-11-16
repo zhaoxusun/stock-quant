@@ -127,6 +127,9 @@ commission-related parameters in the settings file
 Adjust initial principal: Modify trading principal parameters in the settings file
 ```
 
+## Release Note
+[Release Note](docs/ReleaseNote_en.md)
+
 [![Star History Chart](https://api.star-history.com/svg?repos=zhaoxusun/stock-quant&type=date&legend=top-left)](https://www.star-history.com/#zhaoxusun/stock-quant&type=date&legend=top-left)
 
 Disclaimer: The strategy is for learning and research purposes only. It is not recommended for use 

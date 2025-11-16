@@ -5,6 +5,7 @@ import os
 import sys
 from core.strategy.trading.common import StrategyBase
 from common.logger import create_log
+import inspect
 
 logger = create_log("strategy_manager")
 
@@ -81,6 +82,44 @@ class StrategyManager:
         """获取所有注册的策略类名"""
         return list(self.strategy_map.keys())
 
+    def get_strategy_source_code(self, strategy_class_name):
+        """
+        获取策略类的源代码
+
+        参数:
+            strategy_class_name: 策略类名称
+
+        返回:
+            包含源代码和文件路径的字典，如果找不到则返回None
+        """
+        strategy_class = self.get_strategy(strategy_class_name)
+        if not strategy_class:
+            return None
+
+        try:
+            # 获取类的源代码
+            source_code = inspect.getsource(strategy_class)
+            # 获取类所在的文件路径
+            file_path = inspect.getfile(strategy_class)
+
+            # 尝试获取完整的模块源代码
+            module = inspect.getmodule(strategy_class)
+            module_source = None
+            if module:
+                module_file_path = inspect.getfile(module)
+                with open(module_file_path, 'r', encoding='utf-8') as f:
+                    module_source = f.read()
+
+            return {
+                'class_name': strategy_class_name,
+                'source_code': source_code,
+                'file_path': file_path,
+                'module_source': module_source,
+                'module_file_path': module_file_path if module else file_path
+            }
+        except Exception as e:
+            logger.error(f"Failed to get source code for {strategy_class_name}: {str(e)}")
+            return None
 
 # 创建全局的策略管理器实例
 global_strategy_manager = StrategyManager()

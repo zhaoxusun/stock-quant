@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>策略代码查看 - 股票量化回测系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/python.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .code-container {
+            max-height: 80vh;
+            overflow-y: auto;
+            background-color: #1e1e1e;
+            border-radius: 6px;
+        }
+        pre {
+            margin-bottom: 0;
+            border: none;
+        }
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+        }
+        .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+            border-bottom: 2px solid #0d6efd;
+            color: #0d6efd;
+            background-color: #0d6efd;
+        }
+        .main-tabs .nav-item.show .nav-link, .main-tabs .nav-link.active {
+            background-color: #0d6efd;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <!-- 顶部导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+            <div class="container-fluid px-0">
+                <div class="content">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <a class="navbar-brand" href="/">股票量化回测系统</a>
+                        <div class="d-flex align-items-center">
+                            <div class="navbar-nav me-4">
+                                <a class="nav-link" href="/#data-acquisition">数据获取</a>
+                                <a class="nav-link" href="/#backtest">回测</a>
+                                <a class="nav-link" href="/#results">历史结果</a>
+                                <a class="nav-link" href="/signal_analysis">信号分析</a>
+                                <a class="nav-link active" href="/strategy_code">策略管理</a>
+                                <a href="https://github.com/zhaoxusun/stock-quant" target="_blank" class="btn btn-outline-light btn-sm github-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+                                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                                    </svg>
+                                    GitHub
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主要内容区域 -->
+        <div class="content pt-4">
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    代码查看
+                </div>
+                <div class="card-body">
+                    <!-- 主要类型切换选项卡 -->
+                    <ul class="nav nav-tabs main-tabs mb-4">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="strategyTypeTab" data-bs-toggle="tab" href="#strategyTypeContent">交易策略</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="indicatorTypeTab" data-bs-toggle="tab" href="#indicatorTypeContent">信号指标</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- 交易策略内容 -->
+                        <div class="tab-pane fade show active" id="strategyTypeContent">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="strategySelect" class="form-label">选择交易策略</label>
+                                    <select class="form-select" id="strategySelect" onchange="loadCode('strategy')">
+                                        <option value="">请选择策略</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 信号指标内容 -->
+                        <div class="tab-pane fade" id="indicatorTypeContent">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="indicatorSelect" class="form-label">选择信号指标</label>
+                                    <select class="form-select" id="indicatorSelect" onchange="loadCode('indicator')">
+                                        <option value="">请选择指标</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="codeLoading" class="text-center py-4" style="display: none;">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <p class="mt-2">正在加载代码...</p>
+                    </div>
+
+                    <div id="codeContainer" style="display: none;">
+                        <div class="mb-2">
+                            <h5 class="d-inline-block mr-2" id="codeName"></h5>
+                            <small class="text-muted" id="filePath"></small>
+                        </div>
+
+                        <ul class="nav nav-tabs mb-3">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="classTab" data-bs-toggle="tab" href="#classCode">类代码</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="moduleTab" data-bs-toggle="tab" href="#moduleCode">完整模块</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="classCode">
+                                <div class="code-container">
+                                    <pre><code id="classSourceCode" class="language-python"></code></pre>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="moduleCode">
+                                <div class="code-container">
+                                    <pre><code id="moduleSourceCode" class="language-python"></code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="codeError" class="alert alert-danger" style="display: none;">
+                        <h5 class="alert-heading">加载失败</h5>
+                        <p id="errorMessage"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 获取URL参数
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // 加载策略和指标列表
+        function loadLists() {
+            // 加载交易策略列表
+            const strategies = {{ strategies|tojson|safe }};
+            const strategySelect = document.getElementById('strategySelect');
+
+            strategies.forEach(strategy => {
+                const option = document.createElement('option');
+                option.value = strategy;
+                option.textContent = strategy;
+                strategySelect.appendChild(option);
+            });
+
+            // 加载信号指标列表
+            const indicators = {{ indicators|tojson|safe }};
+            const indicatorSelect = document.getElementById('indicatorSelect');
+
+            indicators.forEach(indicator => {
+                const option = document.createElement('option');
+                option.value = indicator;
+                option.textContent = indicator;
+                indicatorSelect.appendChild(option);
+            });
+
+            // 检查URL参数
+            const strategyParam = getUrlParameter('strategy');
+            const indicatorParam = getUrlParameter('indicator');
+
+            if (indicatorParam) {
+                // 如果URL中有指标参数，切换到指标标签页并加载
+                document.getElementById('indicatorTypeTab').click();
+                indicatorSelect.value = indicatorParam;
+                loadCode('indicator');
+            } else if (strategyParam) {
+                // 如果URL中有策略参数，加载策略
+                strategySelect.value = strategyParam;
+                loadCode('strategy');
+            }
+        }
+
+        // 加载代码（支持策略和指标）
+        function loadCode(type) {
+            let name;
+            let url;
+
+            if (type === 'strategy') {
+                name = document.getElementById('strategySelect').value;
+                url = `/get_strategy_code/${name}`;
+            } else if (type === 'indicator') {
+                name = document.getElementById('indicatorSelect').value;
+                url = `/get_indicator_code/${name}`;
+            }
+
+            if (!name) return;
+
+            const loading = document.getElementById('codeLoading');
+            const codeContainer = document.getElementById('codeContainer');
+            const errorContainer = document.getElementById('codeError');
+
+            loading.style.display = 'block';
+            codeContainer.style.display = 'none';
+            errorContainer.style.display = 'none';
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+
+                    if (data.success) {
+                        document.getElementById('codeName').textContent = data.data.class_name;
+                        document.getElementById('filePath').textContent = data.data.file_path;
+                        document.getElementById('classSourceCode').textContent = data.data.source_code;
+                        document.getElementById('moduleSourceCode').textContent = data.data.module_source || '无法获取完整模块代码';
+
+                        // 高亮代码
+                        hljs.highlightAll();
+
+                        codeContainer.style.display = 'block';
+                    } else {
+                        document.getElementById('errorMessage').textContent = data.message;
+                        errorContainer.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    document.getElementById('errorMessage').textContent = '加载代码时发生错误: ' + error.message;
+                    errorContainer.style.display = 'block';
+                });
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLists();
+
+            // 监听标签切换，重新高亮代码
+            document.getElementById('classTab').addEventListener('shown.bs.tab', function() {
+                hljs.highlightElement(document.getElementById('classSourceCode'));
+            });
+
+            document.getElementById('moduleTab').addEventListener('shown.bs.tab', function() {
+                hljs.highlightElement(document.getElementById('moduleSourceCode'));
+            });
+        });
+    </script>
+</body>
+</html>

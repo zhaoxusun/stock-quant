@@ -120,6 +120,9 @@ if __name__ == "__main__":
 调整初始本金：settings文件中修改交易本金参数
 ```
 
+## 版本发布记录
+[版本发布记录](docs/ReleaseNote.md)
+
 [![Star History Chart](https://api.star-history.com/svg?repos=zhaoxusun/stock-quant&type=date&legend=top-left)](https://www.star-history.com/#zhaoxusun/stock-quant&type=date&legend=top-left)
 
 声明：策略仅用于学习和研究，不建议在真实交易中使用，不承担任何交易风险，后果自负

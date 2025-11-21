@@ -20,14 +20,14 @@
     },
     "id": "task_20251119210530",
     "create_time": "2025-11-19 21:05:30",
-    "update_time": "2025-11-20 12:53:49"
+    "update_time": "2025-11-20 20:53:33"
   },
   {
     "name": "撒地方过后就哭了",
     "type": "backtest",
     "description": "23",
     "schedule_time": "0 0 0 0 0",
-    "enabled": true,
+    "enabled": false,
     "target_stocks": [
       {
         "market": "us",
@@ -43,7 +43,7 @@
     },
     "id": "task_20251119211159",
     "create_time": "2025-11-19 21:11:59",
-    "update_time": "2025-11-20 12:53:49"
+    "update_time": "2025-11-20 20:53:33"
   },
   {
     "name": "sadfasd",
@@ -72,14 +72,14 @@
     },
     "id": "task_20251120115150",
     "create_time": "2025-11-20 11:51:50",
-    "update_time": "2025-11-20 12:53:49"
+    "update_time": "2025-11-20 20:53:33"
   },
   {
     "name": "sadfadsfa",
     "type": "backtest",
     "description": "阿斯顿发送到",
     "schedule_time": "0 8 * * 1-6",
-    "enabled": true,
+    "enabled": false,
     "target_stocks": [
       {
         "market": "us",
@@ -95,14 +95,14 @@
     },
     "id": "task_20251120121153",
     "create_time": "2025-11-20 12:11:53",
-    "update_time": "2025-11-20 12:53:49"
+    "update_time": "2025-11-20 20:53:33"
   },
   {
     "name": "撒的发撒的发多少发",
     "type": "backtest",
     "description": "是大法师的",
     "schedule_time": "0 0 0 0 0",
-    "enabled": true,
+    "enabled": false,
     "target_stocks": [
       {
         "market": "us",
@@ -118,6 +118,64 @@
     },
     "id": "task_20251120125338",
     "create_time": "2025-11-20 12:53:38",
-    "update_time": "2025-11-20 12:53:49"
+    "update_time": "2025-11-20 20:53:33"
+  },
+  {
+    "name": "test",
+    "type": "backtest",
+    "description": "test",
+    "schedule_time": "51 10 0 0 1-7",
+    "enabled": true,
+    "target_stocks": [
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.00700",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09988",
+        "adjust_type": "qfq"
+      }
+    ],
+    "backtest_config": {
+      "strategy": "EnhancedVolumeStrategy",
+      "init_cash": 5000000,
+      "during": 1460
+    },
+    "id": "task_20251120172103",
+    "create_time": "2025-11-20 17:21:03",
+    "update_time": "2025-11-20 20:53:33"
+  },
+  {
+    "name": "test",
+    "type": "backtest",
+    "description": "test",
+    "schedule_time": "51 10 0 0 1-7",
+    "enabled": true,
+    "target_stocks": [
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.03690",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.02015",
+        "adjust_type": "qfq"
+      }
+    ],
+    "backtest_config": {
+      "strategy": "SingleVolumeStrategy",
+      "init_cash": 5000000,
+      "during": 1460
+    },
+    "id": "task_20251121172103",
+    "create_time": "2025-11-20 17:21:03",
+    "update_time": "2025-11-20 20:53:33"
   }
 ]

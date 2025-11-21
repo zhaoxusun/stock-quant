@@ -1,12 +1,74 @@
+"""
+此脚本可以直接运行，用于定时任务的执行，不必依赖前端系统的运行。
+与task_timer.py的区别在于，此脚本可以直接运行（修复了futu与python3.13之间的兼容问题），而task_timer.py需要依赖前端系统的运行。
+直接运行此脚本时，会加载所有启用的任务，并按照配置的时间间隔执行。
+"""
+
+
 import os
+import sys
+
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # 向上三级目录
+core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 向上两级目录
+sys.path.insert(0, project_root)  # 优先使用项目根目录
+sys.path.insert(1, core_dir)  # 添加core目录
+import importlib
+
+# 在导入任何模块之前，先修复signal模块的兼容性问题
+try:
+    # 导入Python标准库的signal模块
+    import signal as std_signal
+
+    # 检查是否有signal属性，如果没有则添加一个简单的实现
+    if not hasattr(std_signal, 'signal'):
+        def mock_signal(signum, handler):
+            print(f"Mock signal handler registered for signal {signum}")
+            return None
+
+
+        # 补丁：添加signal属性到signal模块
+        std_signal.signal = mock_signal
+        print("已为Python 3.13环境修补signal模块")
+    # 检查并添加SIGINT常量
+    if not hasattr(std_signal, 'SIGINT'):
+        std_signal.SIGINT = 2  # 大多数系统中SIGINT的标准值
+        print("已为Python 3.13环境添加signal.SIGINT常量")
+
+    print("已为Python 3.13环境修补signal模块")
+except Exception as e:
+    print(f"修复signal模块时出错: {str(e)}")
+
+import importlib
+
+# 现在尝试导入logger来初始化日志
+try:
+    from common.logger import create_log
+
+    logger = create_log('task_timer')
+    logger.info("信号模块兼容性补丁已应用")
+except Exception as e:
+    print(f"初始化日志时出错: {str(e)}")
+    raise
+
+# 尝试导入futu模块
+manager_futu = None
+futu_available = False
+try:
+    # 使用importlib动态导入以更好地控制导入过程
+    manager_futu = importlib.import_module('core.stock.manager_futu')
+    futu_available = True
+    logger.info("成功导入futu模块")
+except Exception as e:
+    logger.error(f"导入futu模块失败: {str(e)}")
+    # 即使futu导入失败，程序也会继续运行
+
 import schedule
 import time
 import datetime
-
 from common.logger import create_log
 from common.util_html import signals_to_html, save_clean_html
 from core.signal.signal_handler import signal_get, signals_analyze
-from core.stock import manager_akshare, manager_baostock, manager_futu
+from core.stock import manager_akshare, manager_baostock
 from core.task.task_manager import TaskManager
 from core.strategy.strategy_manager import global_strategy_manager
 from core.quant.quant_manage import run_backtest_enhanced_volume_strategy
@@ -69,9 +131,9 @@ def get_kline_data(stock_config):
                 success, csv_name = manager_akshare.get_single_us_history(stock_code, start_date, end_date, adjust_type)
             elif data_source == 'baostock' and market.upper() == 'CN':
                 success, csv_name = manager_baostock.get_stock_history(stock_code, start_date, end_date, adjust_type)
-            elif data_source == 'futu' and market.upper() == 'HK':
+            elif data_source == 'futu' and futu_available and market.upper() == 'HK':
                 success, csv_name = manager_futu.get_single_hk_stock_history(stock_code, start_date, end_date, adjust_type)
-            elif data_source == 'futu' and market.upper() == 'CN':
+            elif data_source == 'futu' and futu_available and market.upper() == 'CN':
                 success, csv_name = manager_futu.get_single_cn_stock_history(stock_code, start_date, end_date, adjust_type)
             else:
                 logger.error(f"不支持的数据源或市场: data_source={data_source}, market={market}")

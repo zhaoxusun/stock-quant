@@ -1,15 +1,19 @@
 import os
-import secrets
 import sys
+
+# 首先设置系统路径
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+import secrets
 from datetime import datetime
 from functools import wraps
 
+from core.signal.signal_handler import signal_get, signals_analyze
+from core.task.task_timer import schedule_tasks
 from core.strategy.indicator_manager import global_indicator_manager
 from core.task.task_manager import TaskManager
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 from flask import Flask, render_template, request, send_from_directory
 from flask_cors import CORS
 from flask import make_response
@@ -21,11 +25,6 @@ from core.strategy.strategy_manager import global_strategy_manager
 from common.logger import create_log
 from core.quant.quant_manage import run_backtest_enhanced_volume_strategy, run_backtest_enhanced_volume_strategy_multi
 from settings import stock_data_root, html_root, signals_root
-
-# 导入数据获取相关模块
-
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_root)
 
 # 初始化Flask应用
 app = Flask(__name__)
@@ -567,40 +566,9 @@ def signal_analysis():
 @log_request_details
 def get_signal_files():
     """获取所有信号文件信息"""
+
     try:
-        if not os.path.exists(signals_root):
-            error_response_data = {'success': False, 'message': '信号目录不存在', 'data':{}}
-            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
-            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
-            return error_response
-
-        signal_files = []
-        # 遍历信号目录
-        for root, dirs, files in os.walk(signals_root):
-            for file in files:
-                if file.endswith('.csv') and file.startswith('stock_signals_'):
-                    file_path = os.path.join(root, file)
-                    # 从路径中提取元数据
-                    relative_path = os.path.relpath(file_path, signals_root)
-                    parts = relative_path.split(os.sep)
-
-                    # 解析路径信息
-                    data_source = parts[0] if len(parts) > 0 else 'unknown'
-                    stock_info = parts[1] if len(parts) > 1 else 'unknown'
-                    strategy_name = parts[2] if len(parts) > 2 else 'unknown'
-
-                    # 获取文件创建时间
-                    file_time = datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
-
-                    signal_files.append({
-                        'file_path': relative_path,
-                        'data_source': data_source,
-                        'stock_info': stock_info,
-                        'strategy_name': strategy_name,
-                        'file_time': file_time
-                    })
-
-        # 按文件创建时间倒序排序
+        signal_files = signal_get()
         signal_files.sort(key=lambda x: x['file_time'], reverse=True)
         response_data = {
             'success': True,
@@ -612,7 +580,6 @@ def get_signal_files():
         response = make_response(json.dumps(response_data, ensure_ascii=False))
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return response
-
     except Exception as e:
         logger.error(f"获取信号文件失败: {str(e)}")
         error_response_data = {'success': False, 'message': str(e), 'data':{}}
@@ -625,66 +592,12 @@ def get_signal_files():
 @log_request_details
 def analyze_signals():
     """分析信号文件"""
+
     try:
         data = request.json
         file_paths = data.get('file_paths', [])
         filters = data.get('filters', {})
-
-        all_signals = []
-
-        for file_path in file_paths:
-            full_path = os.path.join(signals_root, file_path)
-
-            if not os.path.exists(full_path):
-                continue
-
-            # 读取CSV文件
-            df = read_data(full_path)
-
-            # 从文件路径中提取元数据
-            parts = file_path.split(os.sep)
-            data_source = parts[0] if len(parts) > 0 else 'unknown'
-            stock_info = parts[1] if len(parts) > 1 else 'unknown'
-            strategy_name = parts[2] if len(parts) > 2 else 'unknown'
-
-            # 添加元数据到DataFrame
-            df['data_source'] = data_source
-            df['stock_info'] = stock_info
-            df['strategy_name'] = strategy_name
-            df['file_path'] = file_path
-
-            all_signals.append(df)
-
-        if not all_signals:
-            error_response_data = {'success': False, 'message':'没有找到有效的信号文件', 'data':{}}
-            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
-            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
-            return error_response
-
-        # 合并所有信号数据
-        combined_df = combine_data(all_signals, True)
-
-        # 应用筛选条件
-        if filters:
-            if 'strategy_name' in filters and filters['strategy_name']:
-                combined_df = combined_df[combined_df['strategy_name'] == filters['strategy_name']]
-
-            if 'stock_code' in filters and filters['stock_code']:
-                combined_df = combined_df[combined_df['stock_info'].str.contains(filters['stock_code'])]
-
-            if 'signal_type' in filters and filters['signal_type']:
-                combined_df = combined_df[combined_df['signal_type'] == filters['signal_type']]
-
-            # 添加时间范围筛选
-            if 'start_date' in filters and filters['start_date']:
-                combined_df = combined_df[combined_df['date'] >= filters['start_date']]
-
-            if 'end_date' in filters and filters['end_date']:
-                combined_df = combined_df[combined_df['date'] <= filters['end_date']]
-
-        # 按时间倒序排序
-        combined_df = combined_df.sort_values(by='date', ascending=False)
-
+        combined_df = signals_analyze(file_paths, filters)
         response_data = {
             'success': True,
             'message': f'Found signals success',
@@ -702,9 +615,10 @@ def analyze_signals():
         response = make_response(json.dumps(response_data, ensure_ascii=False))
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return response
+
     except Exception as e:
         logger.error(f"分析信号失败: {str(e)}")
-        error_response_data = {'success': False, 'message': str(e), 'data':{}}
+        error_response_data = {'success': False, 'message': str(e), 'data': {}}
         error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response
@@ -1161,5 +1075,12 @@ def check_task_exists(task_id):
 
 
 if __name__ == '__main__':
+    try:
+        logger.info("启动任务定时器")
+        schedule_tasks()
+    except KeyboardInterrupt:
+        logger.info("用户中断，停止任务定时器")
+    except Exception as e:
+        logger.error(f"任务定时器异常: {str(e)}")
     # 在开发环境中运行，生产环境应使用WSGI服务器
     app.run(debug=True, host='0.0.0.0', port=5000)

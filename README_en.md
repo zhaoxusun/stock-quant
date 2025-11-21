@@ -66,7 +66,7 @@ date,open,high,low,close,volume,amount,stock_code,stock_name,market
 
 #### 2.1 With Frontend Page
 - Start the frontend page
-  - frontend/frontend_app.py
+  - python frontend/frontend_app.py
 - Execute backtest on the frontend page
   - Get the historical k-line data of the target stock (supports A-share, HK-share, and US-share)
   - Select the stock to backtest (supports A-share, HK-share, and US-share)
@@ -126,6 +126,28 @@ commission-related parameters in the settings file
 
 Adjust initial principal: Modify trading principal parameters in the settings file
 ```
+
+
+### 5. Task Scheduling
+
+```
+1.Configure the task name, type, description, and cron expression
+2.Configure the target stock list (supports A-share, HK-share, and US-share)
+3.Configure the backtest strategy, initial principal, and backtest days (default end time is one day before the current time)
+4.Start the task to execute the backtest offline (message notification feature is not implemented yet)
+```
+
+![schedule_task](https://zhaoxusun.github.io/stock-quant/resource/img/schedule_task.png)
+
+### 6. Strategy Management
+
+```
+1.View indicator strategies
+2.View trading strategies
+```
+
+![strategy_manage](https://zhaoxusun.github.io/stock-quant/resource/img/strategy_manage.png)
+
 
 ## Release Note
 [Release Note](docs/ReleaseNote_en.md)

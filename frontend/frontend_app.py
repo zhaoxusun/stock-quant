@@ -1,11 +1,14 @@
 import os
 import sys
 
+
 # 首先设置系统路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
+import multiprocessing
+
 import secrets
 from datetime import datetime
 from functools import wraps
@@ -1075,12 +1078,15 @@ def check_task_exists(task_id):
 
 
 if __name__ == '__main__':
+    # 在开发环境中运行，生产环境应使用WSGI服务器
     try:
+        # 创建进程启动schedule_tasks
+        task_process = multiprocessing.Process(target=schedule_tasks)
+        task_process.daemon = True  # 设置为守护进程，主进程结束时自动终止
+        task_process.start()
         logger.info("启动任务定时器")
-        schedule_tasks()
     except KeyboardInterrupt:
         logger.info("用户中断，停止任务定时器")
     except Exception as e:
         logger.error(f"任务定时器异常: {str(e)}")
-    # 在开发环境中运行，生产环境应使用WSGI服务器
     app.run(debug=True, host='0.0.0.0', port=5000)

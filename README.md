@@ -66,7 +66,7 @@ date,open,high,low,close,volume,amount,stock_code,stock_name,market
 
 #### 2.1 带前端页面
 - 启动前端页面
-  - frontend/frontend_app.py
+  - python frontend/frontend_app.py
 - 前端页面上执行回测
   - 获取目标股票的历史k线数据（支持A股、港股、美股）
   - 选择要回测的股票（支持A股、港股、美股）
@@ -119,6 +119,27 @@ if __name__ == "__main__":
 调整策略买卖参数（根据交易信号执行交易）：settings文件中修改交易佣金相关参数
 调整初始本金：settings文件中修改交易本金参数
 ```
+
+### 5. 定时任务配置
+
+```
+1.配置任务名称、任务类型、描述、定时表达式
+2.配置目标股票列表（支持A股、港股、美股）
+3.配置回测策略、启动资金、回测天数（结束时间默认为当前时间前一天）
+4.启动任务即可实现离线执行（暂未实现消息通知功能）
+```
+
+![schedule_task](https://zhaoxusun.github.io/stock-quant/resource/img/schedule_task.png)
+
+### 6. 策略管理
+
+```
+1.查看指标策略
+2.查看交易策略
+```
+
+![strategy_manage](https://zhaoxusun.github.io/stock-quant/resource/img/strategy_manage.png)
+
 
 ## 版本发布记录
 [版本发布记录](docs/ReleaseNote.md)

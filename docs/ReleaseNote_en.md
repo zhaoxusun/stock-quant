@@ -1,5 +1,12 @@
 # Release Note - English
 
+## 2025-11-21 v1.0.2
+- Add scheduled task function（support configuring list of target stocks, backtest parameters, task execution time, etc.）
+  - Support configuring scheduled tasks
+  - Support viewing scheduled tasks
+  - Support enabling/disabling scheduled tasks
+- Fix bug of startup
+
 ## 2025-11-15 v1.0.1
 - Add strategy viewer function, support automatic registration of strategies
   - Support viewing transaction strategies

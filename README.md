@@ -127,6 +127,8 @@ if __name__ == "__main__":
 2.配置目标股票列表（支持A股、港股、美股）
 3.配置回测策略、启动资金、回测天数（结束时间默认为当前时间前一天）
 4.启动任务即可实现离线执行（暂未实现消息通知功能）
+
+注意：别配置大量任务、或者太频繁任务，否则会对系统资源造成压力，也有可能被数据源服务封禁IP
 ```
 
 ![schedule_task](https://zhaoxusun.github.io/stock-quant/resource/img/schedule_task.png)

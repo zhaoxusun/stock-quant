@@ -135,6 +135,9 @@ Adjust initial principal: Modify trading principal parameters in the settings fi
 2.Configure the target stock list (supports A-share, HK-share, and US-share)
 3.Configure the backtest strategy, initial principal, and backtest days (default end time is one day before the current time)
 4.Start the task to execute the backtest offline (message notification feature is not implemented yet)
+
+Attention: Do not configure a large number of tasks or too frequent tasks, as it may cause system resource pressure and 
+also risk being banned by the data source service.
 ```
 
 ![schedule_task](https://zhaoxusun.github.io/stock-quant/resource/img/schedule_task.png)

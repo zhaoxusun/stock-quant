@@ -134,7 +134,10 @@ Adjust initial principal: Modify trading principal parameters in the settings fi
 1.Configure the task name, type, description, and cron expression
 2.Configure the target stock list (supports A-share, HK-share, and US-share)
 3.Configure the backtest strategy, initial principal, and backtest days (default end time is one day before the current time)
-4.Start the task to execute the backtest offline (message notification feature is not implemented yet)
+4.Start the task to execute the backtest offline 
+5.Configure the enterprise微信 webhook URL (add WECHAT_WEBHOOK_QUANT to environment variables)
+If configured, a notification message will be sent to the enterprise-wechat group after the task execution is completed.
+（Please configure the enterprise-wechat group message assistant to receive the notification message）
 
 Attention: Do not configure a large number of tasks or too frequent tasks, as it may cause system resource pressure and 
 also risk being banned by the data source service.

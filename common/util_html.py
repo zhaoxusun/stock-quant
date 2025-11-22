@@ -210,7 +210,6 @@ def signals_to_html(signals_data, filters=None, summary=None):
 
 def save_clean_html(html_content, task_id):
     # 后续工作流中可以使用改方法，调用generate_html_report接口获取返回值的html_content值，在调用该方法生成html文件，拓展通知功能（html作为附件一起发送）
-    output_path = f'/Users/romanzhao/PycharmProjects/stock-quant/frontend/templates/{task_id}_fixed_signal_analysis.html'
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
     output_path = os.path.join(project_root, f'{task_id}_fixed_signal_analysis.html')

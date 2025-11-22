@@ -1080,11 +1080,17 @@ def check_task_exists(task_id):
 if __name__ == '__main__':
     # 在开发环境中运行，生产环境应使用WSGI服务器
     try:
-        # 创建进程启动schedule_tasks
-        task_process = multiprocessing.Process(target=schedule_tasks)
-        task_process.daemon = True  # 设置为守护进程，主进程结束时自动终止
-        task_process.start()
-        logger.info("启动任务定时器")
+        # 在Flask debug模式下，避免在子进程中重复启动任务调度器
+        import os
+        # 检查是否为主进程（Flask会设置WERKZEUG_RUN_MAIN环境变量标识子进程）
+        if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
+            # 创建进程启动schedule_tasks
+            task_process = multiprocessing.Process(target=schedule_tasks)
+            task_process.daemon = True  # 设置为守护进程，主进程结束时自动终止
+            task_process.start()
+            logger.info("启动任务定时器")
+        else:
+            logger.info("在Flask子进程中，不启动任务定时器")
     except KeyboardInterrupt:
         logger.info("用户中断，停止任务定时器")
     except Exception as e:

@@ -11,6 +11,7 @@ from core.task.task_manager import TaskManager
 from core.strategy.strategy_manager import global_strategy_manager
 from core.quant.quant_manage import run_backtest_enhanced_volume_strategy
 import settings
+from core.notification.wechat_notifier import send_wechat_message, send_wechat_report
 
 logger = create_log('task_timer')
 
@@ -174,13 +175,13 @@ def check_signals(target_stocks, task_id, days=365):
             logger.debug(f"信号: 股票={signal.get('stock_info')}, 日期={signal.get('date')}, "
                          f"信号类型={signal.get('signal_type')}, 策略={signal.get('strategy_name')}")
         html = signals_to_html(signals, filters, summary)
-        save_clean_html(html, task_id)
+        html_file = save_clean_html(html, task_id)
         logger.info("成功检查昨天信号，并下载信号HTML完成")
-        return True
+        return True, html_file
 
     except Exception as e:
         logger.error(f"分析信号失败: {str(e)}")
-        return False
+        return False, None
 
 
 
@@ -216,11 +217,18 @@ def process_task(task):
                 logger.error(f"跳过股票处理，因为回测失败")
                 continue
 
-            # 第三步：生成信号详情 - 这一步在run_backtest_enhanced_volume_strategy中已经自动处理
-            # 信号会保存到signals目录，图表会保存到html目录
-            check_signals(target_stocks, task_id, days=365)
-            logger.info(f"股票处理完成: {stock_config.get('stock_code')}")
-
+        # 第三步：生成信号详情 - 这一步在run_backtest_enhanced_volume_strategy中已经自动处理
+        # 信号会保存到signals目录，图表会保存到html目录
+        success, html_file = check_signals(target_stocks, task_id, days=365)
+        if not success or not html_file:
+            logger.error(f"跳过股票处理，因为生成信号详情失败")
+        else:
+            logger.info(f"股票处理完成: {target_stocks}")
+            send_wechat_report(
+                html_file_path=html_file,
+                title=f"定时任务{task_id}信号详情",
+                description=f"{task}"
+            )
         logger.info(f"任务处理完成: {task_name} (ID: {task_id})")
     except Exception as e:
         logger.error(f"处理任务时出错: {str(e)}")
@@ -296,11 +304,11 @@ def schedule_tasks():
             time.sleep(60)  # 出错后等待一分钟再尝试
 
 
-if __name__ == '__main__':
-    try:
-        logger.info("启动任务定时器")
-        schedule_tasks()
-    except KeyboardInterrupt:
-        logger.info("用户中断，停止任务定时器")
-    except Exception as e:
-        logger.error(f"任务定时器异常: {str(e)}")
+# if __name__ == '__main__':
+#     try:
+#         logger.info("启动任务定时器")
+#         schedule_tasks()
+#     except KeyboardInterrupt:
+#         logger.info("用户中断，停止任务定时器")
+#     except Exception as e:
+#         logger.error(f"任务定时器异常: {str(e)}")

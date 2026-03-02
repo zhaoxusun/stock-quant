@@ -1,131 +1,10 @@
 [
   {
-    "name": "每日股票分析任务",
-    "type": "backtest",
-    "description": "12",
-    "schedule_time": "0 0 0 0 0",
-    "enabled": false,
-    "target_stocks": [
-      {
-        "market": "us",
-        "data_source": "akshare",
-        "stock_code": "HK.00700",
-        "adjust_type": "hfq"
-      }
-    ],
-    "backtest_config": {
-      "strategy": "EnhancedVolumeStrategy",
-      "init_cash": 5000000,
-      "during": 1460
-    },
-    "id": "task_20251119210530",
-    "create_time": "2025-11-19 21:05:30",
-    "update_time": "2026-03-02 13:35:59"
-  },
-  {
-    "name": "撒地方过后就哭了",
-    "type": "backtest",
-    "description": "23",
-    "schedule_time": "0 0 0 0 0",
-    "enabled": false,
-    "target_stocks": [
-      {
-        "market": "us",
-        "data_source": "baostock",
-        "stock_code": "HK.00700",
-        "adjust_type": "qfq"
-      }
-    ],
-    "backtest_config": {
-      "strategy": "EnhancedVolumeStrategy",
-      "init_cash": 5000001,
-      "during": 1458
-    },
-    "id": "task_20251119211159",
-    "create_time": "2025-11-19 21:11:59",
-    "update_time": "2026-03-02 13:35:59"
-  },
-  {
-    "name": "sadfasd",
-    "type": "backtest",
-    "description": "sdafadsfa",
-    "schedule_time": "0 0 0 0 0",
-    "enabled": false,
-    "target_stocks": [
-      {
-        "market": "cn",
-        "data_source": "baostock",
-        "stock_code": "US.IVV",
-        "adjust_type": "qfq"
-      },
-      {
-        "market": "cn",
-        "data_source": "futu",
-        "stock_code": "US.IVV",
-        "adjust_type": "None"
-      }
-    ],
-    "backtest_config": {
-      "strategy": "EnhancedVolumeStrategy",
-      "init_cash": 5000000,
-      "during": 1460
-    },
-    "id": "task_20251120115150",
-    "create_time": "2025-11-20 11:51:50",
-    "update_time": "2026-03-02 13:35:59"
-  },
-  {
-    "name": "sadfadsfa",
-    "type": "backtest",
-    "description": "阿斯顿发送到",
-    "schedule_time": "0 8 * * 1-6",
-    "enabled": false,
-    "target_stocks": [
-      {
-        "market": "us",
-        "data_source": "akshare",
-        "stock_code": "US.IVV",
-        "adjust_type": "qfq"
-      }
-    ],
-    "backtest_config": {
-      "strategy": "EnhancedVolumeStrategy",
-      "init_cash": 5000000,
-      "during": 1460
-    },
-    "id": "task_20251120121153",
-    "create_time": "2025-11-20 12:11:53",
-    "update_time": "2026-03-02 13:35:59"
-  },
-  {
-    "name": "撒的发撒的发多少发",
-    "type": "backtest",
-    "description": "是大法师的",
-    "schedule_time": "0 0 0 0 0",
-    "enabled": false,
-    "target_stocks": [
-      {
-        "market": "us",
-        "data_source": "akshare",
-        "stock_code": "US.APPL",
-        "adjust_type": "qfq"
-      }
-    ],
-    "backtest_config": {
-      "strategy": "EnhancedVolumeStrategy",
-      "init_cash": 5000000,
-      "during": 1460
-    },
-    "id": "task_20251120125338",
-    "create_time": "2025-11-20 12:53:38",
-    "update_time": "2026-03-02 13:35:59"
-  },
-  {
     "name": "test",
     "type": "backtest",
     "description": "test",
     "schedule_time": "53 18 0 0 1-7",
-    "enabled": true,
+    "enabled": false,
     "target_stocks": [
       {
         "market": "hk",
@@ -147,14 +26,14 @@
     },
     "id": "task_20251120172103",
     "create_time": "2025-11-20 17:21:03",
-    "update_time": "2026-03-02 13:35:59"
+    "update_time": "2026-03-02 21:33:19"
   },
   {
     "name": "test-single",
     "type": "backtest",
     "description": "test",
     "schedule_time": "33 16 0 0 1-7",
-    "enabled": true,
+    "enabled": false,
     "target_stocks": [
       {
         "market": "hk",
@@ -176,6 +55,83 @@
     },
     "id": "task_20251121172103",
     "create_time": "2025-11-20 17:21:03",
-    "update_time": "2026-03-02 13:35:59"
+    "update_time": "2026-03-02 21:33:19"
+  },
+  {
+    "name": "恒生科技互联网",
+    "type": "backtest",
+    "description": "恒生科技互联网",
+    "schedule_time": "09 09 0 0 1-5",
+    "enabled": true,
+    "target_stocks": [
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.00700",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09988",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.03690",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09618",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.01810",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.01024",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09888",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.02015",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09866",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09868",
+        "adjust_type": "qfq"
+      }
+    ],
+    "backtest_config": {
+      "strategy": "EnhancedVolumeStrategy",
+      "init_cash": 5000000,
+      "during": 1460
+    },
+    "id": "task_20260302180714",
+    "create_time": "2026-03-02 18:07:14",
+    "update_time": "2026-03-02 21:33:19"
   }
 ]

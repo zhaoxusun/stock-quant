@@ -580,7 +580,7 @@ input:checked + .slider:before {
 
 /* 优化移动设备上的显示效果 */
 @media (max-width: 768px) {
-    .result-viewer .content {
+    .result-viewer .result-content {
         padding: 0 10px;
         margin: 10px 0;
     }

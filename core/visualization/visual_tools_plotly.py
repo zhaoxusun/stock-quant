@@ -11,6 +11,13 @@ from core.visualization.visual_demo import get_sample_signal_records, get_sample
 from settings import stock_data_root, html_root
 logger = create_log('visual_tools_plotly')
 
+try:
+    from settings import chart_show_switch
+    switch = chart_show_switch
+except ImportError:
+    switch = False
+    logger.info("未导入chart_show_switch，设为False, 执行回测后浏览器不显示标的回测结果图表，请手动查看结果")
+
 
 def prepare_continuous_dates(df):
     """
@@ -558,7 +565,8 @@ def save_and_show_chart(fig, file_name, output_dir=None):
     fig.write_html(file_path)
 
     # 在浏览器中显示图表
-    fig.show()
+    if switch:
+        fig.show()
 
     return file_path
 

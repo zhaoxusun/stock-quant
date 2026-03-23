@@ -18,6 +18,7 @@ log_root = project_root / 'log'
 html_root = project_root / 'html'
 result_root = project_root / 'result'
 signals_root = project_root / 'signals'
+# chart_show_switch = False
 
 
 # 交易策略相关参数

@@ -1,0 +1,125 @@
+<!-- 背景音乐 -->
+<audio id="backgroundMusic" loop preload="auto" muted>
+    <source src="/static/call-of-silence.mp3" type="audio/mpeg">
+    您的浏览器不支持音频元素。
+</audio>
+
+<script>
+    // 音乐控制逻辑
+    const musicToggle = document.getElementById('musicToggle');
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const musicIcon = musicToggle.querySelector('i');
+
+    // 保存音乐状态到localStorage
+    function saveMusicState() {
+        const musicState = {
+            isPlaying: !backgroundMusic.muted,
+            currentTime: backgroundMusic.currentTime,
+            volume: backgroundMusic.volume,
+            lastUpdate: Date.now()
+        };
+        localStorage.setItem('backgroundMusicState', JSON.stringify(musicState));
+    }
+
+    // 从localStorage加载音乐状态
+    function loadMusicState() {
+        const savedState = localStorage.getItem('backgroundMusicState');
+        if (savedState) {
+            try {
+                const musicState = JSON.parse(savedState);
+                backgroundMusic.currentTime = musicState.currentTime;
+                backgroundMusic.volume = musicState.volume;
+
+                // 更新播放状态
+                if (musicState.isPlaying) {
+                    backgroundMusic.muted = false;
+                    // 尝试播放音乐
+                    backgroundMusic.play().catch(error => {
+                        console.log('音乐自动播放失败:', error);
+                        // 如果播放失败，保持静音状态
+                        backgroundMusic.muted = true;
+                    });
+                    musicIcon.classList.remove('fa-music', 'fa-play-circle');
+                    musicIcon.classList.add('fa-pause-circle');
+                    musicToggle.title = '暂停音乐';
+                } else {
+                    backgroundMusic.muted = true;
+                    musicIcon.classList.remove('fa-pause-circle');
+                    musicIcon.classList.add('fa-play-circle');
+                    musicToggle.title = '播放音乐';
+                }
+            } catch (error) {
+                console.log('加载音乐状态失败:', error);
+            }
+        }
+    }
+
+    // 音乐播放进度更新事件 - 每2秒保存一次状态
+    backgroundMusic.addEventListener('timeupdate', function() {
+        const now = Date.now();
+        const lastUpdate = JSON.parse(localStorage.getItem('backgroundMusicState') || '{"lastUpdate": 0}').lastUpdate;
+        if (now - lastUpdate > 2000) {
+            saveMusicState();
+        }
+    });
+
+    // 音乐播放事件
+    backgroundMusic.addEventListener('playing', function() {
+        musicIcon.classList.remove('fa-music', 'fa-play-circle');
+        musicIcon.classList.add('fa-pause-circle');
+        musicToggle.title = '暂停音乐';
+        saveMusicState();
+    });
+
+    // 音乐暂停事件
+    backgroundMusic.addEventListener('pause', function() {
+        musicIcon.classList.remove('fa-pause-circle');
+        musicIcon.classList.add('fa-play-circle');
+        musicToggle.title = '播放音乐';
+        saveMusicState();
+    });
+
+    // 音乐控制按钮点击事件
+    musicToggle.addEventListener('click', function() {
+        if (backgroundMusic.muted) {
+            // 取消静音并尝试播放
+            backgroundMusic.muted = false;
+            backgroundMusic.play().catch(error => {
+                console.log('音乐播放失败:', error);
+                // 如果播放失败，恢复静音状态
+                backgroundMusic.muted = true;
+            });
+        } else {
+            // 静音（实际上是暂停）
+            backgroundMusic.muted = true;
+        }
+    });
+
+    // 页面卸载前保存音乐状态
+    window.addEventListener('beforeunload', function() {
+        saveMusicState();
+    });
+
+    // 页面可见性变化事件 - 当页面重新可见时恢复音乐状态
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            loadMusicState();
+        }
+    });
+
+    // 页面加载完成后恢复音乐状态
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMusicState();
+
+        // 为页面添加点击事件监听器，一旦用户有交互就尝试播放音乐
+        document.addEventListener('click', function enableAudio() {
+            if (!backgroundMusic.muted) {
+                backgroundMusic.play().catch(error => {
+                    console.log('音乐自动播放失败:', error);
+                });
+            }
+            // 移除监听器，避免重复触发
+            document.removeEventListener('click', enableAudio);
+        }, { once: true });
+    });
+</script>

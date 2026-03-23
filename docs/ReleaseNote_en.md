@@ -1,5 +1,9 @@
 # Release Note - English
 
+## 2026-03-04 v1.0.3
+- System page home title bar - extract
+- Support configuring background music
+
 ## 2025-11-21 v1.0.2
 - Add scheduled task function（support configuring list of target stocks, backtest parameters, task execution time, etc.）
   - Support configuring scheduled tasks

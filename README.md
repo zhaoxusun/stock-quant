@@ -174,3 +174,8 @@ source .bash_profile
 [![Star History Chart](https://api.star-history.com/svg?repos=zhaoxusun/stock-quant&type=date&legend=top-left)](https://www.star-history.com/#zhaoxusun/stock-quant&type=date&legend=top-left)
 
 声明：策略仅用于学习和研究，不建议在真实交易中使用，不承担任何交易风险，后果自负
+
+## 联系我们
+- [![Email](https://img.shields.io/badge/Email-zhaoxu_sun@163.com-blue?style=flat&logo=gmail)](mailto:zhaoxu_sun@163.com)
+- [![Bilibili](https://img.shields.io/badge/Bilibili-大混孑玩B站-blue?style=flat&logo=bilibili)](https://space.bilibili.com/)
+- [![Zhihu](https://img.shields.io/badge/Zhihu-知乎-blue?style=flat&logo=zhihu)](https://www.zhihu.com/people/cober-49)

@@ -1,5 +1,6 @@
 import datetime
 import os
+import time
 
 import futu as ft
 import pandas as pd
@@ -45,6 +46,7 @@ class TestIndicatorFetcher:
 
             # 检查返回值是否有效
             if ret != ft.RET_OK:
+                time.sleep(0.5)
                 logger.error(f"获取历史 K 线数据失败: {data}")
                 return pd.DataFrame(), None
 

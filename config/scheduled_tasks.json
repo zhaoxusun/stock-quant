@@ -26,7 +26,7 @@
     },
     "id": "task_20251120172103",
     "create_time": "2025-11-20 17:21:03",
-    "update_time": "2026-03-07 10:41:50"
+    "update_time": "2026-03-23 19:23:09"
   },
   {
     "name": "test-single",
@@ -55,13 +55,13 @@
     },
     "id": "task_20251121172103",
     "create_time": "2025-11-20 17:21:03",
-    "update_time": "2026-03-07 10:41:50"
+    "update_time": "2026-03-23 19:23:09"
   },
   {
     "name": "恒生科技互联网",
     "type": "backtest",
     "description": "恒生科技互联网",
-    "schedule_time": "43 10 0 0 1-5",
+    "schedule_time": "24 19 0 0 1-5",
     "enabled": true,
     "target_stocks": [
       {
@@ -121,7 +121,7 @@
       {
         "market": "hk",
         "data_source": "futu",
-        "stock_code": "HK.09868",
+        "stock_code": "HK.03032",
         "adjust_type": "qfq"
       }
     ],
@@ -132,6 +132,6 @@
     },
     "id": "task_20260302180714",
     "create_time": "2026-03-02 18:07:14",
-    "update_time": "2026-03-07 10:41:50"
+    "update_time": "2026-03-23 19:23:09"
   }
 ]

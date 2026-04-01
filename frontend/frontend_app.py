@@ -12,6 +12,7 @@ import multiprocessing
 import secrets
 from datetime import datetime
 from functools import wraps
+from core.ai.ai_manager import AIManager
 
 from core.signal.signal_handler import signal_get, signals_analyze
 from core.task.task_timer import schedule_tasks
@@ -1075,6 +1076,38 @@ def check_task_exists(task_id):
         error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response
+
+@app.route('/chat')
+@log_request_details
+def chat_page():
+    """AI聊天页面"""
+    return render_template('chat.html')
+
+@app.route('/api/ai-chat', methods=['POST'])
+@log_request_details
+def chat():
+    data = request.json
+    model = data.get('type')
+    prompt = data.get('prompt', '')
+    if not prompt:
+        error_response_data = {'success': False, 'message': f'请输入内容: {str(e)}', 'data': {}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+    logger.info(f'ai model is {model}')
+    ai_manager = AIManager(model)
+    result = ai_manager.get_response(prompt)
+    logger.info(f'ai prompt is {prompt}')
+    logger.info(f'ai result is {result}')
+
+    response_data = {
+        'success': True,
+        'message': f'Success',
+        'data': {'response': result}
+    }
+    response = make_response(json.dumps(response_data, ensure_ascii=False))
+    response.headers['Content-Type'] = 'application/json; charset=utf-8'
+    return response
 
 
 if __name__ == '__main__':

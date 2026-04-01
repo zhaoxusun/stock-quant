@@ -1,5 +1,9 @@
 # Release Note - English
 
+## 2026-04-01 v1.0.5
+- Add AI analysis function
+  - Support model selection of gpt-4o-mini, gpt-4o, DeepSeek-R1, etc. (does not contain context)
+
 ## 2026-03-04 v1.0.3
 - System page home title bar - extract
 - Support configuring background music

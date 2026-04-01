@@ -15,6 +15,7 @@ For switching methods, see the Environment Initialization section.
 
 ## Environment initialization
 - Python3.13（Recommended）
+
 ```
 python3.13 -m venv venv13 
 source venv13/bin/activate
@@ -22,6 +23,7 @@ pip install -r requirements-13.txt
 ```
 
 - Python3.7（Not yet tested）
+
 ```
 python3.7 -m venv venv7 
 source venv7/bin/activate
@@ -135,9 +137,11 @@ Adjust initial principal: Modify trading principal parameters in the settings fi
 2.Configure the target stock list (supports A-share, HK-share, and US-share)
 3.Configure the backtest strategy, initial principal, and backtest days (default end time is one day before the current time)
 4.Start the task to execute the backtest offline 
-5.Configure the enterprise微信 webhook URL (add WECHAT_WEBHOOK_QUANT to environment variables)
+5.Configure the enterprise-wechat webhook URL (add WECHAT_WEBHOOK_QUANT to environment variables)
 If configured, a notification message will be sent to the enterprise-wechat group after the task execution is completed.
-（Please configure the enterprise-wechat group message assistant to receive the notification message）
+(Please configure the enterprise-wechat group message assistant to receive the notification message）
+(Optional. You can apply for a webhook and search by yourself.
+
 
 Attention: Do not configure a large number of tasks or too frequent tasks, as it may cause system resource pressure and 
 also risk being banned by the data source service.
@@ -156,6 +160,23 @@ also risk being banned by the data source service.
 
 ![strategy_manage](https://zhaoxusun.github.io/stock-quant/resource/img/strategy_manage.png)
 
+### 7. AI Analysis (Optional)
+
+```
+1.Apply for GITHUB API Token（https://github.com/settings/personal-access-tokens）
+2.Add environment variable GITHUB_MODEL_TOKEN
+3.Start the quant system to use AI analysis
+
+```
+
+```
+Example: Add environment variable GITHUB_MODEL_TOKEN on macos
+cd ~
+vim .bash_profile
+export GITHUB_MODEL_TOKEN="github_pat_XXXXXX"
+source .bash_profile
+Restart the quant system to use AI analysis
+```
 
 ## Release Note
 [Release Note](docs/ReleaseNote_en.md)

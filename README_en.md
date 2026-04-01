@@ -178,6 +178,9 @@ source .bash_profile
 Restart the quant system to use AI analysis
 ```
 
+![ai-chat](https://zhaoxusun.github.io/stock-quant/resource/img/ai_chat.png)
+
+
 ## Release Note
 [Release Note](docs/ReleaseNote_en.md)
 

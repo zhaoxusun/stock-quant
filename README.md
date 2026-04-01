@@ -165,6 +165,8 @@ source .bash_profile
 重启量化系统即可使用AI功能
 ```
 
+![ai-chat](https://zhaoxusun.github.io/stock-quant/resource/img/ai_chat.png)
+
 
 ## 版本发布记录
 [版本发布记录](docs/ReleaseNote.md)

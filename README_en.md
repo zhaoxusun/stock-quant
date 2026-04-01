@@ -192,4 +192,4 @@ in real trading. We do not assume any trading risks, and all consequences are at
 ## Contact Us
 - [![Email](https://img.shields.io/badge/Email-zhaoxu_sun@163.com-blue?style=flat&logo=gmail)](mailto:zhaoxu_sun@163.com)
 - [![Bilibili](https://img.shields.io/badge/Bilibili-大混孑玩B站-blue?style=flat&logo=bilibili)](https://space.bilibili.com/)
-- [![Zhihu](https://img.shields.io/badge/Zhihu-知乎-blue?style=flat&logo=zhihu)](https://www.zhihu.com/people/cober-49)
+- [![Zhihu](https://img.shields.io/badge/Zhihu-Cober-blue?style=flat&logo=zhihu)](https://www.zhihu.com/people/cober-49)

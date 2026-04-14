@@ -64,6 +64,13 @@ date,open,high,low,close,volume,amount,stock_code,stock_name,market
 2021-11-03,435.08,438.91,434.62,438.55,2916130.0,,US.IVV,IVV,US
 2021-11-04,439.15,440.8,438.78,440.69,3039933.0,,US.IVV,IVV,US
 ```
+
+```
+You can also use the script to get data, refer to test/test_get_data.py. It supports data from akshare, baostock, 
+and futu. （futu requires an extra OpenD account to get data）
+```
+
+
 ### 2. Backtest Execution（Two Ways）
 
 #### 2.1 With Frontend Page
@@ -93,12 +100,14 @@ from settings import stock_data_root
 logger = create_log('test_strategy')
 
 if __name__ == "__main__":
+    from settings import stock_data_root
+    from core.strategy.trading.volume.enhanced_volume import EnhancedVolumeStrategy
+    init_cash = 5000000
+    csv_path = stock_data_root / "futu/HK.00700_腾讯控股_20220414_20260414.csv"
     # start backtest - single stock
-    kline_csv_path = stock_data_root / "futu/HK.00175_吉利汽车_20211028_20251027.csv"
-    run_backtest_enhanced_volume_strategy(kline_csv_path, EnhancedVolumeStrategy)
+    run_backtest_enhanced_volume_strategy(csv_path, EnhancedVolumeStrategy, init_cash)
     # start backtest - multiple stocks
-    kline_csv_path_folder = stock_data_root / "akshare"
-    run_backtest_enhanced_volume_strategy_multi(kline_csv_path_folder, EnhancedVolumeStrategy)
+    run_backtest_enhanced_volume_strategy_multi(stock_data_root / "futu", EnhancedVolumeStrategy,init_cash)
 ```
 
 ### 3. Backtest Result Analysis
@@ -135,7 +144,8 @@ Adjust initial principal: Modify trading principal parameters in the settings fi
 ```
 1.Configure the task name, type, description, and cron expression
 2.Configure the target stock list (supports A-share, HK-share, and US-share)
-3.Configure the backtest strategy, initial principal, and backtest days (default end time is one day before the current time)
+3.Configure the backtest strategy, initial principal, and backtest days (default end time is one day before the 
+current time), and commission-related parameters in the settings file
 4.Start the task to execute the backtest offline 
 5.Configure the enterprise-wechat webhook URL (add WECHAT_WEBHOOK_QUANT to environment variables)
 If configured, a notification message will be sent to the enterprise-wechat group after the task execution is completed.

@@ -1,30 +1,13 @@
 from common.logger import create_log
-from core.quant.quant_manage import run_backtest_enhanced_volume_strategy
-from core.strategy.trading.volume.enhanced_volume import EnhancedVolumeStrategy
+from core.quant.quant_manage import run_backtest_enhanced_volume_strategy, run_backtest_enhanced_volume_strategy_multi
 from settings import stock_data_root
-
+from core.strategy.trading.volume.enhanced_volume import EnhancedVolumeStrategy
 logger = create_log('test_strategy')
 
-
 if __name__ == "__main__":
-
-    # k线数据获取
-    # end_date = datetime.datetime.now().strftime("%Y-%m-%d")
-    # start_time = (datetime.datetime.now() - datetime.timedelta(days=365*4)).strftime("%Y-%m-%d")
-    #
-    # stock_list = get_user_selected_stock_list()
-    # for stock_code in stock_list:
-    #     get_single_hk_stock_history(
-    #         stock_code=stock_code,
-    #         start_date=start_time,
-    #         end_date=end_date,
-    #         adjust_type=ft.AuType.QFQ
-    #     )
-
+    init_cash = 5000000
+    csv_path = stock_data_root / "futu/HK.00700_腾讯控股_20220414_20260414.csv"
     # 启动回测-单个股票
-    kline_csv_path = stock_data_root / "futu/HK.00700_腾讯控股_20211108_20251105.csv"
-    # run_backtest_enhanced_volume_strategy(kline_csv_path, SingleVolumeStrategy)
-    run_backtest_enhanced_volume_strategy(kline_csv_path, EnhancedVolumeStrategy)
+    run_backtest_enhanced_volume_strategy(csv_path, EnhancedVolumeStrategy, init_cash)
     # 启动回测-批量股票
-    kline_csv_path_folder = stock_data_root / "akshare"
-    # run_backtest_enhanced_volume_strategy_multi(kline_csv_path_folder, SingleVolumeStrategy)
+    # run_backtest_enhanced_volume_strategy_multi(stock_data_root / "futu", EnhancedVolumeStrategy,init_cash)

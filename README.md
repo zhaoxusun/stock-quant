@@ -64,6 +64,11 @@ date,open,high,low,close,volume,amount,stock_code,stock_name,market
 2021-11-04,439.15,440.8,438.78,440.69,3039933.0,,US.IVV,IVV,US
 ```
 
+```
+调用脚本也可以获取数据，参考test/test_get_data.py，支持从akshare、baostock、futu获取数据（futu需要额外申请OpenD账号）
+```
+
+
 ### 2 运行回测（两种方式）
 
 #### 2.1 带前端页面
@@ -93,12 +98,14 @@ from settings import stock_data_root
 logger = create_log('test_strategy')
 
 if __name__ == "__main__":
+    from settings import stock_data_root
+    from core.strategy.trading.volume.enhanced_volume import EnhancedVolumeStrategy
+    init_cash = 5000000
+    csv_path = stock_data_root / "futu/HK.00700_腾讯控股_20220414_20260414.csv"
     # 启动回测-单个股票
-    kline_csv_path = stock_data_root / "futu/HK.00175_吉利汽车_20211028_20251027.csv"
-    run_backtest_enhanced_volume_strategy(kline_csv_path, EnhancedVolumeStrategy)
+    run_backtest_enhanced_volume_strategy(csv_path, EnhancedVolumeStrategy, init_cash)
     # 启动回测-批量股票
-    kline_csv_path_folder = stock_data_root / "akshare"
-    run_backtest_enhanced_volume_strategy_multi(kline_csv_path_folder, EnhancedVolumeStrategy)
+    run_backtest_enhanced_volume_strategy_multi(stock_data_root / "futu", EnhancedVolumeStrategy,init_cash)
 ```
 
 ### 3. 回测结果分析
@@ -127,7 +134,7 @@ if __name__ == "__main__":
 ```
 1.配置任务名称、任务类型、描述、定时表达式
 2.配置目标股票列表（支持A股、港股、美股）
-3.配置回测策略、启动资金、回测天数（结束时间默认为当前时间前一天）
+3.配置回测策略、启动资金、回测天数（结束时间默认为当前时间前一天），手续费、滑点等参数在settings文件中配置
 4.启动任务即可实现离线执行
 5.配置企业微信webhook URL（环境变量增加WECHAT_WEBHOOK_QUANT），如果配置了，会在任务执行完成后发送通知到企业微信（企业微信群配置消息助手）（可选，申请webhook自行搜索即可）
 

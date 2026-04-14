@@ -22,7 +22,7 @@ def run_backtest_enhanced_volume_strategy_multi(kline_csv_folder_path, trading_s
     """
     folder = Path(kline_csv_folder_path)
     for kline_csv_path in folder.glob("*.csv"):
-        run_backtest_enhanced_volume_strategy(kline_csv_path, trading_strategy,init_cash)
+        run_backtest_enhanced_volume_strategy(kline_csv_path, trading_strategy, init_cash)
 
 def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strategy, init_cash=settings.INIT_CASH):
     current_time = get_current_time()
@@ -64,6 +64,8 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
     cerebro.addanalyzer(bt.analyzers.TimeReturn, _name="total_return", timeframe=bt.TimeFrame.NoTimeFrame)
     cerebro.addanalyzer(bt.analyzers.DrawDown, _name="drawdown")
     cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name="trade_analyzer")
+    cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name="sharpe_ratio", timeframe=bt.TimeFrame.Days, riskfreerate=0.03)
+    cerebro.addanalyzer(bt.analyzers.AnnualReturn, _name="annual_return")
 
     # 启动回测
     logger.info(f"【回测启动】初始资金：{cerebro.broker.getcash():,.2f} 港元")
@@ -87,14 +89,25 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
     try:
         total_return = list(strategy.analyzers.total_return.get_analysis().values())[0] * 100
         final_cash = cerebro.broker.getvalue()
-        logger.info(f"1. 收益情况：总收益率={total_return:.2f}% | 最终资金={final_cash:,.2f} 港元")
+        # 计算年化收益
+        start_date = data.p.dataname.index[0]
+        end_date = data.p.dataname.index[-1]
+        days = (end_date - start_date).days
+        annual_return = (pow((1 + total_return/100), 365/days) - 1) * 100 if days > 0 else 0
+        logger.info(f"1. 收益情况：总收益率={total_return:.2f}% | 年化收益={annual_return:.2f}% | 最终资金={final_cash:,.2f} 港元")
     except Exception as e:
         logger.warning(f"1. 收益情况：无法计算 ({str(e)})")
 
     # 风险指标
     try:
         max_dd = strategy.analyzers.drawdown.get_analysis()["max"]["drawdown"]
-        logger.info(f"2. 风险指标：最大回撤={max_dd:.2f}%")
+        # 计算Calmar比率
+        try:
+            annual_return = (pow((1 + total_return/100), 365/days) - 1) * 100 if days > 0 else 0
+            calmar_ratio = annual_return / max_dd if max_dd > 0 else 0
+        except:
+            calmar_ratio = 0
+        logger.info(f"2. 风险指标：最大回撤={max_dd:.2f}% | Calmar比率={calmar_ratio:.2f}")
     except Exception as e:
         logger.warning(f"2. 风险指标：无法计算 ({str(e)})")
 
@@ -103,18 +116,34 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
         trade_stats = strategy.analyzers.trade_analyzer.get_analysis()
         total_trades = trade_stats["total"]["total"]
         won_trades = trade_stats.get("won", {}).get("total", 0)
+        lost_trades = trade_stats.get("lost", {}).get("total", 0)
         win_rate = (won_trades / total_trades) * 100 if total_trades > 0 else 0
+        # 计算盈亏比
+        try:
+            avg_win = trade_stats.get("won", {}).get("pnl", {}).get("average", 0)
+            avg_loss = abs(trade_stats.get("lost", {}).get("pnl", {}).get("average", 1))
+            profit_factor = avg_win / avg_loss if avg_loss > 0 else 0
+        except:
+            profit_factor = 0
         logger.info(
-            f"3. 交易统计：总交易={total_trades} | 盈利={won_trades} | 亏损={total_trades - won_trades} | 胜率={win_rate:.2f}%")
+            f"3. 交易统计：总交易={total_trades} | 盈利={won_trades} | 亏损={lost_trades} | 胜率={win_rate:.2f}% | 盈亏比={profit_factor:.2f}")
     except Exception as e:
         logger.warning(f"3. 交易统计：无法计算 ({str(e)})")
+
+    # 夏普比率
+    try:
+        sharpe_ratio = strategy.analyzers.sharpe_ratio.get_analysis().get("sharperatio", 0)
+        sharpe_ratio = sharpe_ratio if sharpe_ratio is not None else 0
+        logger.info(f"4. 风险调整收益：夏普比率={sharpe_ratio:.2f}")
+    except Exception as e:
+        logger.warning(f"4. 风险调整收益：无法计算 ({str(e)})")
 
     # 信号统计
     try:
         logger.info(
-            f"4. 信号统计：买入信号={strategy.buy_signals_count} | 卖出信号={strategy.sell_signals_count} | 实际买入={strategy.executed_buys_count} | 实际卖出={strategy.executed_sells_count}")
+            f"5. 信号统计：买入信号={strategy.buy_signals_count} | 卖出信号={strategy.sell_signals_count} | 实际买入={strategy.executed_buys_count} | 实际卖出={strategy.executed_sells_count}")
     except Exception as e:
-        logger.warning(f"4. 信号统计：无法计算 ({str(e)})")
+        logger.warning(f"5. 信号统计：无法计算 ({str(e)})")
 
     # 保存信号记录
     try:
@@ -128,7 +157,7 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
                 # 保存所有信号到一个文件
                 signals_file_path = os.path.join(signal_file_folder, f"stock_signals_{current_time}.csv")
                 signals_df.to_csv(signals_file_path, index=False, encoding='utf-8-sig')
-                logger.info(f"5. 信号记录已保存至：{signals_file_path}")
+                logger.info(f"6. 信号记录已保存至：{signals_file_path}")
 
     except Exception as e:
         logger.warning(f"信号保存失败：{str(e)}")
@@ -136,7 +165,7 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
     html_file_path = settings.html_root / relative_path.rsplit('.', 1)[0] / strategy.__class__.__name__
     html_file_name = f"stock_with_trades_{current_time}.html"
     html_path = plotly_draw(csv_path, strategy, init_cash, html_file_name, html_file_path)
-    logger.info(f"6. 回测可视化图表将保存至：{html_path}，对应股票数据：{csv_path}")
+    logger.info(f"7. 回测可视化图表将保存至：{html_path}，对应股票数据：{csv_path}")
     logger.info("=" * 60)
     logger.info("【回测结束】\n")
 
@@ -175,12 +204,16 @@ def get_data_form_csv(csv_path):
 
     return data_feed
 
-# if __name__ == "__main__":
-#     # 设置CSV路径
-#     kline_csv_path = stock_data_root / "futu/HK.00700_腾讯控股_20210104_20250127.csv"
-#     init_cash = 5000000
-#     # 启动回测-单个股票
-#     run_backtest_enhanced_volume_strategy(kline_csv_path,init_cash)
-#     # 启动回测-批量股票
-#     run_backtest_enhanced_volume_strategy_multi(folder_path=stock_data_root / "futu", init_cash=5000000)
+if __name__ == "__main__":
+    # 设置CSV路径
+    from settings import stock_data_root
+    from core.strategy.trading.volume.enhanced_volume import EnhancedVolumeStrategy
+
+    init_cash = 5000000
+    # 执行回测
+    csv_path = stock_data_root / "futu/HK.00700_腾讯控股_20220414_20260414.csv"
+    # 启动回测-单个股票
+    run_backtest_enhanced_volume_strategy(csv_path, EnhancedVolumeStrategy, init_cash)
+    # 启动回测-批量股票
+    run_backtest_enhanced_volume_strategy_multi(stock_data_root / "futu", EnhancedVolumeStrategy, init_cash)
 #

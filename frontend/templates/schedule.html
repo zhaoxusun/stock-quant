@@ -202,25 +202,16 @@
                     <div id="noTasks" class="d-none text-center py-8">
                         <p>暂无定时任务</p>
                     </div>
-                </div>
-                <!-- 分页控件 -->
-            <div class="card-footer" id="paginationContainer">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="text-white">
-                        共 <span id="totalItems"></span> 条记录，每页显示
-                        <select id="pageSize" class="form-select form-select-sm d-inline-block w-auto">
-                            <option value="2">2</option>
-                            <option value="20" selected>20</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
-                        条
+                    <!-- 分页控件 -->
+                    <div class="mt-4 d-flex justify-content-between align-items-center" id="paginationContainer">
+                        <div>
+                            共 <span id="totalItems">0</span> 条记录
+                        </div>
+                        <nav>
+                            <ul class="pagination" id="pagination"></ul>
+                        </nav>
                     </div>
-                    <nav>
-                        <ul class="pagination pagination-sm" id="pagination"></ul>
-                    </nav>
                 </div>
-            </div>
             </div>
         </div>
     </div>
@@ -325,33 +316,10 @@
             color: white;
             opacity: 0.8;
         }
-        /* 分页控件样式 */
-        .pagination .page-link {
-            background-color: #343a40;
-            border-color: #495057;
-            color: white;
-        }
-
-        .pagination .page-link:hover {
-            background-color: #495057;
-            border-color: #6c757d;
-        }
-
-        .pagination .active .page-link {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-
-        .pagination .disabled .page-link {
-            background-color: #343a40;
-            border-color: #495057;
-            color: #6c757d;
-        }
     </style>
 
     <script>
         let stockEntities = [];
-        // 分页相关变量
         let currentPage = 1;
         let pageSize = 20;
         let totalTasks = [];
@@ -742,47 +710,56 @@
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
 
-            // 计算总页数
             const totalPages = Math.ceil(totalTasks.length / pageSize);
 
-            // 首页按钮
-            const firstPageItem = document.createElement('li');
-            firstPageItem.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-            firstPageItem.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="goToPage(1)">首页</a>`;
-            pagination.appendChild(firstPageItem);
+            const prevItem = document.createElement('li');
+            prevItem.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevItem.innerHTML = `
+                <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            `;
+            prevItem.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    goToPage(currentPage - 1);
+                }
+            });
+            pagination.appendChild(prevItem);
 
-            // 上一页按钮
-            const prevPageItem = document.createElement('li');
-            prevPageItem.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-            prevPageItem.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="goToPage(${currentPage - 1})">&laquo;</a>`;
-            pagination.appendChild(prevPageItem);
+            const maxButtons = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
 
-            // 页码按钮 - 显示当前页附近的页码
-            const maxVisiblePages = 5;
-            const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-            const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            if (endPage - startPage + 1 < maxButtons) {
+                startPage = Math.max(1, endPage - maxButtons + 1);
+            }
 
-            // 调整起始页，确保能显示maxVisiblePages个页码
-            const adjustedStartPage = Math.max(1, endPage - maxVisiblePages + 1);
-
-            for (let i = adjustedStartPage; i <= endPage; i++) {
+            for (let i = startPage; i <= endPage; i++) {
                 const pageItem = document.createElement('li');
-                pageItem.className = `page-item ${currentPage === i ? 'active' : ''}`;
-                pageItem.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="goToPage(${i})">${i}</a>`;
+                pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                pageItem.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    goToPage(i);
+                });
                 pagination.appendChild(pageItem);
             }
 
-            // 下一页按钮
-            const nextPageItem = document.createElement('li');
-            nextPageItem.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-            nextPageItem.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="goToPage(${currentPage + 1})">&raquo;</a>`;
-            pagination.appendChild(nextPageItem);
-
-            // 末页按钮
-            const lastPageItem = document.createElement('li');
-            lastPageItem.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-            lastPageItem.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="goToPage(${totalPages})")>末页</a>`;
-            pagination.appendChild(lastPageItem);
+            const nextItem = document.createElement('li');
+            nextItem.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextItem.innerHTML = `
+                <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            `;
+            nextItem.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    goToPage(currentPage + 1);
+                }
+            });
+            pagination.appendChild(nextItem);
         }
 
         // 跳转到指定页
@@ -796,15 +773,7 @@
             }
         }
 
-        // 初始化分页相关事件
         function initPagination() {
-            // 监听每页显示数量变化
-            document.getElementById('pageSize').addEventListener('change', function() {
-                pageSize = parseInt(this.value);
-                currentPage = 1; // 重置到第一页
-                renderCurrentPage();
-                renderPagination();
-            });
         }
 
 

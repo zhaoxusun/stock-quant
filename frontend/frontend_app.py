@@ -602,6 +602,17 @@ def analyze_signals():
         file_paths = data.get('file_paths', [])
         filters = data.get('filters', {})
         combined_df = signals_analyze(file_paths, filters)
+        
+        # 计算时间范围
+        date_range = ''
+        if len(combined_df) > 0:
+            min_date = combined_df['date'].min()
+            max_date = combined_df['date'].max()
+            date_range = f"{min_date} 至 {max_date}"
+        
+        # 统计信号类型分布
+        signal_type_counts = combined_df['signal_type'].value_counts().to_dict()
+        
         response_data = {
             'success': True,
             'message': f'Found signals success',
@@ -611,8 +622,11 @@ def analyze_signals():
                     'total_signals': len(combined_df),
                     'buy_signals': len(combined_df[combined_df['signal_type'].str.contains('buy')]),
                     'sell_signals': len(combined_df[combined_df['signal_type'].str.contains('sell')]),
+                    'neutral_signals': len(combined_df[combined_df['signal_type'].str.contains('neutral')]),
                     'unique_stocks': combined_df['stock_info'].nunique(),
-                    'unique_strategies': combined_df['strategy_name'].nunique()
+                    'unique_strategies': combined_df['strategy_name'].nunique(),
+                    'date_range': date_range,
+                    'signal_type_counts': signal_type_counts
                 }
             }
         }

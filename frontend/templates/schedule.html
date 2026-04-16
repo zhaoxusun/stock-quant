@@ -4,77 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>定时任务管理 - 股票量化回测系统</title>
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 自定义CSS -->
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>" type="image/svg+xml">
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
     <div class="container-fluid p-0">
         {% include 'navbar.html' %}
 
-        <!-- 主要内容区域 -->
         <div class="content pt-4">
-            <!-- 任务操作卡片 -->
-            <div class="card mt-4" id="task-form">
-                <div class="card-header bg-primary text-white">
-                    <span id="form-title">创建定时任务</span>
+            <div class="page-header mb-4">
+                <div>
+                    <h1 class="page-title"><i class="fas fa-clock"></i>定时任务管理</h1>
+                    <p class="page-subtitle">自动化执行股票数据获取、回测分析，定期生成投资报告</p>
                 </div>
-                <div class="card-body">
-                    <form id="taskForm">
-                        <input type="hidden" id="taskId" name="taskId">
+            </div>
 
-                        <div class="row g-3">
-                            <!-- 任务名称 -->
-                            <div class="col-md-4">
-                                <label for="taskName" class="form-label">任务名称 <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="taskName" name="taskName" placeholder="请输入任务名称" required>
-                                <div class="invalid-feedback">任务名称不能为空</div>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="card task-form-card" id="task-form">
+                        <div class="card-header">
+                            <div class="schedule-header">
+                                <span id="form-title"><i class="fas fa-calendar-plus me-2"></i>创建定时任务</span>
                             </div>
-
-                            <!-- 任务类型 -->
-                            <div class="col-md-4">
-                                <label for="taskType" class="form-label">任务类型 <span class="text-danger">*</span></label>
-                                <select class="form-select" id="taskType" name="taskType" required>
-                                    <option value="">请选择任务类型</option>
-                                    <option value="backtest">股票数据获取+回测+信号检查</option>
-                                </select>
-                                <div class="invalid-feedback">请选择任务类型</div>
-                            </div>
-
-                            <!-- 描述 -->
-                            <div class="col-md-4">
-                                <label for="description" class="form-label">描述 <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="description" name="description" placeholder="请输入任务描述" required>
-                                <div class="invalid-feedback">任务描述不能为空</div>
-                            </div>
-
-                            <!-- 定时表达式 - 修改宽度为col-md-4 -->
-                            <div class="col-md-4">
-                                <label for="scheduleTime" class="form-label">定时表达式 <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="scheduleTime" name="scheduleTime" placeholder="例如: 0 8 * * 1-5 (工作日早上8点执行)" required>
-                                <div class="invalid-feedback">定时表达式不能为空</div>
-                                <small class="form-text text-muted mt-1">Cron格式: 分 时 日 月 周</small>
-                            </div>
-
-
-                            <!-- 股票实体列表管理 -->
-                            <div class="col-12" id="stockEntitiesContainer">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <span class="mb-0">目标股票列表 <span class="text-danger">*</span></span>
+                        </div>
+                        <div class="card-body">
+                            <form id="taskForm">
+                                <input type="hidden" id="taskId" name="taskId">
+                                
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <i class="fas fa-info-circle"></i>
+                                        基础信息
                                     </div>
-                                    <div class="card-body">
-                                        <!-- 添加股票实体的表单 -->
-                                        <div class="row g-3 mb-3 p-3 bg-dark bg-opacity-70 rounded">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label for="taskName" class="form-label">任务名称<span class="required-star">*</span></label>
+                                            <input type="text" class="form-control" id="taskName" name="taskName" placeholder="请输入任务名称" required>
+                                            <div class="invalid-feedback">任务名称不能为空</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="taskType" class="form-label">任务类型<span class="required-star">*</span></label>
+                                            <select class="form-select" id="taskType" name="taskType" required>
+                                                <option value="">请选择任务类型</option>
+                                                <option value="backtest">股票数据获取+回测+信号检查</option>
+                                            </select>
+                                            <div class="invalid-feedback">请选择任务类型</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="description" class="form-label">描述<span class="required-star">*</span></label>
+                                            <input type="text" class="form-control" id="description" name="description" placeholder="请输入任务描述" required>
+                                            <div class="invalid-feedback">任务描述不能为空</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="scheduleTime" class="form-label">定时表达式<span class="required-star">*</span></label>
+                                            <input type="text" class="form-control" id="scheduleTime" name="scheduleTime" placeholder="例如: 0 8 * * 1-5" required>
+                                            <div class="invalid-feedback">定时表达式不能为空</div>
+                                            <div class="form-text">Cron格式: 分 时 日 月 周 (例: 0 8 * * 1-5 表示工作日8点)</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section" id="stockEntitiesContainer">
+                                    <div class="form-section-title">
+                                        <i class="fas fa-chart-line"></i>
+                                        目标股票<span class="required-star">*</span>
+                                    </div>
+                                    <div class="stock-add-form">
+                                        <div class="row g-3">
                                             <div class="col-md-3">
                                                 <label for="newDataSource" class="form-label">数据源</label>
-                                                <select class="form-select bg-dark text-light border-secondary" id="newDataSource">
+                                                <select class="form-select" id="newDataSource">
                                                     <option value="akshare">akshare</option>
                                                     <option value="baostock">baostock</option>
                                                     <option value="futu">futu</option>
@@ -82,7 +84,7 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <label for="newMarket" class="form-label">市场</label>
-                                                <select class="form-select bg-dark text-white border-secondary" id="newMarket">
+                                                <select class="form-select" id="newMarket">
                                                     <option value="us">美股</option>
                                                     <option value="cn">A股</option>
                                                     <option value="hk">港股</option>
@@ -90,247 +92,170 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <label for="newStockCode" class="form-label">股票代码</label>
-                                                <input type="text" class="form-control bg-dark text-white border-secondary placeholder-white" id="newStockCode" placeholder="例如: US.IVV, SH.600519, HK.00700">
+                                                <input type="text" class="form-control" id="newStockCode" placeholder="US.IVV, SH.600519, HK.00700">
                                             </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-2">
                                                 <label for="newAdjustType" class="form-label">复权类型</label>
-                                                <select class="form-select bg-dark text-white border-secondary" id="newAdjustType">
+                                                <select class="form-select" id="newAdjustType">
                                                     <option value="qfq">前复权</option>
                                                     <option value="hfq">后复权</option>
                                                     <option value="None">不复权</option>
                                                 </select>
                                             </div>
-                                            <div class="col-md-1 align-self-end">
-                                                <button type="button" class="btn btn-primary w-100" id="addStockButton">添加股票</button>
+                                            <div class="col-md-1 d-flex align-items-end">
+                                                <button type="button" class="btn btn-primary w-100" id="addStockButton">
+                                                    <i class="fas fa-plus me-1"></i>添加
+                                                </button>
                                             </div>
                                         </div>
-
-                                        <!-- 股票实体列表 -->
-                                        <div class="overflow-auto" style="max-height: 300px;">
-                                            <table class="table table-sm table-dark table-hover" id="stockEntitiesTable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>数据源</th>
-                                                        <th>市场</th>
-                                                        <th>股票代码</th>
-                                                        <th>复权类型</th>
-                                                        <th>操作</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="stockEntitiesTableBody">
-                                                    <!-- 股票实体将通过JavaScript动态添加 -->
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div id="noStockEntities" class="text-center py-4 text-white">
-                                            暂无股票实体，请添加至少一个
+                                    </div>
+                                    <div class="stock-table-wrapper">
+                                        <table class="data-table" id="stockEntitiesTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>数据源</th>
+                                                    <th>市场</th>
+                                                    <th>股票代码</th>
+                                                    <th>复权类型</th>
+                                                    <th>操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="stockEntitiesTableBody"></tbody>
+                                        </table>
+                                        <div id="noStockEntities" class="empty-state">
+                                            <div class="empty-state-icon"><i class="fas fa-inbox"></i></div>
+                                            <div class="empty-state-text">暂无股票实体，请添加至少一个</div>
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <i class="fas fa-cogs"></i>
+                                        回测配置
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-4" id="strategyField">
+                                            <label for="strategy" class="form-label">策略选择<span class="required-star">*</span></label>
+                                            <select class="form-select" id="strategy" name="strategy" required>
+                                                {% for strategy_name in strategies %}
+                                                <option value="{{ strategy_name }}">{{ strategy_name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4" id="initCashField">
+                                            <label for="initCash" class="form-label">初始资金<span class="required-star">*</span></label>
+                                            <input type="number" class="form-control" id="initCash" name="initCash" value="5000000" required>
+                                            <div class="invalid-feedback">初始资金不能为空</div>
+                                        </div>
+                                        <div class="col-md-4" id="duringField">
+                                            <label for="during" class="form-label">回测周期(天)<span class="required-star">*</span></label>
+                                            <input type="number" class="form-control" id="during" name="during" value="1460" max="1460" required>
+                                            <div class="invalid-feedback">回测周期不能为空</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-3 justify-content-end mt-4">
+                                    <button type="button" class="btn btn-secondary" id="cancelButton">
+                                        <i class="fas fa-times me-1"></i>取消
+                                    </button>
+                                    <button type="submit" class="btn btn-primary" id="submitButton">
+                                        <i class="fas fa-check me-1"></i>创建任务
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card task-list-card" id="task-list">
+                        <div class="card-header">
+                            <div class="schedule-header">
+                                <span><i class="fas fa-list me-2"></i>定时任务列表</span>
+                                <span class="badge badge-info" id="taskCount">0 个任务</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="loading" class="loading-overlay d-none">
+                                <div class="loading-container">
+                                    <div class="loading-spinner"></div>
+                                    <p class="mt-3">加载中...</p>
+                                </div>
                             </div>
 
-
-                            <!-- 策略名称 -->
-                            <div class="col-md-4" id="strategyField">
-                                <label for="strategy" class="form-label">策略选择</label>
-                                <select class="form-select" id="strategy" name="strategy" required>
-                                    {% for strategy_name in strategies %}
-                                    <option value="{{ strategy_name }}">{{ strategy_name }}</option>
-                                    {% endfor %}
-                                </select>
+                            <div id="taskTableContainer">
+                                <div class="data-table-wrapper">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>任务名称</th>
+                                                <th>任务类型</th>
+                                                <th>定时表达式</th>
+                                                <th>状态</th>
+                                                <th>创建时间</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="taskTableBody"></tbody>
+                                    </table>
+                                </div>
                             </div>
 
-                            <!-- 初始资金 -->
-                            <div class="col-md-4" id="initCashField">
-                                <label for="initCash" class="form-label">初始资金 <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="initCash" name="initCash" value="5000000" required>
-                                <div class="invalid-feedback">初始资金不能为空</div>
+                            <div id="noTasks" class="empty-state d-none">
+                                <div class="empty-state-icon"><i class="fas fa-calendar-times"></i></div>
+                                <div class="empty-state-title">暂无定时任务</div>
+                                <div class="empty-state-text">创建您的第一个定时任务，开始自动化回测</div>
                             </div>
 
-                            <!-- 回测周期 -->
-                            <div class="col-md-4" id="duringField">
-                                <label for="during" class="form-label">回测周期(天) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="during" name="during" value="1460" max="1460" required>
-                                <div class="invalid-feedback">回测周期不能为空</div>
-                            </div>
-
-                            <!-- 表单按钮 -->
-                            <div class="col-12 mt-3">
-                                <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary" id="submitButton">创建任务</button>
-                                    <button type="button" class="btn btn-secondary" id="cancelButton">取消</button>
+                            <div class="modern-pagination" id="paginationContainer">
+                                <div class="pagination-info">
+                                    共 <span id="totalItems" class="fw-bold">0</span> 条记录
+                                </div>
+                                <div class="pagination-controls">
+                                    <button class="page-btn nav-btn" id="prevPage" onclick="goToPage(currentPage - 1)">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <div id="pagination"></div>
+                                    <button class="page-btn nav-btn" id="nextPage" onclick="goToPage(currentPage + 1)">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- 任务列表卡片 -->
-            <div class="card mt-4" id="task-list">
-                <div class="card-header bg-primary text-white">
-                    <span>定时任务列表</span>
-                </div>
-                <div class="card-body">
-                    <!-- 加载状态 -->
-                    <div id="loading" class="d-none text-center py-4">
-                        <div class="loading"></div>
-                        <p class="mt-2">加载中...</p>
-                    </div>
-
-                    <!-- 任务列表 -->
-                    <div id="taskTableContainer">
-                        <table class="table table-dark table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>任务名称</th>
-                                    <th>任务类型</th>
-                                    <th>定时表达式</th>
-                                    <th>状态</th>
-                                    <th>创建时间</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="taskTableBody">
-                                <!-- 任务数据将通过JavaScript动态加载 -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- 无数据提示 -->
-                    <div id="noTasks" class="d-none text-center py-8">
-                        <p>暂无定时任务</p>
-                    </div>
-                    <!-- 分页控件 -->
-                    <div class="mt-4 d-flex justify-content-between align-items-center" id="paginationContainer">
-                        <div>
-                            共 <span id="totalItems">0</span> 条记录
-                        </div>
-                        <nav>
-                            <ul class="pagination" id="pagination"></ul>
-                        </nav>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 通知组件 -->
-    <div id="notification" class="notification position-fixed top-20 right-5 p-4 rounded shadow-lg z-50 transform transition-all duration-300 translate-x-full opacity-0">
-        <div id="notificationMessage"></div>
-    </div>
-    <div id="confirmDialog" class="confirm-dialog hidden">
-        <div class="confirm-dialog-content">
-            <h3 id="confirmDialogTitle" class="confirm-dialog-title"></h3>
-            <p id="confirmDialogMessage" class="confirm-dialog-message"></p>
-            <div class="confirm-dialog-buttons">
-                <button id="confirmDialogCancel" class="btn btn-secondary">取消</button>
-                <button id="confirmDialogConfirm" class="btn btn-danger">确认</button>
+    <div id="notification" class="notification"></div>
+    
+    <div id="confirmDialog" class="modern-dialog hidden">
+        <div class="modern-dialog-content">
+            <div class="modern-dialog-icon danger">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="modern-dialog-title" id="confirmDialogTitle"></h3>
+            <p class="modern-dialog-message" id="confirmDialogMessage"></p>
+            <div class="modern-dialog-buttons">
+                <button class="btn btn-cancel" id="confirmDialogCancel">取消</button>
+                <button class="btn btn-confirm" id="confirmDialogConfirm">确认删除</button>
             </div>
         </div>
     </div>
-
-    <style>
-        /* 确认对话框样式 */
-        .confirm-dialog {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1050;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .confirm-dialog.show {
-            opacity: 1;
-        }
-
-        .confirm-dialog.hidden {
-            display: none;
-        }
-
-        .confirm-dialog-content {
-            background-color: white;
-            border-radius: 8px;
-            padding: 24px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transform: translateY(-20px);
-            transition: transform 0.3s ease;
-        }
-
-        .confirm-dialog.show .confirm-dialog-content {
-            transform: translateY(0);
-        }
-
-        .confirm-dialog-title {
-            margin-top: 0;
-            margin-bottom: 16px;
-            font-size: 1.25rem;
-            color: #333;
-        }
-
-        .confirm-dialog-message {
-            margin-bottom: 24px;
-            color: #555;
-            line-height: 1.5;
-        }
-
-        .confirm-dialog-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
-
-        /* 设置placeholder文本为白色 */
-        .placeholder-white::placeholder {
-            color: white;
-            opacity: 0.8; /* 稍微降低透明度以区分实际输入的文本 */
-        }
-
-        /* 针对不同浏览器的兼容性 */
-        .placeholder-white::-webkit-input-placeholder {
-            color: white;
-            opacity: 0.8;
-        }
-
-        .placeholder-white:-moz-placeholder {
-            color: white;
-            opacity: 0.8;
-        }
-
-        .placeholder-white::-moz-placeholder {
-            color: white;
-            opacity: 0.8;
-        }
-
-        .placeholder-white:-ms-input-placeholder {
-            color: white;
-            opacity: 0.8;
-        }
-    </style>
 
     <script>
         let stockEntities = [];
         let currentPage = 1;
         let pageSize = 20;
         let totalTasks = [];
-        // 页面加载完成后执行
+
         document.addEventListener('DOMContentLoaded', function() {
-            // 初始化分页功能
-            initPagination();
-            // 加载任务列表
             loadTasks();
 
-            // 任务类型选择变化时，动态显示/隐藏相关字段
             document.getElementById('taskType').addEventListener('change', function() {
                 const taskType = this.value;
                 const stockEntitiesContainer = document.getElementById('stockEntitiesContainer');
@@ -338,62 +263,46 @@
                 const initCashField = document.getElementById('initCashField');
                 const duringField = document.getElementById('duringField');
 
-                // 重置必填状态
                 document.getElementById('strategy').required = true;
                 document.getElementById('initCash').required = true;
                 document.getElementById('during').required = true;
 
-                // 根据任务类型显示不同的字段
                 if (taskType === 'backtest') {
                     stockEntitiesContainer.classList.remove('d-none');
                     strategyField.classList.remove('d-none');
                     initCashField.classList.remove('d-none');
                     duringField.classList.remove('d-none');
-                    document.getElementById('strategy').required = true;
-                    document.getElementById('initCash').required = true;
-                    document.getElementById('during').required = true;
                 }
             });
 
-            // 数据源和市场联动逻辑
             document.getElementById('newDataSource').addEventListener('change', function() {
                 const dataSource = this.value;
                 const marketSelect = document.getElementById('newMarket');
-
-                // 清空现有选项
                 marketSelect.innerHTML = '';
 
-                // 根据数据源添加对应的市场选项
                 if (dataSource === 'akshare') {
-                    // akshare支持港美市场
                     marketSelect.appendChild(new Option('美股', 'us'));
                     marketSelect.appendChild(new Option('港股', 'hk'));
                 } else if (dataSource === 'baostock') {
-                    // baostock只支持A股
                     marketSelect.appendChild(new Option('A股', 'cn'));
                 } else if (dataSource === 'futu') {
-                    // futu支持港A市场
                     marketSelect.appendChild(new Option('A股', 'cn'));
                     marketSelect.appendChild(new Option('港股', 'hk'));
                 }
             });
 
             document.getElementById('newDataSource').dispatchEvent(new Event('change'));
-
             document.getElementById('addStockButton').addEventListener('click', addStockEntity);
 
-            // 表单提交处理
             document.getElementById('taskForm').addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                // 表单验证
                 if (!this.checkValidity()) {
                     e.stopPropagation();
                     this.classList.add('was-validated');
                     return;
                 }
 
-                // 验证定时表达式
                 const scheduleTime = document.getElementById('scheduleTime').value;
                 const cronValidation = validateCronExpression(scheduleTime);
                 if (!cronValidation.isValid) {
@@ -408,7 +317,6 @@
 
                 const taskId = document.getElementById('taskId').value;
                 const taskData = {
-                    // 使用正确的字段名称
                     name: document.getElementById('taskName').value,
                     type: document.getElementById('taskType').value,
                     description: document.getElementById('description').value,
@@ -417,14 +325,10 @@
                 };
                 taskData.target_stocks = stockEntities;
 
-
-                // 添加backtest_config对象
                 if (document.getElementById('strategy').required) {
                     taskData.backtest_config = {
                         strategy: document.getElementById('strategy').value
                     };
-
-                    // 添加回测配置的可选字段
                     if (document.getElementById('initCash').required) {
                         taskData.backtest_config.init_cash = parseInt(document.getElementById('initCash').value);
                     }
@@ -434,55 +338,43 @@
                 }
 
                 if (taskId) {
-                    // 更新任务
                     updateTask(taskId, taskData);
                 } else {
-                    // 创建任务
                     createTask(taskData);
                 }
             });
 
-            // 取消按钮事件
             document.getElementById('cancelButton').addEventListener('click', resetForm);
             document.getElementById('cancelButton').addEventListener('click', loadTasks);
-
         });
 
-        // 验证Cron表达式格式
         function validateCronExpression(cronExpression) {
-            // Cron格式: 分 时 日 月 周
             const parts = cronExpression.trim().split(/\s+/);
 
-            // 检查是否有5个部分
             if (parts.length !== 5) {
                 return { isValid: false, message: '定时表达式格式错误，应为：分 时 日 月 周' };
             }
 
-            // 验证分钟 (0-59)
             const minuteRegex = /^(\*|\d{1,2}|\d{1,2}-\d{1,2}|\d{1,2}\/\d{1,2})$|^\d{1,2}(,\d{1,2})*$/;
             if (!minuteRegex.test(parts[0])) {
                 return { isValid: false, message: '分钟格式错误，应为0-59之间的数字或通配符' };
             }
 
-            // 验证小时 (0-23)
             const hourRegex = /^(\*|\d{1,2}|\d{1,2}-\d{1,2}|\d{1,2}\/\d{1,2})$|^\d{1,2}(,\d{1,2})*$/;
             if (!hourRegex.test(parts[1])) {
                 return { isValid: false, message: '小时格式错误，应为0-23之间的数字或通配符' };
             }
 
-            // 验证日期 (1-31)
             const dayRegex = /^(\*|\d{1,2}|\d{1,2}-\d{1,2}|\d{1,2}\/\d{1,2}|L|W|LW)$|^\d{1,2}(,\d{1,2})*$/;
             if (!dayRegex.test(parts[2])) {
                 return { isValid: false, message: '日期格式错误，应为1-31之间的数字或通配符' };
             }
 
-            // 验证月份 (1-12)
             const monthRegex = /^(\*|\d{1,2}|\d{1,2}-\d{1,2}|\d{1,2}\/\d{1,2})$|^\d{1,2}(,\d{1,2})*$/;
             if (!monthRegex.test(parts[3])) {
                 return { isValid: false, message: '月份格式错误，应为1-12之间的数字或通配符' };
             }
 
-            // 验证星期 (0-6 或 1-7)
             const weekRegex = /^(\*|[0-7]|[0-7]-[0-7]|[0-7]\/[1-7]|MON|TUE|WED|THU|FRI|SAT|SUN)$|^([0-7](,[0-7])*)$/i;
             if (!weekRegex.test(parts[4])) {
                 return { isValid: false, message: '星期格式错误，应为0-7之间的数字或英文缩写(MON-SUN)或通配符' };
@@ -491,43 +383,36 @@
             return { isValid: true };
         }
 
-        // 添加股票实体
         function addStockEntity() {
             const dataSource = document.getElementById('newDataSource').value;
             const market = document.getElementById('newMarket').value;
             const stockCode = document.getElementById('newStockCode').value;
             const adjustType = document.getElementById('newAdjustType').value;
 
-            // 验证股票代码
             if (!stockCode.trim()) {
                 showNotification('股票代码不能为空', 'error');
                 return;
             }
 
-            // 根据市场类型验证股票代码前缀
             let isValidPrefix = true;
             let expectedPrefix = '';
 
             if (market === 'us') {
-                // 美股必须以US.开头
                 isValidPrefix = stockCode.startsWith('US.');
                 expectedPrefix = 'US.';
             } else if (market === 'hk') {
-                // 港股必须以HK.开头
                 isValidPrefix = stockCode.startsWith('HK.');
                 expectedPrefix = 'HK.';
             } else if (market === 'cn') {
-                // A股必须以SH.或SZ.开头
                 isValidPrefix = stockCode.startsWith('SH.') || stockCode.startsWith('SZ.');
                 expectedPrefix = 'SH.或SZ.';
             }
+            
             if (!isValidPrefix) {
                 showNotification(`股票代码格式错误，${market === 'us' ? '美股' : market === 'hk' ? '港股' : 'A股'}股票代码必须以${expectedPrefix}开头`, 'error');
                 return;
             }
 
-
-            // 检查是否已存在相同的股票实体
             const exists = stockEntities.some(entity =>
                 entity.data_source === dataSource &&
                 entity.market === market &&
@@ -539,22 +424,15 @@
                 return;
             }
 
-            // 添加到列表
-            const newEntity = {
+            stockEntities.push({
                 market: market,
                 data_source: dataSource,
                 stock_code: stockCode,
                 adjust_type: adjustType
-            };
+            });
 
-            stockEntities.push(newEntity);
-
-            // 更新UI
             renderStockEntities();
-
-            // 清空输入框
             document.getElementById('newStockCode').value = '';
-
             showNotification('股票实体添加成功', 'success');
         }
 
@@ -572,16 +450,17 @@
 
             if (stockEntities.length > 0) {
                 noStockEntitiesDiv.classList.add('d-none');
-
                 stockEntities.forEach((entity, index) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${entity.data_source}</td>
+                        <td><span class="badge badge-info">${entity.data_source}</span></td>
                         <td>${getMarketDisplay(entity.market)}</td>
-                        <td>${entity.stock_code}</td>
+                        <td><code>${entity.stock_code}</code></td>
                         <td>${getAdjustTypeDisplay(entity.adjust_type)}</td>
                         <td>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="removeStockEntity(${index})")>删除</button>
+                            <button type="button" class="action-btn remove" onclick="removeStockEntity(${index})">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
                         </td>
                     `;
                     tableBody.appendChild(row);
@@ -591,27 +470,16 @@
             }
         }
 
-        // 获取市场显示名称
         function getMarketDisplay(market) {
-            const marketMap = {
-                'us': '美股',
-                'cn': 'A股',
-                'hk': '港股'
-            };
+            const marketMap = { 'us': '美股', 'cn': 'A股', 'hk': '港股' };
             return marketMap[market] || market;
         }
 
-        // 获取复权类型显示名称
         function getAdjustTypeDisplay(adjustType) {
-            const adjustTypeMap = {
-                'qfq': '前复权',
-                'hfq': '后复权',
-                'None': '不复权'
-            };
+            const adjustTypeMap = { 'qfq': '前复权', 'hfq': '后复权', 'None': '不复权' };
             return adjustTypeMap[adjustType] || adjustType;
         }
 
-        // 加载所有任务
         function loadTasks() {
             showLoading(true);
 
@@ -619,45 +487,36 @@
                 .then(response => response.json())
                 .then(data => {
                     showLoading(false);
-
                     const taskTableBody = document.getElementById('taskTableBody');
                     const noTasksDiv = document.getElementById('noTasks');
                     const paginationContainer = document.getElementById('paginationContainer');
                     const totalItems = document.getElementById('totalItems');
-
+                    const taskCount = document.getElementById('taskCount');
 
                     taskTableBody.innerHTML = '';
 
                     if (data.success && data.data && data.data.length > 0) {
-                        // 按create_time倒序排列任务
                         const sortedTasks = data.data.sort((a, b) => {
                             const dateA = new Date(a.create_time || 0).getTime();
                             const dateB = new Date(b.create_time || 0).getTime();
-                            return dateB - dateA; // 倒序排列
+                            return dateB - dateA;
                         });
                         totalTasks = sortedTasks;
-
-                        // 更新总记录数
                         totalItems.textContent = totalTasks.length;
-                        // 显示任务列表和分页
+                        taskCount.textContent = `${totalTasks.length} 个任务`;
                         noTasksDiv.classList.add('d-none');
                         document.getElementById('taskTableContainer').classList.remove('d-none');
                         paginationContainer.classList.remove('d-none');
                         currentPage = 1;
-
-                        // 渲染当前页的数据
                         renderCurrentPage();
-                        // 生成分页按钮
                         renderPagination();
                     } else {
                         totalTasks = [];
-
-                        // 显示无数据提示，隐藏分页
                         noTasksDiv.classList.remove('d-none');
                         document.getElementById('taskTableContainer').classList.add('d-none');
                         paginationContainer.classList.add('d-none');
                         totalItems.textContent = '0';
-
+                        taskCount.textContent = '0 个任务';
                     }
                 })
                 .catch(error => {
@@ -667,37 +526,40 @@
                 });
         }
 
-        // 渲染当前页的数据
         function renderCurrentPage() {
             const taskTableBody = document.getElementById('taskTableBody');
             taskTableBody.innerHTML = '';
 
-            // 计算当前页的数据范围
             const startIndex = (currentPage - 1) * pageSize;
             const endIndex = Math.min(startIndex + pageSize, totalTasks.length);
             const currentPageTasks = totalTasks.slice(startIndex, endIndex);
 
-            // 渲染当前页的数据
             currentPageTasks.forEach(task => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${task.id}</td>
-                    <td>${task.name}</td>
+                    <td><span class="text-secondary">#${task.id}</span></td>
+                    <td><strong>${task.name}</strong></td>
                     <td>${taskTypeDisplay(task.type)}</td>
-                    <td>${task.schedule_time}</td>
+                    <td><code>${task.schedule_time}</code></td>
                     <td>
-                        <span class="badge ${task.enabled ? 'badge-success' : 'badge-danger'}">
+                        <span class="status-badge ${task.enabled ? 'enabled' : 'disabled'}">
+                            <span class="status-dot"></span>
                             ${task.enabled ? '启用' : '禁用'}
                         </span>
                     </td>
-                    <td>${formatDate(task.create_time)}</td>
+                    <td class="text-secondary">${formatDate(task.create_time)}</td>
                     <td>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-primary btn-sm" onclick="editTask('${task.id}')">编辑</button>
-                            <button class="btn ${task.enabled ? 'btn-warning' : 'btn-success'} btn-sm" onclick="toggleTask('${task.id}', ${!task.enabled})")>
+                        <div class="d-flex gap-2">
+                            <button class="action-btn edit" onclick="editTask('${task.id}')">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="action-btn toggle" onclick="toggleTask('${task.id}', ${!task.enabled})">
+                                <i class="fas fa-toggle-${task.enabled ? 'off' : 'on'}"></i>
                                 ${task.enabled ? '禁用' : '启用'}
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteTask('${task.id}')">删除</button>
+                            <button class="action-btn delete" onclick="deleteTask('${task.id}')">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
                         </div>
                     </td>
                 `;
@@ -705,27 +567,13 @@
             });
         }
 
-        // 渲染分页按钮
         function renderPagination() {
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
-
             const totalPages = Math.ceil(totalTasks.length / pageSize);
 
-            const prevItem = document.createElement('li');
-            prevItem.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-            prevItem.innerHTML = `
-                <a class="page-link" href="#" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            `;
-            prevItem.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage > 1) {
-                    goToPage(currentPage - 1);
-                }
-            });
-            pagination.appendChild(prevItem);
+            document.getElementById('prevPage').className = `page-btn nav-btn ${currentPage === 1 ? 'disabled' : ''}`;
+            document.getElementById('nextPage').className = `page-btn nav-btn ${currentPage === totalPages ? 'disabled' : ''}`;
 
             const maxButtons = 5;
             let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
@@ -736,35 +584,15 @@
             }
 
             for (let i = startPage; i <= endPage; i++) {
-                const pageItem = document.createElement('li');
-                pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
-                pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-                pageItem.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    goToPage(i);
-                });
+                const pageItem = document.createElement('button');
+                pageItem.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                pageItem.textContent = i;
+                pageItem.addEventListener('click', () => goToPage(i));
                 pagination.appendChild(pageItem);
             }
-
-            const nextItem = document.createElement('li');
-            nextItem.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-            nextItem.innerHTML = `
-                <a class="page-link" href="#" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            `;
-            nextItem.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage < totalPages) {
-                    goToPage(currentPage + 1);
-                }
-            });
-            pagination.appendChild(nextItem);
         }
 
-        // 跳转到指定页
         function goToPage(page) {
-            // 确保页码在有效范围内
             const totalPages = Math.ceil(totalTasks.length / pageSize);
             if (page >= 1 && page <= totalPages) {
                 currentPage = page;
@@ -773,25 +601,16 @@
             }
         }
 
-        function initPagination() {
-        }
-
-
-        // 创建任务
         function createTask(taskData) {
             showLoading(true);
-
             fetch('/api/tasks/create', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(taskData)
             })
             .then(response => response.json())
             .then(data => {
                 showLoading(false);
-
                 if (data.success) {
                     showNotification('任务创建成功', 'success');
                     resetForm();
@@ -803,41 +622,30 @@
             .catch(error => {
                 showLoading(false);
                 showNotification('创建任务失败', 'error');
-                console.error('Error creating task:', error);
             });
         }
 
-        // 获取任务详情
         function getTask(taskId) {
             return fetch(`/api/tasks/get/${taskId}`)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        return data.data;
-                    }
+                    if (data.success) return data.data;
                     throw new Error(data.message || '获取任务失败');
                 });
         }
 
-        // 编辑任务
         function editTask(taskId) {
             showLoading(true);
-
             getTask(taskId)
                 .then(task => {
                     showLoading(false);
-
-                    // 填充表单 - 使用正确的字段名称
                     document.getElementById('taskId').value = task.id;
                     document.getElementById('taskName').value = task.name || task.task_name;
                     document.getElementById('taskType').value = task.type || task.task_type;
                     document.getElementById('description').value = task.description;
                     document.getElementById('scheduleTime').value = task.schedule_time || task.cron_expression;
-
-                    // 触发任务类型变化事件，更新相关字段显示
                     document.getElementById('taskType').dispatchEvent(new Event('change'));
 
-                    // 填充target_stocks数据
                     if (task.target_stocks && task.target_stocks.length > 0) {
                         stockEntities = [...task.target_stocks];
                     } else {
@@ -845,47 +653,34 @@
                     }
                     renderStockEntities();
 
-                    // 填充backtest_config数据
                     if (task.backtest_config) {
                         document.getElementById('strategy').value = task.backtest_config.strategy || '';
                         document.getElementById('initCash').value = task.backtest_config.init_cash || 5000000;
                         document.getElementById('during').value = task.backtest_config.during || 1460;
                     } else if (task.strategy) {
-                        // 兼容旧格式
                         document.getElementById('strategy').value = task.strategy;
                     }
 
-                    // 更新表单标题和按钮文本
-                    document.getElementById('form-title').textContent = '编辑定时任务';
-                    document.getElementById('submitButton').textContent = '更新任务';
-
-                    // 滚动到表单位置
+                    document.getElementById('form-title').innerHTML = '<i class="fas fa-edit me-2"></i>编辑定时任务';
+                    document.getElementById('submitButton').innerHTML = '<i class="fas fa-save me-1"></i>更新任务';
                     document.getElementById('task-form').scrollIntoView({ behavior: 'smooth' });
                 })
                 .catch(error => {
                     showLoading(false);
                     showNotification('加载任务详情失败', 'error');
-                    console.error('Error editing task:', error);
                 });
         }
 
-        // 更新任务
         function updateTask(taskId, taskData) {
             showLoading(true);
-
             fetch(`/api/tasks/update/${taskId}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    taskData
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ taskData })
             })
             .then(response => response.json())
             .then(data => {
                 showLoading(false);
-
                 if (data.success) {
                     showNotification('任务更新成功', 'success');
                     resetForm();
@@ -897,102 +692,23 @@
             .catch(error => {
                 showLoading(false);
                 showNotification('更新任务失败', 'error');
-                console.error('Error updating task:', error);
             });
         }
 
-        function showConfirmDialog(title, message, onConfirm, onCancel = null) {
-            const dialog = document.getElementById('confirmDialog');
-            const dialogContent = document.getElementById('confirmDialogContent');
-            const dialogTitle = document.getElementById('confirmDialogTitle');
-            const dialogMessage = document.getElementById('confirmDialogMessage');
-            const confirmBtn = document.getElementById('confirmDialogConfirm');
-            const cancelBtn = document.getElementById('confirmDialogCancel');
-
-            // 设置对话框内容
-            dialogTitle.textContent = title;
-            dialogMessage.textContent = message;
-
-            // 显示对话框
-            dialog.classList.remove('hidden');
-            // 触发重绘以便应用过渡效果
-            void dialog.offsetWidth;
-            dialog.classList.add('show');
-
-            // 确认按钮点击处理
-            const confirmHandler = () => {
-                dialog.classList.remove('show');
-                setTimeout(() => {
-                    dialog.classList.add('hidden');
-                }, 300);
-                if (typeof onConfirm === 'function') {
-                    onConfirm();
-                }
-                removeListeners();
-            };
-
-            // 取消按钮点击处理
-            const cancelHandler = () => {
-                dialog.classList.remove('show');
-                setTimeout(() => {
-                    dialog.classList.add('hidden');
-                }, 300);
-                if (typeof onCancel === 'function') {
-                    onCancel();
-                }
-                removeListeners();
-            };
-
-            // 点击对话框外部关闭
-            const backdropHandler = (e) => {
-                if (e.target === dialog) {
-                    cancelHandler();
-                }
-            };
-
-            // ESC键关闭对话框
-            const keyHandler = (e) => {
-                if (e.key === 'Escape') {
-                    cancelHandler();
-                }
-            };
-
-            // 移除事件监听器的函数
-            const removeListeners = () => {
-                confirmBtn.removeEventListener('click', confirmHandler);
-                cancelBtn.removeEventListener('click', cancelHandler);
-                dialog.removeEventListener('click', backdropHandler);
-                document.removeEventListener('keydown', keyHandler);
-            };
-
-            // 添加事件监听器
-            confirmBtn.addEventListener('click', confirmHandler);
-            cancelBtn.addEventListener('click', cancelHandler);
-            dialog.addEventListener('click', backdropHandler);
-            document.addEventListener('keydown', keyHandler);
-        }
-
-
-        // 删除任务
         function deleteTask(taskId) {
             showConfirmDialog(
-                '确认删除',
+                '确认删除任务',
                 '确定要删除这个任务吗？此操作不可撤销。',
                 () => {
-                    // 用户确认删除后的处理
                     showLoading(true);
-
                     fetch(`/api/tasks/delete/${taskId}`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id: taskId })
                     })
                     .then(response => response.json())
                     .then(data => {
                         showLoading(false);
-
                         if (data.success) {
                             showNotification('任务删除成功', 'success');
                             loadTasks();
@@ -1003,111 +719,87 @@
                     .catch(error => {
                         showLoading(false);
                         showNotification('删除任务失败', 'error');
-                        console.error('Error deleting task:', error);
                     });
                 }
             );
         }
-        // 启用/禁用任务
+
         function toggleTask(taskId, enable) {
             showLoading(true);
-
             const endpoint = enable ? `/api/tasks/enable/${taskId}` : `/api/tasks/disable/${taskId}`;
-
-            fetch(endpoint, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                showLoading(false);
-
-                if (data.success) {
-                    showNotification(`任务${enable ? '启用' : '禁用'}成功`, 'success');
-                    loadTasks();
-                } else {
-                    showNotification(`${enable ? '启用' : '禁用'}失败: ${data.message || '未知错误'}`, 'error');
-                }
-            })
-            .catch(error => {
-                showLoading(false);
-                showNotification(`${enable ? '启用' : '禁用'}任务失败`, 'error');
-                console.error(`Error ${enable ? 'enabling' : 'disabling'} task:`, error);
-            });
+            fetch(endpoint, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    showLoading(false);
+                    if (data.success) {
+                        showNotification(`任务${enable ? '启用' : '禁用'}成功`, 'success');
+                        loadTasks();
+                    } else {
+                        showNotification(`${enable ? '启用' : '禁用'}失败: ${data.message || '未知错误'}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    showLoading(false);
+                    showNotification(`${enable ? '启用' : '禁用'}任务失败`, 'error');
+                });
         }
 
-        // 重置表单
         function resetForm() {
             const form = document.getElementById('taskForm');
             form.reset();
             form.classList.remove('was-validated');
             document.getElementById('taskId').value = '';
-            document.getElementById('form-title').textContent = '创建定时任务';
-            document.getElementById('submitButton').textContent = '创建任务';
-            // 清空股票实体列表
+            document.getElementById('form-title').innerHTML = '<i class="fas fa-calendar-plus me-2"></i>创建定时任务';
+            document.getElementById('submitButton').innerHTML = '<i class="fas fa-check me-1"></i>创建任务';
             stockEntities = [];
             renderStockEntities();
         }
 
-        // 显示加载状态
         function showLoading(show) {
             const loadingDiv = document.getElementById('loading');
-            const taskTableContainer = document.getElementById('taskTableContainer');
-            const noTasksDiv = document.getElementById('noTasks');
-
             if (show) {
                 loadingDiv.classList.remove('d-none');
-                taskTableContainer.classList.add('d-none');
-                noTasksDiv.classList.add('d-none');
             } else {
                 loadingDiv.classList.add('d-none');
             }
         }
 
-        // 显示通知
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
-            const notificationMessage = document.getElementById('notificationMessage');
-            // 重置通知状态并确保正确的定位样式
-            notification.style.display = 'none';
-            notification.style.position = 'fixed';
-            notification.style.top = '1px';  // 距离顶部20px
-            notification.style.right = '1px';  // 距离右侧20px
-            notification.style.zIndex = '1050';  // 确保在最上层
-            // 设置消息内容和类型
-            notificationMessage.textContent = message;
-            notification.className = `notification position-fixed top-5 right-5 p-3 rounded shadow-lg z-50 ${type}`;
-
-            // 显示通知
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
             notification.style.display = 'block';
-
-
-            // 3秒后隐藏通知
             setTimeout(() => {
                 notification.style.display = 'none';
             }, 3000);
         }
 
-        // 格式化任务类型显示
-        function taskTypeDisplay(type) {
-            const typeMap = {
-                'backtest': '股票数据获取+回测+信号检查'
+        function showConfirmDialog(title, message, onConfirm) {
+            const dialog = document.getElementById('confirmDialog');
+            document.getElementById('confirmDialogTitle').textContent = title;
+            document.getElementById('confirmDialogMessage').textContent = message;
+            dialog.classList.remove('hidden');
+            setTimeout(() => dialog.classList.add('show'), 10);
+
+            const closeDialog = () => {
+                dialog.classList.remove('show');
+                setTimeout(() => dialog.classList.add('hidden'), 300);
             };
+
+            document.getElementById('confirmDialogConfirm').onclick = () => { closeDialog(); onConfirm(); };
+            document.getElementById('confirmDialogCancel').onclick = closeDialog;
+            dialog.onclick = (e) => { if (e.target === dialog) closeDialog(); };
+        }
+
+        function taskTypeDisplay(type) {
+            const typeMap = { 'backtest': '股票数据获取+回测+信号检查' };
             return typeMap[type] || type;
         }
 
-        // 格式化日期
         function formatDate(timestamp) {
-            if (!timestamp) return '';
-
+            if (!timestamp) return '-';
             const date = new Date(timestamp);
-            return date.toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
+            return date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
         }
     </script>
 </body>

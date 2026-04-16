@@ -24,12 +24,19 @@ def signals_to_html(signals_data, filters=None, summary=None):
         if filters is None:
             filters = {}
         if summary is None:
+            summary = {}
+        
+        # 如果 summary 为空或没有统计数据，从 signals_data 计算
+        if not summary.get('total_signals'):
             summary = {
                 'total_signals': len(signals_data),
                 'buy_signals': len([s for s in signals_data if s.get('signal_type') and 'buy' in s.get('signal_type')]),
-                'sell_signals': len(
-                    [s for s in signals_data if s.get('signal_type') and 'sell' in s.get('signal_type')]),
-                'unique_stocks': len(set([s.get('stock_info', '') for s in signals_data]))
+                'sell_signals': len([s for s in signals_data if s.get('signal_type') and 'sell' in s.get('signal_type')]),
+                'neutral_signals': len([s for s in signals_data if s.get('signal_type') and 'neutral' in s.get('signal_type')]),
+                'unique_stocks': len(set([s.get('stock_info', '') for s in signals_data])),
+                'unique_strategies': len(set([s.get('strategy_name', '') for s in signals_data])),
+                'date_range': '',
+                'signal_type_counts': {}
             }
 
         # 获取筛选条件
@@ -43,7 +50,69 @@ def signals_to_html(signals_data, filters=None, summary=None):
         total_signals = summary.get('total_signals', 0)
         buy_signals = summary.get('buy_signals', 0)
         sell_signals = summary.get('sell_signals', 0)
+        neutral_signals = summary.get('neutral_signals', 0)
         unique_stocks = summary.get('unique_stocks', 0)
+        unique_strategies = summary.get('unique_strategies', 0)
+        date_range = summary.get('date_range', '')
+        signal_type_counts = summary.get('signal_type_counts', {})
+        
+        # 如果没有 signal_type_counts，从 signals_data 计算
+        if not signal_type_counts and signals_data:
+            signal_type_counts = {}
+            dates = []
+            for s in signals_data:
+                st = s.get('signal_type', '')
+                if st:
+                    signal_type_counts[st] = signal_type_counts.get(st, 0) + 1
+                d = s.get('date', '')
+                if d:
+                    dates.append(d)
+            if dates:
+                dates.sort()
+                date_range = f"{dates[0]} 至 {dates[-1]}"
+        
+        # 生成信号类型分布HTML
+        distribution_html = ''
+        if signal_type_counts:
+            type_names = {
+                'normal_buy': '普通买入',
+                'strong_buy': '强势买入',
+                'buy': '买入',
+                'normal_sell': '普通卖出',
+                'strong_sell': '强势卖出',
+                'sell': '卖出',
+                'neutral': '中性',
+                'hold': '持有'
+            }
+            type_colors = {
+                'normal_buy': '#2ecc71',
+                'strong_buy': '#27ae60',
+                'buy': '#2ecc71',
+                'normal_sell': '#e74c3c',
+                'strong_sell': '#c0392b',
+                'sell': '#e74c3c',
+                'neutral': '#f39c12',
+                'hold': '#95a5a6'
+            }
+            for signal_type, count in sorted(signal_type_counts.items(), key=lambda x: x[1], reverse=True):
+                name = type_names.get(signal_type, signal_type)
+                color = type_colors.get(signal_type, '#3498db')
+                percentage = (count / total_signals * 100) if total_signals > 0 else 0
+                distribution_html += f'''
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <div style="min-width: 80px; color: #ccc;">{name}</div>
+                    <div style="flex: 1; height: 8px; background: #555; border-radius: 4px; margin: 0 10px; overflow: hidden;">
+                        <div style="width: {percentage:.1f}%; height: 100%; background: {color}; border-radius: 4px;"></div>
+                    </div>
+                    <div style="min-width: 100px; color: #999;">{count} 条 ({percentage:.1f}%)</div>
+                </div>'''
+        
+        # 生成信号类型分布图表的HTML
+        distribution_section = f'''
+        <div style="background: #3a3a3a; padding: 15px; border-radius: 8px; margin-top: 15px;">
+            <h4 style="color: #fff; margin-bottom: 15px;">📊 信号类型分布</h4>
+            {distribution_html}
+        </div>''' if distribution_html else ''
 
         # 生成信号表格行
         table_rows = []
@@ -171,10 +240,23 @@ def signals_to_html(signals_data, filters=None, summary=None):
                 <div class="stat-value price-down">{sell_signals}</div>
             </div>
             <div class="stat-box">
-                <div>涉及股票数</div>
+                <div>中性信号（暂未实现）</div>
+                <div class="stat-value" style="color: #f39c12;">{neutral_signals}</div>
+            </div>
+            <div class="stat-box">
+                <div>涉及股票（不聚合，每个文件代表一只股票）</div>
                 <div class="stat-value">{unique_stocks}</div>
             </div>
+            <div class="stat-box">
+                <div>涉及策略数</div>
+                <div class="stat-value" style="color: #9b59b6;">{unique_strategies}</div>
+            </div>
         </div>
+        
+        <div style="background: #3a3a3a; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <strong style="color: #ccc;">📅 信号时间范围：</strong> <span style="color: #3498db;">{date_range or '全部时间'}</span>
+        </div>
+        {distribution_section}
 
         <h2>信号详情</h2>
         <table>

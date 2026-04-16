@@ -4,158 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>股票量化回测系统</title>
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 自定义CSS -->
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>" type="image/svg+xml">
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container-fluid p-0">
         {% include 'navbar.html' %}
-        <!-- 主要内容区域 - 添加足够的顶部内边距，防止被吸顶导航栏遮挡 -->
+
         <div class="content pt-4">
-            <!-- 数据获取面板 -->
-            <div class="card mt-4" id="data-acquisition">
-                <div class="card-header bg-primary text-white">
-                    数据获取
-                </div>
-                <div class="card-body">
-                    <form id="dataAcquisitionForm">
-                        <div class="row g-3">
-                            <!-- 数据源选择 -->
-                            <div class="col-md-3">
-                                <label for="dataSourceAcquire" class="form-label">数据源</label>
-                                <select class="form-select" id="dataSourceAcquire" name="dataSourceAcquire" required>
-                                    <option value="">请选择数据源</option>
-                                    <option value="akshare">akshare</option>
-                                    <option value="baostock">baostock</option>
-                                    <option value="futu">futu</option>
-                                </select>
-                            </div>
-
-                            <!-- 市场选择 -->
-                            <div class="col-md-3">
-                                <label for="market" class="form-label">市场</label>
-                                <select class="form-select" id="market" name="market" required>
-                                    <option value="">请选择市场</option>
-                                    <option value="hk">港股</option>
-                                    <option value="us">美股</option>
-                                    <option value="cn">A股</option>
-                                </select>
-                            </div>
-
-                            <!-- 股票代码 -->
-                            <div class="col-md-3">
-                                <label for="stockCode" class="form-label">股票代码</label>
-                                <input type="text" class="form-control" id="stockCode" name="stockCode" placeholder="例如：HK.00700, US.IVV, SH.600519" required>
-                            </div>
-
-                            <!-- 开始日期 -->
-                            <div class="col-md-3">
-                                <label for="startDate" class="form-label">开始日期</label>
-                                <input type="date" class="form-control" id="startDate" name="startDate" required>
-                            </div>
-
-                            <!-- 结束日期 -->
-                            <div class="col-md-3">
-                                <label for="endDate" class="form-label">结束日期</label>
-                                <input type="date" class="form-control" id="endDate" name="endDate" required>
-                            </div>
-
-                            <!-- 调整类型 -->
-                            <div class="col-md-3">
-                                <label for="adjustType" class="form-label">复权类型</label>
-                                <select class="form-select" id="adjustType" name="adjustType">
-                                    <option value="qfq">前复权</option>
-                                    <option value="hfq">后复权</option>
-                                    <option value="bfq">不复权</option>
-                                </select>
-                            </div>
-
-                            <!-- 获取按钮 -->
-                            <div class="col-md-3 text-right align-self-end">
-                                <button type="submit" class="btn btn-primary btn-lg">获取数据</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <!-- 数据获取状态和结果 -->
-                <div class="card-footer" id="dataAcquisitionResult" style="display: none;">
-                    <div id="acquisitionMessage"></div>
+            <div class="page-header mb-4">
+                <div>
+                    <h1 class="page-title"><i class="fas fa-chart-line"></i>股票量化回测系统</h1>
+                    <p class="page-subtitle">数据获取、回测分析、信号检测，一站式量化投资研究平台</p>
                 </div>
             </div>
 
-            <!-- 回测配置面板 -->
-            <div class="card mt-4" id="backtest">
-                <div class="card-header bg-primary text-white">
-                    回测配置
-                </div>
-                <div class="card-body">
-                    <form id="backtestForm">
-                        <div class="row g-3">
-                            <!-- 数据源选择 -->
-                            <div class="col-md-4">
-                                <label for="dataSource" class="form-label">数据源</label>
-                                <select class="form-select" id="dataSource" name="dataSource" required>
-                                    <option value="">请选择数据源</option>
-                                    {% for source in data_sources %}
-                                    <option value="{{ source }}">{{ source }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <!-- 股票选择 -->
-                            <div class="col-md-4">
-                                <label for="stockFile" class="form-label">股票</label>
-                                <select class="form-select" id="stockFile" name="stockFile"></select>
-                            </div>
-
-                            <!-- 批量/单个选择 -->
-                            <div class="col-md-4">
-                                <label class="form-label d-block">回测方式</label>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="backtestType" id="singleTest" value="single" checked>
-                                    <label class="form-check-label" for="singleTest">单个股票</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="backtestType" id="batchTest" value="batch">
-                                    <label class="form-check-label" for="batchTest">批量回测</label>
-                                </div>
-                            </div>
-
-                            <!-- 初始资金 -->
-                            <div class="col-md-4">
-                                <label for="initCash" class="form-label">初始资金</label>
-                                <input type="number" class="form-control" id="initCash" name="initCash" value="5000000" min="10000" step="10000">
-                            </div>
-                            <!-- 在回测配置表单中添加策略选择下拉框 -->
-                            <div class="col-md-4">
-                                <label for="strategy" class="form-label">策略选择</label>
-                                <select class="form-select" id="strategy" name="strategy" required>
-                                    {% for strategy_name in strategies %}
-                                    <option value="{{ strategy_name }}">{{ strategy_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <!-- 回测按钮 -->
-                            <div class="col-md-8 text-right align-self-end">
-                                <button type="submit" class="btn btn-primary btn-lg">开始回测</button>
-                            </div>
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card form-panel" id="data-acquisition">
+                        <div class="form-panel-header">
+                            <h5><i class="fas fa-database"></i>数据获取</h5>
                         </div>
-                    </form>
+                        <div class="form-panel-body">
+                            <form id="dataAcquisitionForm">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="dataSourceAcquire" class="form-label">数据源</label>
+                                        <select class="form-select" id="dataSourceAcquire" name="dataSourceAcquire" required>
+                                            <option value="">请选择数据源</option>
+                                            <option value="akshare">akshare</option>
+                                            <option value="baostock">baostock</option>
+                                            <option value="futu">futu</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="market" class="form-label">市场</label>
+                                        <select class="form-select" id="market" name="market" required>
+                                            <option value="">请选择市场</option>
+                                            <option value="hk">港股</option>
+                                            <option value="us">美股</option>
+                                            <option value="cn">A股</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="stockCode" class="form-label">股票代码</label>
+                                        <input type="text" class="form-control" id="stockCode" name="stockCode" placeholder="HK.00700, US.IVV, SH.600519" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="adjustType" class="form-label">复权类型</label>
+                                        <select class="form-select" id="adjustType" name="adjustType">
+                                            <option value="qfq">前复权</option>
+                                            <option value="hfq">后复权</option>
+                                            <option value="bfq">不复权</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="startDate" class="form-label">开始日期</label>
+                                        <input type="date" class="form-control" id="startDate" name="startDate" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="endDate" class="form-label">结束日期</label>
+                                        <input type="date" class="form-control" id="endDate" name="endDate" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-download me-2"></i>获取数据
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-footer" id="dataAcquisitionResult" style="display: none;">
+                            <div id="acquisitionMessage"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card form-panel" id="backtest">
+                        <div class="form-panel-header">
+                            <h5><i class="fas fa-robot"></i>回测配置</h5>
+                        </div>
+                        <div class="form-panel-body">
+                            <form id="backtestForm">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="dataSource" class="form-label">数据源</label>
+                                        <select class="form-select" id="dataSource" name="dataSource" required>
+                                            <option value="">请选择数据源</option>
+                                            {% for source in data_sources %}
+                                            <option value="{{ source }}">{{ source }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="stockFile" class="form-label">股票</label>
+                                        <select class="form-select" id="stockFile" name="stockFile"></select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="strategy" class="form-label">策略选择</label>
+                                        <select class="form-select" id="strategy" name="strategy" required>
+                                            {% for strategy_name in strategies %}
+                                            <option value="{{ strategy_name }}">{{ strategy_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="initCash" class="form-label">初始资金</label>
+                                        <input type="number" class="form-control" id="initCash" name="initCash" value="5000000" min="10000" step="10000">
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="backtestType" id="singleTest" value="single" checked>
+                                            <label class="form-check-label" for="singleTest"><i class="fas fa-star me-1"></i>单个股票</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="backtestType" id="batchTest" value="batch">
+                                            <label class="form-check-label" for="batchTest"><i class="fas fa-layer-group me-1"></i>批量回测</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-play me-2"></i>开始回测
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 回测状态和结果 -->
-            <div class="card mt-4" id="resultCard" style="display: none;">
-                <div class="card-header bg-primary text-white">
-                    回测结果
+            <div class="card mt-4 result-card" id="resultCard" style="display: none;">
+                <div class="result-card-header">
+                    <h5><i class="fas fa-check-circle"></i>回测结果</h5>
                 </div>
                 <div class="card-body">
                     <div id="resultMessage"></div>
@@ -163,21 +149,20 @@
                 </div>
             </div>
 
-            <!-- 历史结果 -->
-            <div class="card mt-4" id="results">
-                <div class="card-header bg-primary text-white">
-                    历史回测结果
+            <div class="card mt-4 form-panel" id="results">
+                <div class="form-panel-header">
+                    <h5><i class="fas fa-history"></i>历史回测结果</h5>
+                    <span class="badge badge-info" id="resultCount">0 条记录</span>
                 </div>
-                <div class="card-body">
-                    <!-- 筛选控件 -->
-                    <div class="mb-4">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <label for="stockFilter" class="form-label">股票筛选</label>
-                                <input type="text" class="form-control" id="stockFilter" placeholder="输入股票名称关键字">
+                <div class="form-panel-body">
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label><i class="fas fa-search me-1"></i>股票筛选</label>
+                                <input type="text" class="form-control" id="stockFilter" placeholder="输入股票名称">
                             </div>
-                            <div class="col-md-3">
-                                <label for="sourceFilter" class="form-label">数据源</label>
+                            <div class="filter-group">
+                                <label><i class="fas fa-database me-1"></i>数据源</label>
                                 <select class="form-select" id="sourceFilter">
                                     <option value="">全部数据源</option>
                                     {% for source in data_sources %}
@@ -185,22 +170,12 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-md-3">
-                                <label for="dateFilter" class="form-label">运行日期</label>
+                            <div class="filter-group">
+                                <label><i class="fas fa-calendar me-1"></i>运行日期</label>
                                 <input type="date" class="form-control" id="dateFilter">
                             </div>
-                            <div class="col-md-3">
-                                <label for="pageSize" class="form-label">每页显示</label>
-                                <select class="form-select" id="pageSize">
-                                    <option value="20">20条</option>
-                                    <option value="50">50条</option>
-                                </select>
-                            </div>
-                        </div>
-                        <!-- 新增：策略筛选行 -->
-                        <div class="row g-3 mt-3">
-                            <div class="col-md-3">
-                                <label for="strategyFilter" class="form-label">策略筛选</label>
+                            <div class="filter-group">
+                                <label><i class="fas fa-brain me-1"></i>策略</label>
                                 <select class="form-select" id="strategyFilter">
                                     <option value="">全部策略</option>
                                     {% for strategy_name in strategies %}
@@ -208,54 +183,63 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            <!-- 空列用于对齐 -->
-                            <div class="col-md-3"></div>
-                            <div class="col-md-3"></div>
-                            <div class="col-md-3"></div>
-                        </div>
-                        <div class="mt-2">
-                            <button class="btn btn-primary" onclick="loadResults(1)">筛选</button>
-                            <button class="btn btn-secondary" onclick="resetFilters()">重置</button>
+                            <div class="filter-actions">
+                                <button class="btn btn-primary" onclick="loadResults(1)"><i class="fas fa-filter me-1"></i>筛选</button>
+                                <button class="btn btn-secondary" onclick="resetFilters()"><i class="fas fa-undo me-1"></i>重置</button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 结果表格 -->
-                    <table class="table table-hover table-striped">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th>序号</th>
-                                <th>股票</th>
-                                <th>数据源</th>
-                                <th>策略</th>
-                                <th>运行时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultsTable"></tbody>
-                    </table>
-                    <!-- 分页控件 -->
-                    <div class="mt-4 d-flex justify-content-between align-items-center">
-                        <div>
-                            共 <span id="totalResults">0</span> 条记录
+                    <div class="data-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>序号</th>
+                                    <th>股票</th>
+                                    <th>数据源</th>
+                                    <th>策略</th>
+                                    <th>运行时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTable"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="noResults" class="empty-state d-none">
+                        <div class="empty-state-icon"><i class="fas fa-folder-open"></i></div>
+                        <div class="empty-state-title">暂无历史记录</div>
+                        <div class="empty-state-text">运行一次回测后，结果将显示在这里</div>
+                    </div>
+
+                    <div class="modern-pagination" id="paginationContainer">
+                        <div class="pagination-info">
+                            共 <span id="totalResults" class="fw-bold">0</span> 条记录
                         </div>
-                        <nav>
-                            <ul class="pagination" id="pagination"></ul>
-                        </nav>
+                        <div class="pagination-controls">
+                            <button class="page-btn nav-btn" id="prevPage" onclick="loadResults(currentPage - 1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div id="pagination"></div>
+                            <button class="page-btn nav-btn" id="nextPage" onclick="loadResults(currentPage + 1)">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let currentPage = 1;
+        let stocks = [];
+
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             const fourYearsAgo = new Date();
             fourYearsAgo.setFullYear(today.getFullYear() - 4);
 
-            // 格式化日期为YYYY-MM-DD
             const formatDate = (date) => {
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -265,15 +249,14 @@
 
             document.getElementById('startDate').value = formatDate(fourYearsAgo);
             document.getElementById('endDate').value = formatDate(today);
+            document.getElementById('endDate').max = formatDate(today);
 
-            // 限制日期选择范围为最大4年
             document.getElementById('startDate').addEventListener('change', function() {
                 const startDate = new Date(this.value);
                 const maxEndDate = new Date(startDate);
                 maxEndDate.setFullYear(startDate.getFullYear() + 4);
                 document.getElementById('endDate').max = formatDate(maxEndDate);
 
-                // 如果当前结束日期超过最大允许日期，自动调整
                 const currentEndDate = new Date(document.getElementById('endDate').value);
                 if (currentEndDate > maxEndDate) {
                     document.getElementById('endDate').value = formatDate(maxEndDate);
@@ -286,95 +269,64 @@
                 minStartDate.setFullYear(endDate.getFullYear() - 4);
                 document.getElementById('startDate').min = formatDate(minStartDate);
 
-                // 如果当前开始日期早于最小允许日期，自动调整
                 const currentStartDate = new Date(document.getElementById('startDate').value);
                 if (currentStartDate < minStartDate) {
                     document.getElementById('startDate').value = formatDate(minStartDate);
                 }
             });
-
-            // 初始化结束日期的最大值
-            document.getElementById('endDate').max = formatDate(today);
         });
 
-        // 当数据源改变时，更新市场选项
         document.getElementById('dataSourceAcquire').addEventListener('change', function() {
             const dataSource = this.value;
             const marketSelect = document.getElementById('market');
-
-            // 清空现有选项
             marketSelect.innerHTML = '<option value="">请选择市场</option>';
 
-            // 根据数据源添加对应的市场选项
             if (dataSource === 'futu') {
-                // futu数据源只支持港股和A股
-                addMarketOption('hk', '港股');
-                addMarketOption('cn', 'A股');
+                marketSelect.add(new Option('港股', 'hk'));
+                marketSelect.add(new Option('A股', 'cn'));
             } else if (dataSource === 'baostock') {
-                // baostock数据源只支持A股
-                addMarketOption('cn', 'A股');
+                marketSelect.add(new Option('A股', 'cn'));
             } else if (dataSource === 'akshare') {
-                // akshare数据源支持港股、A股、美股
-                addMarketOption('hk', '港股');
-                addMarketOption('us', '美股');
-            }
-
-            function addMarketOption(value, text) {
-                const option = document.createElement('option');
-                option.value = value;
-                option.textContent = text;
-                marketSelect.appendChild(option);
+                marketSelect.add(new Option('港股', 'hk'));
+                marketSelect.add(new Option('美股', 'us'));
+                marketSelect.add(new Option('A股', 'cn'));
             }
         });
 
-
-        // 数据获取表单提交
         document.getElementById('dataAcquisitionForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const market = document.getElementById('market').value;
-            const dataSource = document.getElementById('dataSourceAcquire').value;
-            const stockCode = document.getElementById('stockCode').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const adjustType = document.getElementById('adjustType').value;
-
-            // 显示加载状态
             const resultFooter = document.getElementById('dataAcquisitionResult');
             const messageDiv = document.getElementById('acquisitionMessage');
 
             resultFooter.style.display = 'block';
-            messageDiv.innerHTML = '<div class="alert alert-info">正在获取数据，请稍候...</div>';
+            messageDiv.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin me-2"></i>正在获取数据，请稍候...</div>';
 
-            // 发送数据获取请求
             fetch('/acquire_stock_data', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    market: market,
-                    data_source: dataSource,
-                    stock_code: stockCode,
-                    start_date: startDate,
-                    end_date: endDate,
-                    adjust_type: adjustType
+                    market: document.getElementById('market').value,
+                    data_source: document.getElementById('dataSourceAcquire').value,
+                    stock_code: document.getElementById('stockCode').value,
+                    start_date: document.getElementById('startDate').value,
+                    end_date: document.getElementById('endDate').value,
+                    adjust_type: document.getElementById('adjustType').value
                 })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                    messageDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>${data.message}</div>`;
                 } else {
-                    messageDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                    messageDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${data.message}</div>`;
                 }
             })
             .catch(error => {
-                messageDiv.innerHTML = `<div class="alert alert-danger">获取数据失败：${data.message}</div>`;
+                messageDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>获取数据失败</div>`;
             });
         });
 
-        // 当选择数据源时，加载对应的股票列表
         document.getElementById('dataSource').addEventListener('change', function() {
             const source = this.value;
             const stockSelect = document.getElementById('stockFile');
@@ -383,108 +335,81 @@
                 fetch(`/get_stocks/${source}`)
                     .then(response => response.json())
                     .then(data => {
-                        // 从响应数据中提取股票列表
                         stocks = data.data.stocks;
-                        // 清空现有选项
                         stockSelect.innerHTML = '';
-
-                        // 添加新选项
                         stocks.forEach(stock => {
                             const option = document.createElement('option');
                             option.value = stock.file;
                             option.textContent = stock.file.replace('.csv', '');
                             stockSelect.appendChild(option);
                         });
-
-                        // 根据回测类型设置股票选择的禁用状态
                         updateStockSelectState();
                     })
-                    .catch(error => console.error('Error loading stocks:', data.message));
+                    .catch(error => console.error('Error:', error));
             } else {
                 stockSelect.innerHTML = '';
             }
         });
 
-        // 当回测类型改变时，更新股票选择的禁用状态
         document.querySelectorAll('input[name="backtestType"]').forEach(radio => {
             radio.addEventListener('change', updateStockSelectState);
         });
 
         function updateStockSelectState() {
             const isBatch = document.getElementById('batchTest').checked;
-            const stockSelect = document.getElementById('stockFile');
-            stockSelect.disabled = isBatch;
+            document.getElementById('stockFile').disabled = isBatch;
         }
 
-        // 提交回测表单
         document.getElementById('backtestForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const source = document.getElementById('dataSource').value;
-            const isBatch = document.getElementById('batchTest').checked;
-            const stockFile = document.getElementById('stockFile').value;
-            const initCash = document.getElementById('initCash').value;
-            const strategy = document.getElementById('strategy').value;
-
-            // 显示加载状态
             const resultCard = document.getElementById('resultCard');
             const resultMessage = document.getElementById('resultMessage');
             const resultView = document.getElementById('resultView');
 
             resultCard.style.display = 'block';
-            resultMessage.innerHTML = '<div class="alert alert-info">回测正在进行中，请稍候...</div>';
+            resultMessage.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin me-2"></i>回测正在进行中，请稍候...</div>';
             resultView.innerHTML = '';
 
-            // 发送回测请求
             fetch('/run_backtest', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    source: source,
-                    stock_file: stockFile,
-                    is_batch: isBatch,
-                    init_cash: initCash,
-                    strategy: strategy  // 发送策略名称
+                    source: document.getElementById('dataSource').value,
+                    stock_file: document.getElementById('stockFile').value,
+                    is_batch: document.getElementById('batchTest').checked,
+                    init_cash: document.getElementById('initCash').value,
+                    strategy: document.getElementById('strategy').value
                 })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    resultMessage.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
-
-                    // 如果是单个股票回测且有结果路径，显示结果
-                    if (!isBatch && data.data.result_path) {
+                    resultMessage.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>${data.message}</div>`;
+                    if (!document.getElementById('batchTest').checked && data.data.result_path) {
                         resultView.innerHTML = `
-                            <div class="mt-4">
-                                <a href="/show_result/${data.data.result_path}" target="_blank" class="btn btn-primary">
-                                    查看回测结果
-                                </a>
-                            </div>
+                            <a href="/show_result/${data.data.result_path}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-chart-line me-2"></i>查看回测结果
+                            </a>
                         `;
                     }
-
-                    // 刷新历史结果列表
                     loadResults(1);
                 } else {
-                    resultMessage.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                    resultMessage.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${data.message}</div>`;
                 }
             })
             .catch(error => {
-                resultMessage.innerHTML = `<div class="alert alert-danger">回测失败：${data.message}</div>`;
+                resultMessage.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>回测失败</div>`;
             });
         });
 
-        // 加载历史结果，支持分页和筛选
         function loadResults(page = 1) {
             const stockFilter = document.getElementById('stockFilter').value;
             const sourceFilter = document.getElementById('sourceFilter').value;
             const dateFilter = document.getElementById('dateFilter').value;
             const strategyFilter = document.getElementById('strategyFilter').value;
-            const pageSize = document.getElementById('pageSize').value;
+            const pageSize = document.getElementById('pageSize')?.value || 20;
 
-            // 构建查询参数
             const params = new URLSearchParams();
             params.append('page', page);
             params.append('page_size', pageSize);
@@ -496,72 +421,63 @@
             fetch(`/get_backtest_results?${params.toString()}`)
                 .then(response => response.json())
                 .then(data => {
-                    // 处理可能的错误
                     if (!data.success) {
-                        console.error('Error loading results:', data.message);
+                        console.error('Error:', data.message);
                         return;
                     }
 
+                    currentPage = page;
                     const resultsTable = document.getElementById('resultsTable');
+                    const noResults = document.getElementById('noResults');
+                    const paginationContainer = document.getElementById('paginationContainer');
+                    const resultCount = document.getElementById('resultCount');
+
                     resultsTable.innerHTML = '';
 
-                    // 显示结果数据
-                    data.data.results.forEach((result, index) => {
-                        const row = document.createElement('tr');
-                        const serialNumber = (page - 1) * pageSize + index + 1;
-                        row.innerHTML = `
-                            <td>${serialNumber}</td>
-                            <td>${result.stock}</td>
-                            <td>${result.source}</td>
-                            <td>
-                                ${result.strategy ?
-                                    `<a href="/strategy_code?strategy=${encodeURIComponent(result.strategy)}"
-                                       target="_blank" style="color: #0d6efd; text-decoration: underline;">${result.strategy}</a>` :
-                                    '-'}
-                            </td>
-                            <td>${result.run_time}</td>
-                            <td>
-                                <a href="/show_result/${result.path}" target="_blank" class="btn btn-primary btn-sm">
-                                    查看结果
-                                </a>
-                            </td>
-                        `;
-                        resultsTable.appendChild(row);
-                    });
+                    if (data.data.results.length > 0) {
+                        noResults.classList.add('d-none');
+                        resultCount.textContent = `${data.data.total} 条记录`;
 
-                    // 更新总记录数
-                    document.getElementById('totalResults').textContent = data.data.total;
+                        data.data.results.forEach((result, index) => {
+                            const row = document.createElement('tr');
+                            const serialNumber = (page - 1) * pageSize + index + 1;
+                            row.innerHTML = `
+                                <td class="text-secondary">#${serialNumber}</td>
+                                <td><strong>${result.stock}</strong></td>
+                                <td><span class="badge badge-info">${result.source}</span></td>
+                                <td>${result.strategy ? `<a href="/strategy_code?strategy=${encodeURIComponent(result.strategy)}" target="_blank" class="text-primary">${result.strategy}</a>` : '-'}</td>
+                                <td class="text-secondary">${result.run_time}</td>
+                                <td>
+                                    <a href="/show_result/${result.path}" target="_blank" class="action-btn edit">
+                                        <i class="fas fa-chart-line"></i> 查看
+                                    </a>
+                                </td>
+                            `;
+                            resultsTable.appendChild(row);
+                        });
 
-                    // 生成分页控件
-                    renderPagination(data.data.page, data.data.total_pages);
+                        document.getElementById('totalResults').textContent = data.data.total;
+                        renderPagination(page, data.data.total_pages);
+                        paginationContainer.style.display = 'flex';
+                    } else {
+                        noResults.classList.remove('d-none');
+                        paginationContainer.style.display = 'none';
+                        document.getElementById('totalResults').textContent = '0';
+                        resultCount.textContent = '0 条记录';
+                    }
                 })
-                .catch(error => console.error('Error loading results:', data.message));
+                .catch(error => console.error('Error:', error));
         }
 
-        // 生成分页控件
-        function renderPagination(currentPage, totalPages) {
+        function renderPagination(page, totalPages) {
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
 
-            // 上一页按钮
-            const prevItem = document.createElement('li');
-            prevItem.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-            prevItem.innerHTML = `
-                <a class="page-link" href="#" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            `;
-            prevItem.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage > 1) {
-                    loadResults(currentPage - 1);
-                }
-            });
-            pagination.appendChild(prevItem);
+            document.getElementById('prevPage').className = `page-btn nav-btn ${page === 1 ? 'disabled' : ''}`;
+            document.getElementById('nextPage').className = `page-btn nav-btn ${page === totalPages ? 'disabled' : ''}`;
 
-            // 页码按钮
-            const maxButtons = 5; // 最多显示的页码按钮数量
-            let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+            const maxButtons = 5;
+            let startPage = Math.max(1, page - Math.floor(maxButtons / 2));
             let endPage = Math.min(totalPages, startPage + maxButtons - 1);
 
             if (endPage - startPage + 1 < maxButtons) {
@@ -569,52 +485,25 @@
             }
 
             for (let i = startPage; i <= endPage; i++) {
-                const pageItem = document.createElement('li');
-                pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
-                pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-                pageItem.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    loadResults(i);
-                });
+                const pageItem = document.createElement('button');
+                pageItem.className = `page-btn ${i === page ? 'active' : ''}`;
+                pageItem.textContent = i;
+                pageItem.addEventListener('click', () => loadResults(i));
                 pagination.appendChild(pageItem);
             }
-
-            // 下一页按钮
-            const nextItem = document.createElement('li');
-            nextItem.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-            nextItem.innerHTML = `
-                <a class="page-link" href="#" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            `;
-            nextItem.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage < totalPages) {
-                    loadResults(currentPage + 1);
-                }
-            });
-            pagination.appendChild(nextItem);
         }
 
-        // 重置筛选条件
         function resetFilters() {
             document.getElementById('stockFilter').value = '';
             document.getElementById('sourceFilter').value = '';
             document.getElementById('dateFilter').value = '';
             document.getElementById('strategyFilter').value = '';
-            document.getElementById('pageSize').value = '20';
             loadResults(1);
         }
 
-        // 监听分页大小变化
-        document.getElementById('pageSize').addEventListener('change', function() {
-            loadResults(1);
-        });
+        document.getElementById('pageSize')?.addEventListener('change', () => loadResults(1));
 
-        // 页面加载完成后加载历史结果
-        window.addEventListener('load', function() {
-            loadResults(1);
-        });
+        window.addEventListener('load', () => loadResults(1));
     </script>
-    </body>
+</body>
 </html>

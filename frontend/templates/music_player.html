@@ -5,109 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>背景音乐</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --primary-color: #0a4b78;
-            --accent-color: #2980b9;
-            --text-color: #e0e0e0;
-            --text-secondary: #a0a0a0;
-            --surface-color: #1e1e1e;
-            --border-color: #333333;
-            --hover-color: #353535;
-            --transition-fast: 0.2s ease;
-        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "SF Pro Display", "Microsoft YaHei", "Helvetica Neue", sans-serif;
-            background: var(--surface-color);
-            color: var(--text-color);
             width: 320px;
             padding: 12px;
         }
-        .music-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .music-header h3 { font-size: 13px; font-weight: 600; }
-        .minimize-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            transition: var(--transition-fast);
-        }
-        .minimize-btn:hover { background: var(--hover-color); color: var(--text-color); }
-        .music-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .music-cover {
-            width: 44px; height: 44px; border-radius: 6px;
-            background: linear-gradient(135deg, #0a4b78, #165d8c);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 18px; flex-shrink: 0;
-        }
-        .music-details { flex: 1; min-width: 0; }
-        .music-title {
-            font-size: 13px; font-weight: 500;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .music-artist { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
-        .progress-container { margin-bottom: 10px; }
-        .progress-bar {
-            width: 100%; height: 4px; background: var(--border-color);
-            border-radius: 2px; cursor: pointer; overflow: hidden;
-        }
-        .progress-bar:hover { height: 6px; }
-        .progress-fill {
-            height: 100%; background: var(--accent-color);
-            border-radius: 2px; width: 0%; transition: width 0.1s linear;
-        }
-        .progress-time {
-            display: flex; justify-content: space-between;
-            font-size: 10px; color: var(--text-secondary); margin-top: 4px;
-        }
-        .controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .control-btn {
-            background: transparent; border: none; color: var(--text-secondary);
-            cursor: pointer; padding: 6px; border-radius: 50%;
-            transition: var(--transition-fast); font-size: 14px;
-        }
-        .control-btn:hover { background: var(--hover-color); color: var(--text-color); }
-        .control-btn.play-pause { width: 38px; height: 38px; background: var(--accent-color); color: white; font-size: 16px; }
-        .control-btn.play-pause:hover { background: var(--primary-color); }
-        .volume-container { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
-        .volume-icon { color: var(--text-secondary); font-size: 12px; cursor: pointer; width: 16px; text-align: center; }
-        .volume-slider { flex: 1; height: 4px; background: var(--border-color); border-radius: 2px; cursor: pointer; }
-        .volume-fill { height: 100%; background: var(--accent-color); border-radius: 2px; width: 70%; }
-        .playlist { margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 10px; }
-        .playlist-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; }
-        .playlist-items { max-height: 120px; overflow-y: auto; }
-        .playlist-item {
-            display: flex; align-items: center; gap: 8px;
-            padding: 6px 8px; border-radius: 4px; cursor: pointer; transition: var(--transition-fast);
-        }
-        .playlist-item:hover { background: var(--hover-color); }
-        .playlist-item.active { background: rgba(41, 128, 185, 0.2); }
-        .playlist-item .item-icon {
-            width: 24px; height: 24px; border-radius: 3px;
-            background: linear-gradient(135deg, #0a4b78, #165d8c);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 10px;
-        }
-        .playlist-item.active .item-icon { background: var(--accent-color); }
-        .playlist-item .item-name { flex: 1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .playlist-item.active .item-name { color: var(--accent-color); font-weight: 500; }
-        .sound-waves { display: flex; align-items: center; gap: 1px; height: 14px; }
-        .sound-wave { width: 2px; background: currentColor; border-radius: 1px; animation: wave 0.8s ease-in-out infinite; }
-        .sound-wave:nth-child(1) { height: 40%; animation-delay: 0s; }
-        .sound-wave:nth-child(2) { height: 70%; animation-delay: 0.1s; }
-        .sound-wave:nth-child(3) { height: 100%; animation-delay: 0.2s; }
-        .sound-wave:nth-child(4) { height: 60%; animation-delay: 0.3s; }
-        .playlist-item:not(.active) .sound-wave { animation: none; height: 4px; }
-        @keyframes wave { 0%, 100% { transform: scaleY(0.5); } 50% { transform: scaleY(1); } }
     </style>
 </head>
 <body>

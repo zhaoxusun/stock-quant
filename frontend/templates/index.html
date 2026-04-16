@@ -328,6 +328,7 @@
         .modern-btn-primary {
             background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
             color: white;
+            box-shadow: 0 4px 15px rgba(41, 128, 185, 0.3);
         }
 
         .modern-btn-primary:hover {
@@ -343,10 +344,13 @@
             background: var(--surface-color);
             color: var(--text-color);
             border: 1px solid var(--border-color);
+            box-shadow: none;
         }
 
         .modern-btn-secondary:hover {
             background: var(--hover-color);
+            border-color: var(--accent-color);
+            color: white;
         }
 
         .radio-group {
@@ -536,34 +540,38 @@
 
         .filter-btn {
             padding: 8px 16px;
-            background: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: var(--transition-fast);
+            transition: var(--transition-normal);
             white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(41, 128, 185, 0.25);
         }
 
         .filter-btn:hover {
-            background: var(--primary-color);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(41, 128, 185, 0.35);
         }
 
         .filter-btn.reset {
             background: var(--surface-color);
             color: var(--text-secondary);
             border: 1px solid var(--border-color);
+            box-shadow: none;
         }
 
         .filter-btn.reset:hover {
             background: var(--hover-color);
-            color: var(--text-color);
+            border-color: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(41, 128, 185, 0.2);
         }
 
         .data-table-custom {

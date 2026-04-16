@@ -174,7 +174,6 @@
                         <div class="card-header">
                             <div class="schedule-header">
                                 <span><i class="fas fa-list me-2"></i>定时任务列表</span>
-                                <span class="badge badge-info" id="taskCount">0 个任务</span>
                             </div>
                         </div>
                         <div class="card-body">
@@ -491,7 +490,6 @@
                     const noTasksDiv = document.getElementById('noTasks');
                     const paginationContainer = document.getElementById('paginationContainer');
                     const totalItems = document.getElementById('totalItems');
-                    const taskCount = document.getElementById('taskCount');
 
                     taskTableBody.innerHTML = '';
 
@@ -503,7 +501,6 @@
                         });
                         totalTasks = sortedTasks;
                         totalItems.textContent = totalTasks.length;
-                        taskCount.textContent = `${totalTasks.length} 个任务`;
                         noTasksDiv.classList.add('d-none');
                         document.getElementById('taskTableContainer').classList.remove('d-none');
                         paginationContainer.classList.remove('d-none');
@@ -516,7 +513,6 @@
                         document.getElementById('taskTableContainer').classList.add('d-none');
                         paginationContainer.classList.add('d-none');
                         totalItems.textContent = '0';
-                        taskCount.textContent = '0 个任务';
                     }
                 })
                 .catch(error => {

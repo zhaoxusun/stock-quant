@@ -128,26 +128,29 @@ body {
 
 /* 按钮样式 */
 .btn {
-    border-radius: 4px;
-    font-weight: 500;
+    border-radius: 8px;
+    font-weight: 600;
     padding: 8px 16px;
     transition: all 0.3s ease;
     border: none;
     outline: none;
     cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
     font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
     color: white;
+    box-shadow: 0 4px 15px rgba(41, 128, 185, 0.3);
 }
 
 .btn-primary:hover {
-    background-color: var(--secondary-color);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(41, 128, 185, 0.4);
 }
 
 .btn-primary:active {
@@ -155,13 +158,58 @@ body {
 }
 
 .btn-secondary {
-    background-color: var(--surface-color);
+    background: var(--surface-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-    background-color: var(--hover-color);
+    background: var(--hover-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success-color), #27ae60);
+    color: white;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger-color), #c0392b);
+    color: white;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--warning-color), #e67e22);
+    color: white;
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+}
+
+.btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+}
+
+.btn-sm {
+    padding: 5px 12px;
+    font-size: 12px;
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 15px;
 }
 
 /* 表单样式 */
@@ -169,16 +217,43 @@ body {
     background-color: var(--surface-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 10px 12px;
+    border-radius: 8px;
+    padding: 12px 14px;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
     outline: none;
 }
 
 .form-control:focus {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px rgba(41, 128, 185, 0.2);
+    box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.15);
+}
+
+.form-control::placeholder {
+    color: var(--text-secondary);
+}
+
+.form-select {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    transition: var(--transition-normal);
+    outline: none;
+    cursor: pointer;
+}
+
+.form-select:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.15);
+}
+
+.form-select option {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    padding: 8px;
 }
 
 .form-group {
@@ -1325,13 +1400,15 @@ input:checked + .slider:before {
     padding: 6px 12px;
     border-radius: 6px;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 5px;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
     border: none;
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .action-btn i {
@@ -1339,7 +1416,7 @@ input:checked + .slider:before {
 }
 
 .action-btn.edit {
-    background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
     color: white;
 }
 
@@ -1715,7 +1792,7 @@ input:checked + .slider:before {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: var(--gradient-primary);
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
     border: none;
     color: white;
     cursor: pointer;
@@ -1723,17 +1800,19 @@ input:checked + .slider:before {
     align-items: center;
     justify-content: center;
     transition: var(--transition-normal);
+    box-shadow: 0 4px 15px rgba(41, 128, 185, 0.3);
 }
 
 .chat-send-btn:hover {
     transform: scale(1.1);
-    box-shadow: 0 4px 15px rgba(41, 128, 185, 0.4);
+    box-shadow: 0 6px 20px rgba(41, 128, 185, 0.5);
 }
 
 .chat-send-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
 /* Model Select */

@@ -32,7 +32,7 @@
 }
 
 body {
-    font-family: "Segoe UI", "Microsoft YaHei", "Arial", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "SF Pro Display", "Microsoft YaHei", "Helvetica Neue", sans-serif;
     background-color: var(--background-color);
     color: var(--text-color);
     line-height: 1.6;
@@ -1892,52 +1892,71 @@ input:checked + .slider:before {
 
 .code-header {
     background: var(--surface-color);
-    padding: 12px 16px;
+    padding: 14px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .code-tabs {
     display: flex;
-    gap: 4px;
+    gap: 6px;
 }
 
 .code-tab {
     padding: 8px 16px;
-    background: transparent;
-    border: none;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
     color: var(--text-secondary);
     font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    border-radius: 6px;
-    transition: var(--transition-fast);
+    border-radius: 8px;
+    transition: var(--transition-normal);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .code-tab:hover {
     background: var(--hover-color);
-    color: var(--text-color);
-}
-
-.code-tab.active {
-    background: var(--accent-color);
+    border-color: var(--accent-color);
     color: white;
 }
 
+.code-tab.active {
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 12px rgba(41, 128, 185, 0.3);
+}
+
 .code-copy-btn {
-    padding: 6px 12px;
-    background: var(--surface-color);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    border-radius: 6px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    border: none;
+    color: white;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    transition: var(--transition-fast);
+    transition: var(--transition-normal);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(41, 128, 185, 0.3);
 }
 
 .code-copy-btn:hover {
-    background: var(--hover-color);
-    color: var(--text-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(41, 128, 185, 0.4);
+}
+
+.code-copy-btn:active {
+    transform: translateY(0);
 }
 
 .code-container pre {

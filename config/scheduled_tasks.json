@@ -26,7 +26,7 @@
     },
     "id": "task_20251120172103",
     "create_time": "2025-11-20 17:21:03",
-    "update_time": "2026-04-16 13:29:59"
+    "update_time": "2026-04-16 16:02:03"
   },
   {
     "name": "test-single",
@@ -55,13 +55,13 @@
     },
     "id": "task_20251121172103",
     "create_time": "2025-11-20 17:21:03",
-    "update_time": "2026-04-16 13:29:59"
+    "update_time": "2026-04-16 16:02:03"
   },
   {
     "name": "恒生科技互联网",
     "type": "backtest",
     "description": "恒生科技互联网",
-    "schedule_time": "24 19 0 0 1-5",
+    "schedule_time": "03 16 0 0 1-5",
     "enabled": true,
     "target_stocks": [
       {
@@ -132,6 +132,6 @@
     },
     "id": "task_20260302180714",
     "create_time": "2026-03-02 18:07:14",
-    "update_time": "2026-04-16 13:29:59"
+    "update_time": "2026-04-16 16:02:03"
   }
 ]

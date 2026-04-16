@@ -1,69 +1,16 @@
 [
   {
-    "name": "test",
-    "type": "backtest",
-    "description": "test",
-    "schedule_time": "53 18 0 0 1-7",
-    "enabled": false,
-    "target_stocks": [
-      {
-        "market": "hk",
-        "data_source": "futu",
-        "stock_code": "HK.00700",
-        "adjust_type": "qfq"
-      },
-      {
-        "market": "hk",
-        "data_source": "futu",
-        "stock_code": "HK.09988",
-        "adjust_type": "qfq"
-      }
-    ],
-    "backtest_config": {
-      "strategy": "EnhancedVolumeStrategy",
-      "init_cash": 5000000,
-      "during": 1460
+    "id": "exec_20260416162300907937",
+    "task_id": "task_20260302180714",
+    "task_name": "恒生科技互联网",
+    "status": "success",
+    "start_time": "2026-04-16 16:23:00",
+    "end_time": "2026-04-16 16:23:32",
+    "duration": 32.0,
+    "details": {
+      "schedule_time": "23 16 0 0 1-5"
     },
-    "id": "task_20251120172103",
-    "create_time": "2025-11-20 17:21:03",
-    "update_time": "2026-04-16 16:26:08"
-  },
-  {
-    "name": "test-single",
-    "type": "backtest",
-    "description": "test",
-    "schedule_time": "33 16 0 0 1-7",
-    "enabled": false,
-    "target_stocks": [
-      {
-        "market": "hk",
-        "data_source": "futu",
-        "stock_code": "HK.03690",
-        "adjust_type": "qfq"
-      },
-      {
-        "market": "hk",
-        "data_source": "futu",
-        "stock_code": "HK.02015",
-        "adjust_type": "qfq"
-      }
-    ],
-    "backtest_config": {
-      "strategy": "SingleVolumeStrategy",
-      "init_cash": 5000000,
-      "during": 1460
-    },
-    "id": "task_20251121172103",
-    "create_time": "2025-11-20 17:21:03",
-    "update_time": "2026-04-16 16:26:08"
-  },
-  {
-    "name": "恒生科技互联网",
-    "type": "backtest",
-    "description": "恒生科技互联网",
-    "schedule_time": "28 16 0 0 1-5",
-    "enabled": true,
-    "target_stocks": [
+    "stocks": [
       {
         "market": "hk",
         "data_source": "futu",
@@ -125,13 +72,85 @@
         "adjust_type": "qfq"
       }
     ],
-    "backtest_config": {
-      "strategy": "EnhancedVolumeStrategy",
-      "init_cash": 5000000,
-      "during": 1460
+    "stocks_processed": 10,
+    "stocks_success": 10,
+    "stocks_failed": 0
+  },
+  {
+    "id": "exec_20260416162800797611",
+    "task_id": "task_20260302180714",
+    "task_name": "恒生科技互联网",
+    "status": "success",
+    "start_time": "2026-04-16 16:28:00",
+    "end_time": "2026-04-16 16:28:32",
+    "duration": 32.0,
+    "details": {
+      "schedule_time": "28 16 0 0 1-5"
     },
-    "id": "task_20260302180714",
-    "create_time": "2026-03-02 18:07:14",
-    "update_time": "2026-04-16 16:26:08"
+    "stocks": [
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.00700",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09988",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.03690",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09618",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.01810",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.01024",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09888",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.02015",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09866",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.03032",
+        "adjust_type": "qfq"
+      }
+    ],
+    "stocks_processed": 10,
+    "stocks_success": 10,
+    "stocks_failed": 0
   }
 ]

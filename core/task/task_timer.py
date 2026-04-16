@@ -8,6 +8,7 @@ from common.util_html import signals_to_html, save_clean_html
 from core.signal.signal_handler import signal_get, signals_analyze
 from core.stock import manager_akshare, manager_baostock, manager_futu
 from core.task.task_manager import TaskManager
+from core.task.task_execution_manager import task_execution_manager
 from core.strategy.strategy_manager import global_strategy_manager
 from core.quant.quant_manage import run_backtest_enhanced_volume_strategy
 import settings
@@ -199,42 +200,81 @@ def process_task(task):
     task_name = task.get('name')
     logger.info(f"开始处理任务: {task_name} (ID: {task_id})")
 
+    execution = task_execution_manager.create(
+        task_id=task_id,
+        task_name=task_name,
+        status='running',
+        details={'schedule_time': task.get('schedule_time')},
+        stocks=task.get('target_stocks', [])
+    )
+    if not execution:
+        logger.error(f"创建执行记录失败，跳过任务: {task_name}")
+        return
+    execution_id = execution['id']
+
+    stocks_processed = 0
+    stocks_success = 0
+    stocks_failed = 0
+
     try:
-        # 获取目标股票列表
         target_stocks = task.get('target_stocks', [])
         backtest_config = task.get('backtest_config', {})
 
         for stock_config in target_stocks:
             logger.info(f"处理股票: {stock_config.get('stock_code')}")
 
-            # 第一步：查询历史k线数据
             success, csv_path = get_kline_data(stock_config)
             if not success or not csv_path:
                 logger.error(f"跳过股票处理，因为获取k线数据失败")
+                stocks_failed += 1
+                stocks_processed += 1
                 continue
 
-            # 第二步：执行回测
             backtest_success = run_backtest(csv_path, backtest_config)
             if not backtest_success:
                 logger.error(f"跳过股票处理，因为回测失败")
+                stocks_failed += 1
+                stocks_processed += 1
                 continue
 
-        # 第三步：生成信号详情 - 这一步在run_backtest_enhanced_volume_strategy中已经自动处理
-        # 信号会保存到signals目录，图表会保存到html目录
+            stocks_success += 1
+            stocks_processed += 1
+
         success, html_content = check_signals(target_stocks, task_id, days=180)
         if not success or not html_content:
-            logger.error(f"跳过股票处理，因为生成信号详情失败")
+            logger.error(f"生成信号详情失败")
+            status = 'partial'
         else:
             logger.info(f"股票处理完成: {target_stocks}")
-            send_wechat_report_pdf(
-                html_content=html_content,
-                title=f"定时任务{task_id}信号详情",
-                description=f"{task}",
-                report_filename=f"{task_id}_report.pdf"
-            )
-        logger.info(f"任务处理完成: {task_name} (ID: {task_id})")
+            try:
+                send_wechat_report_pdf(
+                    html_content=html_content,
+                    title=f"定时任务{task_id}信号详情",
+                    description=f"{task}",
+                    report_filename=f"{task_id}_report.pdf"
+                )
+            except Exception as e:
+                logger.error(f"发送微信报告失败: {e}")
+            status = 'success'
+
+        task_execution_manager.update(
+            execution_id,
+            status=status,
+            stocks_processed=stocks_processed,
+            stocks_success=stocks_success,
+            stocks_failed=stocks_failed
+        )
+        logger.info(f"任务处理完成: {task_name} (ID: {task_id}), 状态: {status}, 成功: {stocks_success}/{stocks_processed}")
     except Exception as e:
         logger.error(f"处理任务时出错: {str(e)}")
+        task_execution_manager.update(
+            execution_id,
+            status='failed',
+            details={'error': str(e)},
+            stocks_processed=stocks_processed,
+            stocks_success=stocks_success,
+            stocks_failed=stocks_failed
+        )
 
 
 def update_schedule():

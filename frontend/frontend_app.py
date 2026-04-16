@@ -18,6 +18,7 @@ from core.signal.signal_handler import signal_get, signals_analyze
 from core.task.task_timer import schedule_tasks
 from core.strategy.indicator_manager import global_indicator_manager
 from core.task.task_manager import TaskManager
+from core.task.task_execution_manager import task_execution_manager
 from flask import Flask, render_template, request, send_from_directory
 from flask_cors import CORS
 from flask import make_response
@@ -1116,6 +1117,87 @@ def check_task_exists(task_id):
         error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response
+
+
+@app.route('/api/executions/get_all', methods=['GET'])
+@log_request_details
+def get_all_executions():
+    """获取所有执行记录"""
+    try:
+        limit = request.args.get('limit', 100, type=int)
+        executions = task_execution_manager.read_all(limit=limit)
+        response_data = {'success': True, 'message': '获取执行记录成功', 'data': executions}
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"获取执行记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'获取执行记录失败: {str(e)}', 'data': []}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
+@app.route('/api/executions/get/<execution_id>', methods=['GET'])
+@log_request_details
+def get_execution(execution_id):
+    """获取单个执行记录"""
+    try:
+        execution = task_execution_manager.read(execution_id)
+        if execution:
+            response_data = {'success': True, 'message': '获取执行记录成功', 'data': execution}
+        else:
+            response_data = {'success': False, 'message': '执行记录不存在', 'data': None}
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"获取执行记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'获取执行记录失败: {str(e)}', 'data': None}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
+@app.route('/api/executions/by_task/<task_id>', methods=['GET'])
+@log_request_details
+def get_executions_by_task(task_id):
+    """获取指定任务的执行记录"""
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        executions = task_execution_manager.read_by_task(task_id, limit=limit)
+        response_data = {'success': True, 'message': '获取执行记录成功', 'data': executions}
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"获取执行记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'获取执行记录失败: {str(e)}', 'data': []}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
+@app.route('/api/executions/delete/<execution_id>', methods=['POST'])
+@log_request_details
+def delete_execution(execution_id):
+    """删除执行记录"""
+    try:
+        success = task_execution_manager.delete(execution_id)
+        if success:
+            response_data = {'success': True, 'message': '删除执行记录成功'}
+        else:
+            response_data = {'success': False, 'message': '删除执行记录失败'}
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"删除执行记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'删除执行记录失败: {str(e)}'}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
 
 @app.route('/chat')
 @log_request_details

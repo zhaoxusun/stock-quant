@@ -189,7 +189,7 @@
                                     <table class="data-table">
                                         <thead>
                                             <tr>
-                                                <th>ID</th>
+                                                <th>任务ID</th>
                                                 <th>任务名称</th>
                                                 <th>任务类型</th>
                                                 <th>定时表达式</th>
@@ -226,6 +226,60 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-12">
+                    <div class="card task-list-card mt-4" id="execution-list">
+                        <div class="card-header">
+                            <div class="schedule-header">
+                                <span><i class="fas fa-history me-2"></i>执行记录</span>
+                                <button class="btn btn-sm btn-secondary" onclick="loadExecutions()">
+                                    <i class="fas fa-sync-alt me-1"></i>刷新
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="executionTableContainer">
+                                <div class="data-table-wrapper">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>执行ID</th>
+                                                <th>任务名称</th>
+                                                <th>状态</th>
+                                                <th>开始时间</th>
+                                                <th>耗时</th>
+                                                <th>处理结果</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="executionTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div id="noExecutions" class="empty-state d-none">
+                                <div class="empty-state-icon"><i class="fas fa-clock"></i></div>
+                                <div class="empty-state-title">暂无执行记录</div>
+                                <div class="empty-state-text">定时任务执行后将显示在这里</div>
+                            </div>
+
+                            <div class="modern-pagination" id="executionPaginationContainer">
+                                <div class="pagination-info">
+                                    共 <span id="totalExecutions" class="fw-bold">0</span> 条记录
+                                </div>
+                                <div class="pagination-controls">
+                                    <button class="page-btn nav-btn" id="execPrevPage" onclick="goToExecPage(currentExecPage - 1)">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <div id="execPagination"></div>
+                                    <button class="page-btn nav-btn" id="execNextPage" onclick="goToExecPage(currentExecPage + 1)">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -251,9 +305,13 @@
         let currentPage = 1;
         let pageSize = 20;
         let totalTasks = [];
+        let currentExecPage = 1;
+        let execPageSize = 10;
+        let totalExecutions = [];
 
         document.addEventListener('DOMContentLoaded', function() {
             loadTasks();
+            loadExecutions();
 
             document.getElementById('taskType').addEventListener('change', function() {
                 const taskType = this.value;
@@ -797,6 +855,133 @@
             const date = new Date(timestamp);
             return date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
         }
+
+        function loadExecutions() {
+            fetch('/api/executions/get_all?limit=100')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.length > 0) {
+                        totalExecutions = data.data;
+                        document.getElementById('totalExecutions').textContent = totalExecutions.length;
+                        document.getElementById('noExecutions').classList.add('d-none');
+                        document.getElementById('executionTableContainer').classList.remove('d-none');
+                        document.getElementById('executionPaginationContainer').classList.remove('d-none');
+                        currentExecPage = 1;
+                        renderExecCurrentPage();
+                        renderExecPagination();
+                    } else {
+                        totalExecutions = [];
+                        document.getElementById('totalExecutions').textContent = '0';
+                        document.getElementById('noExecutions').classList.remove('d-none');
+                        document.getElementById('executionTableContainer').classList.add('d-none');
+                        document.getElementById('executionPaginationContainer').classList.add('d-none');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading executions:', error);
+                });
+        }
+
+        function renderExecCurrentPage() {
+            const tableBody = document.getElementById('executionTableBody');
+            tableBody.innerHTML = '';
+
+            const startIndex = (currentExecPage - 1) * execPageSize;
+            const endIndex = Math.min(startIndex + execPageSize, totalExecutions.length);
+            const currentPageData = totalExecutions.slice(startIndex, endIndex);
+
+            currentPageData.forEach(exec => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="text-secondary">#${exec.id}</span></td>
+                    <td><strong>${exec.task_name}</strong><br><small class="text-secondary">${exec.task_id}</small></td>
+                    <td>${getExecutionStatusBadge(exec.status)}</td>
+                    <td>${formatDate(exec.start_time)}</td>
+                    <td>${exec.duration ? exec.duration + '秒' : '-'}</td>
+                    <td>${getExecutionProgress(exec)}</td>
+                    <td>
+                        <button class="action-btn delete" onclick="deleteExecution('${exec.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderExecPagination() {
+            const pagination = document.getElementById('execPagination');
+            pagination.innerHTML = '';
+            const totalPages = Math.ceil(totalExecutions.length / execPageSize);
+
+            document.getElementById('execPrevPage').className = `page-btn nav-btn ${currentExecPage === 1 ? 'disabled' : ''}`;
+            document.getElementById('execNextPage').className = `page-btn nav-btn ${currentExecPage === totalPages ? 'disabled' : ''}`;
+
+            const maxButtons = 5;
+            let startPage = Math.max(1, currentExecPage - Math.floor(maxButtons / 2));
+            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+            if (endPage - startPage + 1 < maxButtons) {
+                startPage = Math.max(1, endPage - maxButtons + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageItem = document.createElement('button');
+                pageItem.className = `page-btn ${i === currentExecPage ? 'active' : ''}`;
+                pageItem.textContent = i;
+                pageItem.addEventListener('click', () => goToExecPage(i));
+                pagination.appendChild(pageItem);
+            }
+        }
+
+        function goToExecPage(page) {
+            const totalPages = Math.ceil(totalExecutions.length / execPageSize);
+            if (page >= 1 && page <= totalPages) {
+                currentExecPage = page;
+                renderExecCurrentPage();
+                renderExecPagination();
+            }
+        }
+
+        function getExecutionStatusBadge(status) {
+            const statusMap = {
+                'running': '<span class="badge" style="background: #3498db;">运行中</span>',
+                'success': '<span class="badge badge-success">成功</span>',
+                'failed': '<span class="badge badge-danger">失败</span>',
+                'partial': '<span class="badge badge-warning">部分成功</span>'
+            };
+            return statusMap[status] || `<span class="badge">${status || '-'}</span>`;
+        }
+
+        function getExecutionProgress(exec) {
+            if (exec.status === 'running') {
+                return '<span class="text-info">处理中...</span>';
+            }
+            const processed = exec.stocks_processed || 0;
+            const success = exec.stocks_success || 0;
+            const failed = exec.stocks_failed || 0;
+            if (processed === 0) return '-';
+            return `<span class="text-success">${success}成功</span> / <span class="text-danger">${failed}失败</span>`;
+        }
+
+        function deleteExecution(executionId) {
+            if (!confirm('确定要删除这条执行记录吗？')) return;
+            fetch(`/api/executions/delete/${executionId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('删除成功', 'success');
+                        loadExecutions();
+                    } else {
+                        showNotification('删除失败', 'error');
+                    }
+                })
+                .catch(error => {
+                    showNotification('删除失败', 'error');
+                });
+        }
+
+        setInterval(loadExecutions, 30000);
     </script>
 </body>
 </html>

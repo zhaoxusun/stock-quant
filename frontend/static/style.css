@@ -577,6 +577,33 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
 .playlist-item:not(.active) .sound-wave { animation: none; height: 4px; }
 @keyframes wave { 0%, 100% { transform: scaleY(0.5); } 50% { transform: scaleY(1); } }
 
+/* Download Button */
+.download-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--success-color), #27ae60);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition-normal);
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+.download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(46, 204, 113, 0.4);
+}
+.download-btn:active {
+    transform: translateY(0);
+}
+.download-btn i {
+    font-size: 12px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .content { margin: 10px; padding: 0 10px; }

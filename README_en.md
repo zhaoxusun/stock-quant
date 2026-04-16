@@ -82,10 +82,12 @@ and futu. （futu requires an extra OpenD account to get data）
   - Select the strategy to backtest (current code supports EnhancedVolumeStrategy. you can view the strategy in core/strategy/trading/volume/trading_strategy_volume.py)
     - Or add your own strategy (refer to the EnhancedVolumeStrategy class in core/strategy/trading/volume/trading_strategy_volume.py)
   - Click the "Backtest" button to execute the backtest
-  - ![index_page](https://zhaoxusun.github.io/stock-quant/resource/img/index.png)
+  - ![index_page](https://zhaoxusun.github.io/stock-quant/resource/img/index_1.png)
+  - ![index_page](https://zhaoxusun.github.io/stock-quant/resource/img/index_2.png)
   - Backtest results will be displayed on the frontend page
   - ![result_page](https://zhaoxusun.github.io/stock-quant/resource/img/backtest_result_1.png)
   - ![result_page](https://zhaoxusun.github.io/stock-quant/resource/img/backtest_result_2.png)
+  - ![result_page](https://zhaoxusun.github.io/stock-quant/resource/img/backtest_result_3.png)
 
 #### 2.2 Direct Code Execution（Without Frontend Page）
 - Run backtest code
@@ -159,7 +161,8 @@ also risk being banned by the data source service.
 
 ![schedule_task](https://zhaoxusun.github.io/stock-quant/resource/img/schedule_task.png)
 ![report_message_summary](https://zhaoxusun.github.io/stock-quant/resource/img/report_message_summary.png)
-![report_message_detail](https://zhaoxusun.github.io/stock-quant/resource/img/report_message_detail.png)
+![report_message_detail](https://zhaoxusun.github.io/stock-quant/resource/img/report_message_detail_1.png)
+![report_message_detail](https://zhaoxusun.github.io/stock-quant/resource/img/report_message_detail_2.png)
 
 ### 6. Strategy Management
 

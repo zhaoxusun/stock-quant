@@ -4,134 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>信号分析 - 股票量化回测系统</title>
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 自定义CSS -->
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>" type="image/svg+xml">
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container-fluid p-0">
         {% include 'navbar.html' %}
 
-        <!-- 主要内容区域 -->
         <div class="content pt-4">
-            <!-- 信号分析标题 -->
-            <div class="card mt-4">
-                <div class="card-header bg-primary text-white">
-                    信号分析<small class="text-white ml-2">请注意：回测后才会有信号</small>
+            <div class="page-header mb-4">
+                <div>
+                    <h1 class="page-title"><i class="fas fa-chart-line"></i>信号分析</h1>
+                    <p class="page-subtitle">深度分析交易信号，挖掘市场规律与投资机会</p>
                 </div>
-                <div class="card-body">
-                    <!-- 筛选控件 -->
-                    <div class="mb-4">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <label for="strategyFilter" class="form-label">策略筛选</label>
+            </div>
+
+            <div class="card form-panel mb-4">
+                <div class="form-panel-header">
+                    <h5><i class="fas fa-filter"></i>筛选条件</h5>
+                </div>
+                <div class="form-panel-body">
+                    <div class="filter-bar">
+                        <div class="filter-row">
+                            <div class="filter-item">
+                                <label><i class="fas fa-brain me-1"></i>策略</label>
                                 <select class="form-select" id="strategyFilter">
                                     <option value="">全部策略</option>
                                 </select>
                             </div>
-                            <div class="col-md-3">
-                                <label for="stockFilter" class="form-label">股票筛选</label>
-                                <input type="text" class="form-control" id="stockFilter" placeholder="输入股票代码或名称进行模糊搜索" oninput="filterStocks(this.value)">
-                                <div id="stockSuggestions" class="dropdown-menu w-100 mt-1" style="display: none; position: absolute; z-index: 1000; max-height: 200px; overflow-y: auto;"></div>
+                            <div class="filter-item">
+                                <label><i class="fas fa-search me-1"></i>股票</label>
+                                <input type="text" class="form-control" id="stockFilter" placeholder="输入股票代码或名称">
                             </div>
-                            <div class="col-md-3">
-                                <label for="signalTypeFilter" class="form-label">信号类型</label>
-                                <select class="form-select" id="signalTypeFilter">
-                                    <option value="">全部类型</option>
-                                </select>
+                            <div class="filter-item">
+                                <label><i class="fas fa-clock me-1"></i>文件创建时间</label>
+                                <div class="d-flex gap-2">
+                                    <input type="date" class="form-control" id="fileCreateStartDate">
+                                    <input type="date" class="form-control" id="fileCreateEndDate">
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">时间筛选</label>
-                                <div class="row">
-                                    <div class="col">
-                                        <input type="date" class="form-control" id="startDate">
-                                    </div>
-                                    <div class="col">
-                                        <input type="date" class="form-control" id="endDate">
+                            <div class="filter-actions align-self-end">
+                                <button class="btn btn-secondary" onclick="resetSignalFilters()">
+                                    <i class="fas fa-undo me-1"></i>重置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="signal-files-wrapper mt-4">
+                        <div class="signal-files-container">
+                            <div class="signal-files-header">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="selectAllFiles" checked>
+                                            <label class="form-check-label" for="selectAllFiles">全选</label>
+                                        </div>
+                                        <span class="text-secondary">|</span>
+                                        <span class="filter-result-count">
+                                            已筛选 <strong id="filteredFileCount">0</strong> 条
+                                        </span>
+                                        <span class="text-secondary">|</span>
+                                        <span class="selected-info">
+                                            已勾选 <strong id="selectedFileCount">0</strong> 条
+                                        </span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row g-3 mt-3">
-                            <div class="col-md-12 text-right">
-                                <button class="btn btn-primary" onclick="analyzeSelectedSignals()">分析信号</button>
-                                <button class="btn btn-secondary ml-2" onclick="resetSignalFilters()">重置筛选</button>
+                            <div class="signal-files-list" id="signalFilesContainer">
+                                <div class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin me-2"></i>加载信号文件中...</div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- 信号文件选择 -->
-                    <div class="mb-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="selectAllFiles">
-                            <label class="form-check-label" for="selectAllFiles">
-                                全选信号文件
-                            </label>
-                        </div>
-                        <div id="signalFilesContainer" class="mt-2 border rounded p-2 bg-gray-50" style="max-height: 500px; overflow-y: auto;">
-                            <!-- 信号文件列表将动态加载 -->
-                            <div class="text-center text-muted py-3">加载信号文件中...</div>
+                        <div class="signal-files-stats">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="filter-item-inline">
+                                        <span class="filter-label">信号类型：</span>
+                                        <select class="form-select form-select-sm" id="signalTypeFilter">
+                                            <option value="">全部类型</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-item-inline">
+                                        <span class="filter-label">筛选信号时间区间：</span>
+                                        <input type="date" class="form-control form-control-sm" id="startDate">
+                                        <span class="text-muted mx-1">至</span>
+                                        <input type="date" class="form-control form-control-sm" id="endDate">
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary analyze-btn" onclick="analyzeSelectedSignals()">
+                                    <i class="fas fa-chart-bar me-1"></i>分析信号
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 分析结果统计 -->
-            <div class="card mt-4" id="analysisSummaryCard" style="display: none;">
-                <div class="card-header bg-primary text-white">
-                    分析摘要
+            <div id="analysisSummaryCard" class="card form-panel mb-4" style="display: none;">
+                <div class="form-panel-header">
+                    <h5><i class="fas fa-chart-pie"></i>分析摘要</h5>
+                    <button id="downloadHtmlBtn" class="download-btn" style="display: none;">
+                        <i class="fas fa-download"></i>下载报告
+                    </button>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="stats-card">
-                                <div class="stat-label">总信号数</div>
-                                <div class="stat-value" id="totalSignals">0</div>
-                            </div>
+                <div class="form-panel-body">
+                    <div class="stats-grid">
+                        <div class="stat-card primary">
+                            <div class="stat-card-icon"><i class="fas fa-list"></i></div>
+                            <div class="stat-card-label">总信号数</div>
+                            <div class="stat-card-value" id="totalSignals">0</div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stats-card">
-                                <div class="stat-label">买入信号</div>
-                                <div class="stat-value price-up" id="buySignals">0</div>
-                            </div>
+                        <div class="stat-card success">
+                            <div class="stat-card-icon"><i class="fas fa-arrow-up"></i></div>
+                            <div class="stat-card-label">买入信号</div>
+                            <div class="stat-card-value" id="buySignals">0</div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stats-card">
-                                <div class="stat-label">卖出信号</div>
-                                <div class="stat-value price-down" id="sellSignals">0</div>
-                            </div>
+                        <div class="stat-card danger">
+                            <div class="stat-card-icon"><i class="fas fa-arrow-down"></i></div>
+                            <div class="stat-card-label">卖出信号</div>
+                            <div class="stat-card-value" id="sellSignals">0</div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stats-card">
-                                <div class="stat-label">涉及股票数</div>
-                                <div class="stat-value" id="uniqueStocks">0</div>
-                            </div>
+                        <div class="stat-card neutral">
+                            <div class="stat-card-icon"><i class="fas fa-minus"></i></div>
+                            <div class="stat-card-label">中性信号（暂未实现）</div>
+                            <div class="stat-card-value" id="neutralSignals">0</div>
+                        </div>
+                        <div class="stat-card info">
+                            <div class="stat-card-icon"><i class="fas fa-chart-bar"></i></div>
+                            <div class="stat-card-label">涉及股票（不聚合，每个文件代表一只股票）</div>
+                            <div class="stat-card-value" id="uniqueStocks">0</div>
+                        </div>
+                        <div class="stat-card strategy">
+                            <div class="stat-card-icon"><i class="fas fa-brain"></i></div>
+                            <div class="stat-card-label">涉及策略</div>
+                            <div class="stat-card-value" id="uniqueStrategies">0</div>
                         </div>
                     </div>
-                    <!-- 添加下载按钮 -->
-                    <div class="mt-3 text-right">
-                        <button id="downloadHtmlBtn" class="btn btn-success" style="display: none;">下载HTML报告</button>
+                    <div class="analysis-extra-info">
+                        <div class="extra-info-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>信号时间范围：<strong id="dateRange">-</strong></span>
+                        </div>
+                    </div>
+                    <div class="signal-type-distribution" id="signalTypeDistribution">
+                        <div class="distribution-title">信号类型分布</div>
+                        <div class="distribution-bars" id="distributionBars"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- 信号分析结果 -->
-            <div class="card mt-4" id="analysisResultCard" style="display: none;">
-                <div class="card-header bg-primary text-white">
-                    信号分析结果
+            <div id="analysisResultCard" class="card form-panel" style="display: none;">
+                <div class="form-panel-header">
+                    <h5><i class="fas fa-table"></i>信号分析结果</h5>
                 </div>
-                <div class="card-body">
-                    <!-- 信号表格 -->
-                    <div class="overflow-x-auto">
-                        <table class="table table-hover table-striped">
-                            <thead class="thead-dark">
+                <div class="form-panel-body">
+                    <div class="data-table-wrapper">
+                        <table class="data-table">
+                            <thead>
                                 <tr>
                                     <th>日期</th>
                                     <th>信号类型</th>
@@ -141,324 +173,163 @@
                                     <th>策略</th>
                                 </tr>
                             </thead>
-                            <tbody id="signalsTable">
-                                <!-- 信号数据将动态加载 -->
-                            </tbody>
+                            <tbody id="signalsTable"></tbody>
                         </table>
                     </div>
 
-                    <!-- 分页控件 -->
-                    <div class="mt-4 d-flex justify-content-between align-items-center">
-                        <div>
-                            共 <span id="totalSignalResults">0</span> 条记录
+                    <div class="modern-pagination" id="paginationContainer">
+                        <div class="pagination-info">共 <span id="totalSignalResults" class="fw-bold">0</span> 条记录</div>
+                        <div class="pagination-controls">
+                            <button class="page-btn nav-btn" id="prevPage" onclick="goToPage(currentPage - 1)"><i class="fas fa-chevron-left"></i></button>
+                            <div id="signalPagination"></div>
+                            <button class="page-btn nav-btn" id="nextPage" onclick="goToPage(currentPage + 1)"><i class="fas fa-chevron-right"></i></button>
                         </div>
-                        <nav>
-                            <ul class="pagination" id="signalPagination"></ul>
-                        </nav>
                     </div>
                 </div>
             </div>
         </div>
-        <div id="notification" class="notification position-fixed top-20 right-5 p-4 rounded shadow-lg z-50 transform transition-all duration-300 translate-x-full opacity-0">
-            <div id="notificationMessage"></div>
-        </div>
     </div>
 
-    <!-- JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div id="notification" class="notification"></div>
+
     <script>
-        // 全局存储所有信号文件，用于筛选
         let allSignalFiles = [];
-        // 全局存储所有信号数据，用于分页
+        let filteredSignalFiles = [];
         let allSignalsData = [];
-        // 每页显示的记录数
         const pageSize = 20;
-        // 当前页码
         let currentPage = 1;
 
-        // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             loadSignalFiles();
             loadSignalMetadata();
 
-            // 全选/取消全选功能
             document.getElementById('selectAllFiles').addEventListener('change', function() {
-                const isChecked = this.checked;
-                const checkboxes = document.querySelectorAll('input[name="signalFile"]');
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                });
+                document.querySelectorAll('input[name="signalFile"]').forEach(cb => cb.checked = this.checked);
+                updateFileCount();
             });
 
-            // 为筛选控件添加变化事件监听
             document.getElementById('strategyFilter').addEventListener('change', filterSignalFiles);
+            document.getElementById('stockFilter').addEventListener('input', debounce(filterSignalFiles, 300));
+            document.getElementById('fileCreateStartDate').addEventListener('change', filterSignalFiles);
+            document.getElementById('fileCreateEndDate').addEventListener('change', filterSignalFiles);
             document.getElementById('signalTypeFilter').addEventListener('change', filterSignalFiles);
             document.getElementById('startDate').addEventListener('change', filterSignalFiles);
             document.getElementById('endDate').addEventListener('change', filterSignalFiles);
-
-            // 点击页面其他地方关闭股票搜索建议
-            document.addEventListener('click', function(event) {
-                const suggestions = document.getElementById('stockSuggestions');
-                const input = document.getElementById('stockFilter');
-                if (!input.contains(event.target) && !suggestions.contains(event.target)) {
-                    suggestions.style.display = 'none';
-                }
-            });
-
-            // 为分页控件添加点击事件监听（使用事件委托）
-            document.getElementById('signalPagination').addEventListener('click', function(event) {
-                event.preventDefault();
-                const target = event.target.closest('a');
-                if (!target) return;
-
-                if (target.parentElement.classList.contains('disabled')) return;
-
-                if (target.textContent.trim() === '«') {
-                    // 上一页
-                    if (currentPage > 1) {
-                        goToPage(currentPage - 1);
-                    }
-                } else if (target.textContent.trim() === '»') {
-                    // 下一页
-                    const totalPages = Math.ceil(allSignalsData.length / pageSize);
-                    if (currentPage < totalPages) {
-                        goToPage(currentPage + 1);
-                    }
-                } else {
-                    // 页码
-                    const pageNum = parseInt(target.textContent);
-                    if (!isNaN(pageNum)) {
-                        goToPage(pageNum);
-                    }
-                }
-            });
-
-            // 添加下载按钮事件监听
             document.getElementById('downloadHtmlBtn').addEventListener('click', downloadResultsAsHTML);
 
-            // 设置日期输入框的默认值
             const today = new Date();
             const oneWeekAgo = new Date(today);
             oneWeekAgo.setDate(today.getDate() - 7);
-
-            // 格式化日期为YYYY-MM-DD格式
-            const formatDate = (date) => {
-                return date.toISOString().split('T')[0];
-            };
-
-            // 设置默认日期
-            document.getElementById('startDate').value = formatDate(oneWeekAgo);
-            document.getElementById('endDate').value = formatDate(today);
+            document.getElementById('startDate').value = oneWeekAgo.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            document.getElementById('fileCreateEndDate').value = today.toISOString().split('T')[0];
         });
 
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
 
-        // 加载信号文件列表
         function loadSignalFiles() {
             fetch('/get_signal_files')
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
-                    const container = document.getElementById('signalFilesContainer');
-
                     if (data.success && data.data.signal_files) {
-                        // 保存所有信号文件数据
                         allSignalFiles = data.data.signal_files;
-                        // 显示所有文件
-                        renderSignalFiles(data.data.signal_files);
-                    } else {
-                        container.innerHTML = `<div class="text-center text-danger py-3">${data.message || '加载信号文件失败'}</div>`;
+                        filteredSignalFiles = [...allSignalFiles];
+                        renderSignalFiles(filteredSignalFiles);
                     }
-                })
-                .catch(error => {
-                    console.error('加载信号文件失败:', error);
-                    document.getElementById('signalFilesContainer').innerHTML = '<div class="text-center text-danger py-3">加载信号文件失败</div>';
                 });
         }
 
-        // 根据筛选条件过滤信号文件
         function filterSignalFiles() {
-            // 获取所有筛选条件
-            const strategyFilter = document.getElementById('strategyFilter').value;
-            const stockFilter = document.getElementById('stockFilter').value;
-            const signalTypeFilter = document.getElementById('signalTypeFilter').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
+            const strategy = document.getElementById('strategyFilter').value;
+            const stock = document.getElementById('stockFilter').value;
+            const fileCreateStart = document.getElementById('fileCreateStartDate').value;
+            const fileCreateEnd = document.getElementById('fileCreateEndDate').value;
 
-            // 过滤文件
-            let filteredFiles = allSignalFiles;
+            filteredSignalFiles = allSignalFiles.filter(f => {
+                if (strategy && !f.strategy_name.includes(strategy)) return false;
+                if (stock && !f.stock_info.toLowerCase().includes(stock.toLowerCase())) return false;
+                if (fileCreateStart && new Date(f.file_time) < new Date(fileCreateStart)) return false;
+                if (fileCreateEnd && new Date(f.file_time) > new Date(fileCreateEnd + 'T23:59:59')) return false;
+                return true;
+            });
 
-            if (strategyFilter) {
-                filteredFiles = filteredFiles.filter(file =>
-                    file.strategy_name.includes(strategyFilter)
-                );
-            }
-
-            if (stockFilter) {
-                filteredFiles = filteredFiles.filter(file =>
-                    file.stock_info.includes(stockFilter)
-                );
-            }
-
-            // 日期筛选
-            if (startDate) {
-                filteredFiles = filteredFiles.filter(file => {
-                    const fileDate = new Date(file.file_time);
-                    return fileDate >= new Date(startDate);
-                });
-            }
-
-            if (endDate) {
-                filteredFiles = filteredFiles.filter(file => {
-                    const fileDate = new Date(file.file_time);
-                    // 结束日期包含当天
-                    const endDateObj = new Date(endDate);
-                    endDateObj.setHours(23, 59, 59, 999);
-                    return fileDate <= endDateObj;
-                });
-            }
-
-            // 重新渲染文件列表
-            renderSignalFiles(filteredFiles);
-
-            // 更新全选复选框状态
-            updateSelectAllCheckbox();
+            renderSignalFiles(filteredSignalFiles);
         }
 
-        // 渲染信号文件列表
         function renderSignalFiles(files) {
             const container = document.getElementById('signalFilesContainer');
-            container.innerHTML = '';
-
+            
+            document.getElementById('filteredFileCount').textContent = files.length;
+            
             if (files.length === 0) {
-                container.innerHTML = '<div class="text-center text-muted py-3">没有找到匹配的信号文件</div>';
-                return;
-            }
-
-            // 显示所有文件
-            files.forEach(file => {
-                const div = document.createElement('div');
-                div.className = 'form-check';
-                div.innerHTML = `
-                    <input class="form-check-input" type="checkbox" name="signalFile" value="${file.file_path}" checked>
-                    <label class="form-check-label">
-                        ${file.data_source} / ${file.stock_info} / ${file.strategy_name} (${file.file_time})
-                    </label>
+                container.innerHTML = `
+                    <div class="signal-files-empty">
+                        <i class="fas fa-search"></i>
+                        <p>没有找到匹配的信号文件</p>
+                        <small>尝试调整筛选条件</small>
+                    </div>
                 `;
-                container.appendChild(div);
-            });
-
-            // 显示文件总数
-            const hintDiv = document.createElement('div');
-            hintDiv.className = 'text-center text-white mt-2';
-            hintDiv.textContent = `共${files.length}条信号文件`;
-            container.appendChild(hintDiv);
-        }
-
-        // 股票模糊搜索功能
-        function filterStocks(keyword) {
-            const suggestions = document.getElementById('stockSuggestions');
-            suggestions.innerHTML = '';
-
-            if (!keyword.trim()) {
-                suggestions.style.display = 'none';
-                // 如果搜索框为空，重新应用其他筛选条件
-                filterSignalFiles();
+                updateFileCount();
                 return;
             }
-
-            // 获取所有可能的股票代码/名称
-            const allStocks = new Set();
-            allSignalFiles.forEach(file => {
-                allStocks.add(file.stock_info);
-            });
-
-            // 过滤匹配的股票
-            const matchedStocks = Array.from(allStocks).filter(stock =>
-                stock.toLowerCase().includes(keyword.toLowerCase())
-            );
-
-            // 显示搜索建议
-            if (matchedStocks.length > 0) {
-                matchedStocks.forEach(stock => {
-                    const suggestion = document.createElement('a');
-                    suggestion.className = 'dropdown-item';
-                    suggestion.href = '#';
-                    suggestion.textContent = stock;
-                    suggestion.onclick = function(event) {
-                        event.preventDefault();
-                        document.getElementById('stockFilter').value = stock;
-                        suggestions.style.display = 'none';
-                        // 应用筛选
-                        filterSignalFiles();
-                    };
-                    suggestions.appendChild(suggestion);
-                });
-                suggestions.style.display = 'block';
-            } else {
-                suggestions.style.display = 'none';
-            }
-
-            // 即时应用股票筛选
-            filterSignalFiles();
+            
+            container.innerHTML = files.map(f => `
+                <div class="signal-file-item">
+                    <input type="checkbox" name="signalFile" value="${f.file_path}" checked onchange="updateFileCount()">
+                    <div class="signal-file-content">
+                        <div class="signal-file-info">
+                            <span class="signal-file-source">${f.data_source}</span>
+                            <i class="fas fa-chevron-right text-muted mx-2"></i>
+                            <span class="signal-file-stock">${f.stock_info}</span>
+                            <i class="fas fa-chevron-right text-muted mx-2"></i>
+                            <span class="signal-file-strategy">${f.strategy_name}</span>
+                            <i class="fas fa-clock text-muted mx-2"></i>
+                            <span class="signal-file-time">${f.file_time}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateFileCount();
         }
 
-        // 更新全选复选框状态
-        function updateSelectAllCheckbox() {
-            const selectAllCheckbox = document.getElementById('selectAllFiles');
-            const checkboxes = document.querySelectorAll('input[name="signalFile"]');
-
-            if (checkboxes.length === 0) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.disabled = true;
-            } else {
-                const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
-                selectAllCheckbox.checked = allChecked;
-                selectAllCheckbox.disabled = false;
-            }
+        function updateFileCount() {
+            const checkedCount = document.querySelectorAll('input[name="signalFile"]:checked').length;
+            document.getElementById('selectedFileCount').textContent = checkedCount;
         }
 
-        // 加载信号元数据（用于筛选）
         function loadSignalMetadata() {
             fetch('/get_signal_metadata')
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
                     if (data.success && data.data.metadata) {
-                        const strategyFilter = document.getElementById('strategyFilter');
-                        const signalTypeFilter = document.getElementById('signalTypeFilter');
-
-                        // 填充策略筛选
-                        data.data.metadata.strategies.forEach(strategy => {
-                            const option = document.createElement('option');
-                            option.value = strategy;
-                            option.textContent = strategy;
-                            strategyFilter.appendChild(option);
+                        data.data.metadata.strategies.forEach(s => {
+                            const opt = document.createElement('option');
+                            opt.value = s; opt.textContent = s;
+                            document.getElementById('strategyFilter').appendChild(opt);
                         });
-
-                        // 填充信号类型筛选
-                        data.data.metadata.signal_types.forEach(type => {
-                            const option = document.createElement('option');
-                            option.value = type;
-                            option.textContent = type;
-                            signalTypeFilter.appendChild(option);
+                        data.data.metadata.signal_types.forEach(t => {
+                            const opt = document.createElement('option');
+                            opt.value = t; opt.textContent = t;
+                            document.getElementById('signalTypeFilter').appendChild(opt);
                         });
                     }
-                })
-                .catch(error => {
-                    console.error('加载信号元数据失败:', error);
                 });
         }
 
-        // 分析选中的信号文件
         function analyzeSelectedSignals() {
-            // 获取选中的文件路径
-            const selectedFiles = Array.from(document.querySelectorAll('input[name="signalFile"]:checked'))
-                .map(checkbox => checkbox.value);
-
+            const selectedFiles = Array.from(document.querySelectorAll('input[name="signalFile"]:checked')).map(cb => cb.value);
             if (selectedFiles.length === 0) {
-                alert('请至少选择一个信号文件');
+                showNotification('请至少选择一个信号文件', 'error');
                 return;
             }
 
-            // 获取筛选条件
             const filters = {
                 strategy_name: document.getElementById('strategyFilter').value,
                 stock_code: document.getElementById('stockFilter').value,
@@ -467,315 +338,219 @@
                 end_date: document.getElementById('endDate').value
             };
 
-            // 显示加载状态
-            const summaryCard = document.getElementById('analysisSummaryCard');
-            const resultCard = document.getElementById('analysisResultCard');
+            document.getElementById('analysisSummaryCard').style.display = 'block';
+            document.getElementById('signalsTable').innerHTML = '<tr><td colspan="6" class="text-center py-5"><div class="loading-spinner mx-auto"></div></td></tr>';
 
-            summaryCard.style.display = 'none';
-            resultCard.style.display = 'block';
-            document.getElementById('signalsTable').innerHTML = '<tr><td colspan="6" class="text-center py-4">分析中，请稍候...</td></tr>';
-            document.getElementById('downloadHtmlBtn').style.display = 'none';
-
-            // 发送分析请求
             fetch('/analyze_signals', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    file_paths: selectedFiles,
-                    filters: filters
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file_paths: selectedFiles, filters })
             })
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => {
                 if (data.success && data.data) {
-                    // 更新摘要信息
-                    document.getElementById('totalSignals').textContent = data.data.summary.total_signals;
-                    document.getElementById('buySignals').textContent = data.data.summary.buy_signals;
-                    document.getElementById('sellSignals').textContent = data.data.summary.sell_signals;
-                    document.getElementById('uniqueStocks').textContent = data.data.summary.unique_stocks;
-                    summaryCard.style.display = 'block';
-                    document.getElementById('downloadHtmlBtn').style.display = 'inline-block';
-
-                    // 保存所有信号数据
+                    const summary = data.data.summary;
+                    document.getElementById('totalSignals').textContent = summary.total_signals;
+                    document.getElementById('buySignals').textContent = summary.buy_signals;
+                    document.getElementById('sellSignals').textContent = summary.sell_signals;
+                    document.getElementById('neutralSignals').textContent = summary.neutral_signals || 0;
+                    document.getElementById('uniqueStocks').textContent = summary.unique_stocks;
+                    document.getElementById('uniqueStrategies').textContent = summary.unique_strategies;
+                    document.getElementById('dateRange').textContent = summary.date_range || '-';
+                    document.getElementById('downloadHtmlBtn').style.display = 'inline-flex';
+                    
+                    // 渲染信号类型分布图
+                    renderSignalDistribution(summary.signal_type_counts, summary.total_signals);
+                    
                     allSignalsData = data.data.signals;
-                    // 重置为第一页
                     currentPage = 1;
-                    // 显示第一页数据
                     renderPageData();
-                    // 更新总记录数
-                    document.getElementById('totalSignalResults').textContent = data.data.summary.total_signals;
-
-                    // 显示成功通知
-                    showNotification(`信号分析完成，共找到 ${data.data.summary.total_signals} 条信号`);
+                    document.getElementById('totalSignalResults').textContent = summary.total_signals;
+                    showNotification(`分析完成，共找到 ${summary.total_signals} 条信号`);
                 } else {
-                    document.getElementById('signalsTable').innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">${data.message || '分析失败'}</td></tr>`;
-                    // 显示错误通知
-                    showNotification(data.message || '信号分析失败', 'error');
+                    showNotification(data.message || '分析失败', 'error');
                 }
-            })
-            .catch(error => {
-                console.error('分析信号失败:', error);
-                document.getElementById('signalsTable').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">分析失败</td></tr>';
-                // 显示错误通知
-                showNotification('信号分析过程中发生错误', 'error');
             });
         }
 
-        // 渲染当前页数据
         function renderPageData() {
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            const currentPageData = allSignalsData.slice(startIndex, endIndex);
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageData = allSignalsData.slice(start, end);
+            updateSignalsTable(pageData);
+            renderSignalPagination(currentPage, Math.ceil(allSignalsData.length / pageSize));
+        }
 
-            // 更新信号表格
-            updateSignalsTable(currentPageData);
-
-            // 生成分页控件
+        function goToPage(page) {
             const totalPages = Math.ceil(allSignalsData.length / pageSize);
-            renderSignalPagination(currentPage, totalPages);
-        }
-
-        // 跳转到指定页
-        function goToPage(pageNum) {
-            currentPage = pageNum;
-            renderPageData();
-        }
-
-        // 更新信号表格
-        function updateSignalsTable(signals) {
-            const tableBody = document.getElementById('signalsTable');
-            tableBody.innerHTML = '';
-
-            if (signals.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">没有找到匹配的信号</td></tr>';
-                return;
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                renderPageData();
             }
-
-            signals.forEach(signal => {
-                const row = document.createElement('tr');
-
-                // 根据信号类型设置颜色
-                let signalTypeClass = '';
-                if (signal.signal_type && signal.signal_type.includes('buy')) {
-                    signalTypeClass = 'price-up';
-                } else if (signal.signal_type && signal.signal_type.includes('sell')) {
-                    signalTypeClass = 'price-down';
-                }
-
-                row.innerHTML = `
-                    <td>${signal.date || '-'}</td>
-                    <td class="${signalTypeClass}">${signal.signal_type || '-'}</td>
-                    <td>${signal.description || '-'}</td>
-                    <td>${signal.stock_info || '-'}</td>
-                    <td>${signal.data_source || '-'}</td>
-                    <td>${signal.strategy_name || '-'}</td>
-                `;
-
-                tableBody.appendChild(row);
-            });
         }
 
-        // 生成分页控件 - 优化版，只显示10个页码
-        function renderSignalPagination(currentPage, totalPages) {
+        function updateSignalsTable(signals) {
+            const tbody = document.getElementById('signalsTable');
+            tbody.innerHTML = signals.map(s => `
+                <tr>
+                    <td>${s.date || '-'}</td>
+                    <td class="${s.signal_type?.includes('buy') ? 'price-up' : s.signal_type?.includes('sell') ? 'price-down' : ''}">${s.signal_type || '-'}</td>
+                    <td>${s.description || '-'}</td>
+                    <td>${s.stock_info || '-'}</td>
+                    <td>${s.data_source || '-'}</td>
+                    <td>${s.strategy_name || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderSignalPagination(page, totalPages) {
             const pagination = document.getElementById('signalPagination');
+            document.getElementById('prevPage').className = `page-btn nav-btn ${page === 1 ? 'disabled' : ''}`;
+            document.getElementById('nextPage').className = `page-btn nav-btn ${page === totalPages ? 'disabled' : ''}`;
             pagination.innerHTML = '';
 
-            // 单页情况下不显示分页
-            if (totalPages <= 1) {
-                return;
+            const max = 5;
+            let start = Math.max(1, page - Math.floor(max / 2));
+            let end = Math.min(totalPages, start + max - 1);
+            if (end - start + 1 < max) start = Math.max(1, end - max + 1);
+
+            for (let i = start; i <= end; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === page ? 'active' : ''}`;
+                btn.textContent = i;
+                btn.onclick = () => goToPage(i);
+                pagination.appendChild(btn);
             }
-
-            // 上一页按钮
-            const prevItem = document.createElement('li');
-            prevItem.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-            prevItem.innerHTML = `
-                <a class="page-link" href="#" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            `;
-            pagination.appendChild(prevItem);
-
-            // 页码按钮 - 只显示10个页码
-            const maxVisiblePages = 10;
-            let startPage = 1;
-            let endPage = totalPages;
-
-            if (totalPages > maxVisiblePages) {
-                // 计算起始页码
-                if (currentPage <= 5) {
-                    startPage = 1;
-                    endPage = maxVisiblePages;
-                } else if (currentPage >= totalPages - 4) {
-                    startPage = totalPages - maxVisiblePages + 1;
-                    endPage = totalPages;
-                } else {
-                    startPage = currentPage - 4;
-                    endPage = currentPage + 5;
-                }
-
-                // 添加第一页和省略号
-                if (startPage > 1) {
-                    const firstPageItem = document.createElement('li');
-                    firstPageItem.className = 'page-item';
-                    firstPageItem.innerHTML = `<a class="page-link" href="#">1</a>`;
-                    pagination.appendChild(firstPageItem);
-
-                    if (startPage > 2) {
-                        const ellipsisItem = document.createElement('li');
-                        ellipsisItem.className = 'page-item disabled';
-                        ellipsisItem.innerHTML = `<span class="page-link">...</span>`;
-                        pagination.appendChild(ellipsisItem);
-                    }
-                }
-            }
-
-            // 添加中间页码
-            for (let i = startPage; i <= endPage; i++) {
-                const pageItem = document.createElement('li');
-                pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
-                pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-                pagination.appendChild(pageItem);
-            }
-
-            // 添加末尾页码和省略号（如果需要）
-            if (totalPages > maxVisiblePages && endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    const ellipsisItem = document.createElement('li');
-                    ellipsisItem.className = 'page-item disabled';
-                    ellipsisItem.innerHTML = `<span class="page-link">...</span>`;
-                    pagination.appendChild(ellipsisItem);
-                }
-
-                const lastPageItem = document.createElement('li');
-                lastPageItem.className = 'page-item';
-                lastPageItem.innerHTML = `<a class="page-link" href="#">${totalPages}</a>`;
-                pagination.appendChild(lastPageItem);
-            }
-
-            // 下一页按钮
-            const nextItem = document.createElement('li');
-            nextItem.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-            nextItem.innerHTML = `
-                <a class="page-link" href="#" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            `;
-            pagination.appendChild(nextItem);
         }
 
-        // 重置信号筛选条件
+        function renderSignalDistribution(typeCounts, total) {
+            const container = document.getElementById('distributionBars');
+            const typeColors = {
+                'normal_buy': '#2ecc71',
+                'strong_buy': '#27ae60',
+                'buy': '#2ecc71',
+                'normal_sell': '#e74c3c',
+                'strong_sell': '#c0392b',
+                'sell': '#e74c3c',
+                'neutral': '#f39c12',
+                'hold': '#95a5a6'
+            };
+            
+            const typeNames = {
+                'normal_buy': '普通买入',
+                'strong_buy': '强势买入',
+                'buy': '买入',
+                'normal_sell': '普通卖出',
+                'strong_sell': '强势卖出',
+                'sell': '卖出',
+                'neutral': '中性',
+                'hold': '持有'
+            };
+            
+            container.innerHTML = '';
+            
+            const entries = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+            entries.forEach(([type, count]) => {
+                const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
+                const color = typeColors[type] || '#3498db';
+                const name = typeNames[type] || type;
+                
+                const bar = document.createElement('div');
+                bar.className = 'distribution-bar';
+                bar.innerHTML = `
+                    <div class="bar-label">
+                        <span class="bar-name">${name}</span>
+                        <span class="bar-count">${count} 条</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: ${percentage}%; background: ${color};"></div>
+                    </div>
+                    <div class="bar-percent">${percentage}%</div>
+                `;
+                container.appendChild(bar);
+            });
+        }
+
         function resetSignalFilters() {
             document.getElementById('strategyFilter').value = '';
             document.getElementById('stockFilter').value = '';
-            document.getElementById('signalTypeFilter').value = '';
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
-            document.getElementById('stockSuggestions').style.display = 'none';
-
-            // 重新显示所有文件
-            renderSignalFiles(allSignalFiles);
-            updateSelectAllCheckbox();
+            document.getElementById('fileCreateStartDate').value = '';
+            document.getElementById('fileCreateEndDate').value = '';
+            filteredSignalFiles = [...allSignalFiles];
+            renderSignalFiles(filteredSignalFiles);
         }
 
-        // 消息通知函数
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
-            const notificationMessage = document.getElementById('notificationMessage');
-            // 重置通知状态并确保正确的定位样式
-            notification.style.display = 'none';
-            notification.style.position = 'fixed';
-            notification.style.top = '1px';  // 距离顶部20px
-            notification.style.right = '1px';  // 距离右侧20px
-            notification.style.zIndex = '1050';  // 确保在最上层
-            // 设置消息内容和类型
-            notificationMessage.textContent = message;
-            notification.className = `notification position-fixed top-5 right-5 p-3 rounded shadow-lg z-50 ${type}`;
-
-            // 显示通知
-            notification.style.display = 'block';
-
-
-            // 3秒后隐藏通知
-            setTimeout(() => {
-                notification.style.display = 'none';
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            notification.innerHTML = `
+                <div class="toast-content ${type}">
+                    <i class="fas ${icon} toast-icon"></i>
+                    <span class="toast-message">${message}</span>
+                </div>
+            `;
+            notification.className = `notification ${type} show`;
+            
+            clearTimeout(notification.hideTimeout);
+            notification.hideTimeout = setTimeout(() => {
+                notification.classList.remove('show');
             }, 3000);
         }
 
-
-        // 下载HTML报告
         function downloadResultsAsHTML() {
-            if (!allSignalsData || allSignalsData.length === 0) {
-                showNotification('没有可下载的信号数据', 'error');
+            if (!allSignalsData.length) {
+                showNotification('没有可下载的数据', 'error');
                 return;
             }
-
-            // 获取当前筛选条件
-            const strategyFilter = document.getElementById('strategyFilter').value;
-            const stockFilter = document.getElementById('stockFilter').value;
-            const signalTypeFilter = document.getElementById('signalTypeFilter').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-
-            // 获取摘要信息
-            const totalSignals = document.getElementById('totalSignals').textContent;
-            const buySignals = document.getElementById('buySignals').textContent;
-            const sellSignals = document.getElementById('sellSignals').textContent;
-            const uniqueStocks = document.getElementById('uniqueStocks').textContent;
-
-            // 准备发送给后端的数据
-            const requestData = {
-                signals_data: allSignalsData,
-                filters: {
-                    strategy_name: strategyFilter,
-                    stock_code: stockFilter,
-                    signal_type: signalTypeFilter,
-                    start_date: startDate,
-                    end_date: endDate
-                },
-                summary: {
-                    total_signals: totalSignals,
-                    buy_signals: buySignals,
-                    sell_signals: sellSignals,
-                    unique_stocks: uniqueStocks
-                }
+            
+            const filters = {
+                strategy_name: document.getElementById('strategyFilter').value,
+                stock_code: document.getElementById('stockFilter').value,
+                signal_type: document.getElementById('signalTypeFilter').value,
+                start_date: document.getElementById('startDate').value,
+                end_date: document.getElementById('endDate').value
             };
-
-            // 调用后端API生成HTML报告
+            
+            const summary = {
+                total_signals: allSignalsData.length,
+                buy_signals: allSignalsData.filter(s => s.signal_type && s.signal_type.includes('buy')).length,
+                sell_signals: allSignalsData.filter(s => s.signal_type && s.signal_type.includes('sell')).length,
+                neutral_signals: allSignalsData.filter(s => s.signal_type && s.signal_type.includes('neutral')).length,
+                unique_stocks: [...new Set(allSignalsData.map(s => s.stock_info))].length,
+                unique_strategies: [...new Set(allSignalsData.map(s => s.strategy_name))].length,
+                date_range: '',
+                signal_type_counts: {}
+            };
+            
+            const dates = allSignalsData.map(s => s.date).filter(d => d).sort();
+            if (dates.length > 0) {
+                summary.date_range = `${dates[0]} 至 ${dates[dates.length - 1]}`;
+            }
+            
+            allSignalsData.forEach(s => {
+                const st = s.signal_type || '';
+                if (st) {
+                    summary.signal_type_counts[st] = (summary.signal_type_counts[st] || 0) + 1;
+                }
+            });
+            
             fetch('/generate_html_report', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestData)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ signals_data: allSignalsData, filters, summary })
             })
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    // 创建下载链接
                     const blob = new Blob([data.data.html_content], { type: 'text/html' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
                     a.download = data.data.file_name;
-                    document.body.appendChild(a);
                     a.click();
-
-                    // 清理
-                    document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-
-                    // 显示成功通知
-                    showNotification('HTML报告下载成功');
-
-                } else {
-                    showNotification(`生成HTML报告失败: ${data.message}`, 'error');
+                    showNotification('报告下载成功');
                 }
-            })
-            .catch(error => {
-                console.error('生成HTML报告时发生错误:', error);
-                showNotification('生成HTML报告时发生网络错误', 'error');
             });
         }
     </script>

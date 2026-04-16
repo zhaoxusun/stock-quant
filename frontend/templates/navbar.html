@@ -14,8 +14,7 @@
                         <a class="nav-link{% if request.path == '/schedule' %} active{% endif %}" href="/schedule">定时任务</a>
                         <a class="nav-link{% if request.path == '/chat' %} active{% endif %}" href="/chat">AI 分析</a>
                     </div>
-                    <!-- 音乐控制按钮 -->
-                    <button id="musicToggle" class="btn btn-outline-light btn-sm me-2" title="音乐开关">
+                    <button id="musicToggleBtn" class="btn btn-outline-light btn-sm me-2" title="背景音乐">
                         <i class="fas fa-music"></i>
                     </button>
                     <a href="https://github.com/zhaoxusun/stock-quant" target="_blank" class="btn btn-outline-light btn-sm github-link">
@@ -29,4 +28,59 @@
         </div>
     </div>
 </nav>
-{% include 'background_music.html' %}
+
+<script>
+    let musicWindow = null;
+
+    function openMusicPlayer() {
+        if (musicWindow && !musicWindow.closed) {
+            musicWindow.focus();
+            return;
+        }
+
+        musicWindow = window.open(
+            '/music_player',
+            'musicPlayer',
+            'width=340,height=420,menubar=no,toolbar=no,location=no,status=no,scrollbars=no'
+        );
+
+        if (musicWindow) {
+            musicWindow.focus();
+        }
+    }
+
+    document.getElementById('musicToggleBtn').addEventListener('click', openMusicPlayer);
+
+    function updateMusicBtn(playing) {
+        const btn = document.getElementById('musicToggleBtn');
+        if (playing) {
+            btn.classList.add('playing');
+        } else {
+            btn.classList.remove('playing');
+        }
+    }
+
+    function syncMusicState() {
+        const isPlaying = localStorage.getItem('musicIsPlaying') === 'true';
+        updateMusicBtn(isPlaying);
+
+        setInterval(() => {
+            const currentPlaying = localStorage.getItem('musicIsPlaying') === 'true';
+            updateMusicBtn(currentPlaying);
+        }, 1000);
+    }
+
+    window.addEventListener('message', (e) => {
+        if (e.data.type === 'musicState') {
+            updateMusicBtn(e.data.isPlaying);
+        }
+    });
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'musicIsPlaying') {
+            updateMusicBtn(e.newValue === 'true');
+        }
+    });
+
+    syncMusicState();
+</script>

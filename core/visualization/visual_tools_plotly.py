@@ -9,10 +9,12 @@ from common.time_key import get_current_time
 from common.util_csv import load_stock_data
 from core.visualization.visual_demo import get_sample_signal_records, get_sample_trade_records, get_sample_asset_records
 from settings import stock_data_root, html_root
+
 logger = create_log('visual_tools_plotly')
 
 try:
     from settings import chart_show_switch
+
     switch = chart_show_switch
 except ImportError:
     switch = False
@@ -77,6 +79,7 @@ def filter_valid_dates(df, records):
 
     return valid_records
 
+
 def calculate_holdings(df_continuous, valid_trades, initial_capital):
     """
     计算持仓量变化、总资产、持仓成本变化
@@ -90,7 +93,7 @@ def calculate_holdings(df_continuous, valid_trades, initial_capital):
         包含持仓量和总资产和持仓成本的DataFrame
     """
     holdings_data = pd.DataFrame(index=df_continuous.index)
-    holdings_data['holdings'] = 0   # 持仓量
+    holdings_data['holdings'] = 0  # 持仓量
     holdings_data['adjusted_cost'] = 0.0  # 持仓成本
 
     # 检查valid_trades是否为空或不包含'date'列
@@ -101,16 +104,15 @@ def calculate_holdings(df_continuous, valid_trades, initial_capital):
 
     # 初始化持仓量和资金
     total_holdings = 0  # 当前持仓量
-    capital = initial_capital   # 剩余资金
+    capital = initial_capital  # 剩余资金
     holdings_value = 0
     total_cost = 0.0  # 总持仓成本
-    adjusted_cost = 0.0    # 持仓成本
+    adjusted_cost = 0.0  # 持仓成本
 
     # 计算持仓量变化和总资产变化
     holdings_history = []
     asset_history = []
     adjusted_cost_history = []
-
 
     for date in df_continuous.index:
         # 检查该日期是否有交易
@@ -164,6 +166,107 @@ def calculate_holdings(df_continuous, valid_trades, initial_capital):
     return holdings_data
 
 
+def calculate_performance_metrics(strategy, initial_capital, df):
+    """
+    计算绩效指标
+
+    参数:
+        strategy: 策略实例
+        initial_capital: 初始资金
+        df: 股票数据
+
+    返回:
+        包含绩效指标的字典
+    """
+    metrics = {}
+
+    # 收益情况
+    try:
+        total_return = list(strategy.analyzers.total_return.get_analysis().values())[0] * 100
+        final_cash = strategy.broker.getvalue()
+        # 计算年化收益
+        start_date = df.index[0]
+        end_date = df.index[-1]
+        days = (end_date - start_date).days
+        annual_return = (pow((1 + total_return / 100), 365 / days) - 1) * 100 if days > 0 else 0
+        metrics['total_return'] = total_return
+        metrics['annual_return'] = annual_return
+        metrics['final_cash'] = final_cash
+    except Exception as e:
+        logger.warning(f"计算收益指标失败：{str(e)}")
+        metrics['total_return'] = 0
+        metrics['annual_return'] = 0
+        metrics['final_cash'] = initial_capital
+
+    # 风险指标
+    try:
+        max_dd = strategy.analyzers.drawdown.get_analysis()["max"]["drawdown"]
+        # 计算Calmar比率
+        try:
+            calmar_ratio = metrics['annual_return'] / max_dd if max_dd > 0 else 0
+        except:
+            calmar_ratio = 0
+        metrics['max_drawdown'] = max_dd
+        metrics['calmar_ratio'] = calmar_ratio
+    except Exception as e:
+        logger.warning(f"计算风险指标失败：{str(e)}")
+        metrics['max_drawdown'] = 0
+        metrics['calmar_ratio'] = 0
+
+    # 交易统计
+    try:
+        trade_stats = strategy.analyzers.trade_analyzer.get_analysis()
+        total_trades = trade_stats["total"]["total"]
+        won_trades = trade_stats.get("won", {}).get("total", 0)
+        lost_trades = trade_stats.get("lost", {}).get("total", 0)
+        win_rate = (won_trades / total_trades) * 100 if total_trades > 0 else 0
+        # 计算盈亏比
+        try:
+            avg_win = trade_stats.get("won", {}).get("pnl", {}).get("average", 0)
+            avg_loss = abs(trade_stats.get("lost", {}).get("pnl", {}).get("average", 1))
+            profit_factor = avg_win / avg_loss if avg_loss > 0 else 0
+        except:
+            profit_factor = 0
+        metrics['total_trades'] = total_trades
+
+        metrics['won_trades'] = won_trades
+        metrics['lost_trades'] = lost_trades
+        metrics['win_rate'] = win_rate
+        metrics['profit_factor'] = profit_factor
+    except Exception as e:
+        logger.warning(f"计算交易统计失败：{str(e)}")
+        metrics['total_trades'] = 0
+        metrics['won_trades'] = 0
+        metrics['lost_trades'] = 0
+        metrics['win_rate'] = 0
+        metrics['profit_factor'] = 0
+
+    # 夏普比率
+    try:
+        sharpe_ratio = strategy.analyzers.sharpe_ratio.get_analysis().get("sharperatio", 0)
+        # 确保sharpe_ratio不是None
+        sharpe_ratio = sharpe_ratio if sharpe_ratio is not None else 0
+        metrics['sharpe_ratio'] = sharpe_ratio
+    except Exception as e:
+        logger.warning(f"计算夏普比率失败：{str(e)}")
+        metrics['sharpe_ratio'] = 0
+
+    # 信号统计
+    try:
+        metrics['buy_signals_count'] = strategy.buy_signals_count
+        metrics['sell_signals_count'] = strategy.sell_signals_count
+        metrics['executed_buys_count'] = strategy.executed_buys_count
+        metrics['executed_sells_count'] = strategy.executed_sells_count
+    except Exception as e:
+        logger.warning(f"计算信号统计失败：{str(e)}")
+        metrics['buy_signals_count'] = 0
+        metrics['sell_signals_count'] = 0
+        metrics['executed_buys_count'] = 0
+        metrics['executed_sells_count'] = 0
+
+    return metrics
+
+
 def create_trading_chart(chart_title_prefix, df, valid_signals, valid_trades, holdings_data, initial_capital):
     """
     创建包含K线、信号和交易记录的图表
@@ -179,6 +282,14 @@ def create_trading_chart(chart_title_prefix, df, valid_signals, valid_trades, ho
     返回:
         Plotly图表对象
     """
+    # 数据清理：处理NaN值
+    df = df.copy()
+    df = df.ffill().fillna(0)  # 前向填充再用0填充剩余NaN值
+
+    # 持仓数据清理
+    holdings_data = holdings_data.copy()
+    holdings_data = holdings_data.ffill().fillna(0)
+
     # 创建五个垂直排列的图表
     fig = make_subplots(
         rows=6, cols=1,
@@ -186,7 +297,7 @@ def create_trading_chart(chart_title_prefix, df, valid_signals, valid_trades, ho
         vertical_spacing=0.07,
         subplot_titles=(
             'K线图与交易信号',
-            '全景K图', # 全景K线视图，用于时间范围选择，方便其他图联动
+            '全景K图',  # 全景K线视图，用于时间范围选择，方便其他图联动
             '成交量',
             '持仓量变化',
             '总资产变化',
@@ -238,10 +349,12 @@ def create_trading_chart(chart_title_prefix, df, valid_signals, valid_trades, ho
     )
 
     # 4. 添加持仓量变化曲线
+    # 处理NaN值
+    holdings_clean = holdings_data['holdings'].ffill().fillna(0)
     fig.add_trace(
         go.Scatter(
             x=holdings_data.index,
-            y=holdings_data['holdings'],
+            y=holdings_clean,
             mode='lines',
             name='持仓量',
             line=dict(color='blue', width=2)
@@ -250,10 +363,12 @@ def create_trading_chart(chart_title_prefix, df, valid_signals, valid_trades, ho
     )
 
     # 5. 添加总资产变化曲线和初始资金参考线
+    # 处理NaN值
+    assets_clean = holdings_data['total_assets'].ffill().fillna(0)
     fig.add_trace(
         go.Scatter(
             x=holdings_data.index,
-            y=holdings_data['total_assets'],
+            y=assets_clean,
             mode='lines',
             name='总资产',
             line=dict(color='purple', width=2),
@@ -273,10 +388,12 @@ def create_trading_chart(chart_title_prefix, df, valid_signals, valid_trades, ho
     )
 
     # 6. 添加持仓成本变化曲线
+    # 处理NaN值
+    cost_clean = holdings_data['adjusted_cost'].ffill().fillna(0)
     fig.add_trace(
         go.Scatter(
             x=holdings_data.index,
-            y=holdings_data['adjusted_cost'],
+            y=cost_clean,
             mode='lines',
             name='持仓成本',
             line=dict(color='orange', width=2)
@@ -286,7 +403,13 @@ def create_trading_chart(chart_title_prefix, df, valid_signals, valid_trades, ho
 
     # 6. 添加信号点标记
     # 首先检查valid_signals是否有效
-    if valid_signals is not None and not valid_signals.empty and all(col in valid_signals.columns for col in ['date', 'signal_type', 'signal_description']):
+    if valid_signals is not None and not valid_signals.empty and all(
+            col in valid_signals.columns for col in ['date', 'signal_type', 'signal_description']):
+        # 清理信号数据中的NaN值
+        valid_signals = valid_signals.dropna(subset=['date']).copy()
+        # 只保留日期在df索引范围内的信号
+        valid_signals = valid_signals[valid_signals['date'].isin(df.index)]
+
         # 强买入信号（绿色，圆形）
         strong_buy_signals = valid_signals[valid_signals['signal_type'] == 'strong_buy']
         if not strong_buy_signals.empty:
@@ -391,7 +514,13 @@ def create_trading_chart(chart_title_prefix, df, valid_signals, valid_trades, ho
 
     # 7. 添加实际交易点标记
     # 首先检查valid_trades是否有效
-    if valid_trades is not None and not valid_trades.empty and all(col in valid_trades.columns for col in ['date', 'action', 'size']):
+    if valid_trades is not None and not valid_trades.empty and all(
+            col in valid_trades.columns for col in ['date', 'action', 'size']):
+        # 清理交易数据中的NaN值
+        valid_trades = valid_trades.dropna(subset=['date']).copy()
+        # 只保留日期在df索引范围内的交易
+        valid_trades = valid_trades[valid_trades['date'].isin(df.index)]
+
         # 买入操作（B，上三角形，绿色，K线下方）
         buy_trades = valid_trades[valid_trades['action'] == 'B']
         if not buy_trades.empty:
@@ -452,7 +581,7 @@ def create_trading_chart(chart_title_prefix, df, valid_signals, valid_trades, ho
             xanchor='center',
             yanchor='top'  # 设置yanchor为top，确保y值从标题顶部开始计算
         ),
-        height=2000,
+        height=1800,  # 调整高度，因为指标表格现在在图表下方
         width=1600,
         margin=dict(l=120, r=80, t=120, b=80),
         legend=dict(
@@ -542,13 +671,14 @@ def create_trading_chart(chart_title_prefix, df, valid_signals, valid_trades, ho
     return fig
 
 
-def save_and_show_chart(fig, file_name, output_dir=None):
+def save_and_show_chart(fig, file_name, output_dir=None, metrics=None):
     """
     保存图表并在浏览器中显示
 
     参数:
         fig: Plotly图表对象
         output_dir: 输出目录路径（可选）
+        metrics: 绩效指标字典（可选）
 
     返回:
         保存的文件路径
@@ -561,17 +691,246 @@ def save_and_show_chart(fig, file_name, output_dir=None):
     else:
         file_path = file_name
 
-    # 保存图表
-    fig.write_html(file_path)
+    # 生成指标表格HTML
+    metrics_table = ""
+    if metrics:
+        metrics_table = f"""
+        <div class="card" style="margin: 20px 0;">
+            <div class="card-header">
+                <h3 style="margin: 0; font-size: 1.2em;">策略绩效指标</h3>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">指标</th>
+                            <th style="text-align: right;">值</th>
+                            <th style="text-align: left;">说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>总收益率</td>
+                            <td style="text-align: right;">{metrics['total_return']:.2f}%</td>
+                            <td>策略整体盈利或亏损的百分比</td>
+                        </tr>
+                        <tr>
+                            <td>年化收益</td>
+                            <td style="text-align: right;">{metrics['annual_return']:.2f}%</td>
+                            <td>按年计算的平均收益率</td>
+                        </tr>
+                        <tr>
+                            <td>最终资金</td>
+                            <td style="text-align: right;">{metrics['final_cash']:,.2f} 港元</td>
+                            <td>回测结束时的资金总额</td>
+                        </tr>
+                        <tr>
+                            <td>最大回撤</td>
+                            <td style="text-align: right;">{metrics['max_drawdown']:.2f}%</td>
+                            <td>策略历史上最大的亏损幅度</td>
+                        </tr>
+                        <tr>
+                            <td>Calmar比率</td>
+                            <td style="text-align: right;">{metrics['calmar_ratio']:.2f}</td>
+                            <td>年化收益与最大回撤的比值，衡量风险调整后的收益</td>
+                        </tr>
+                        <tr>
+                            <td>夏普比率</td>
+                            <td style="text-align: right;">{metrics.get('sharpe_ratio', 0):.2f}</td>
+                            <td>超额收益与波动率的比值，衡量风险调整后的收益</td>
+                        </tr>
+                        <tr>
+                            <td>总交易次数</td>
+                            <td style="text-align: right;">{metrics['total_trades']}</td>
+                            <td>所有已平仓完整订单</td>
+                        </tr>
+                        <tr>
+                            <td>胜率</td>
+                            <td style="text-align: right;">{metrics['win_rate']:.2f}%</td>
+                            <td>平仓后净利润＞0 的交易占总交易次数的百分比</td>
+                        </tr>
+                        <tr>
+                            <td>盈亏比</td>
+                            <td style="text-align: right;">{metrics['profit_factor']:.2f}</td>
+                            <td>平均盈利与平均亏损的比值</td>
+                        </tr>
+                        <tr>
+                            <td>买入信号</td>
+                            <td style="text-align: right;">{metrics['buy_signals_count']}</td>
+                            <td>策略生成的买入信号数量</td>
+                        </tr>
+                        <tr>
+                            <td>卖出信号</td>
+                            <td style="text-align: right;">{metrics['sell_signals_count']}</td>
+                            <td>策略生成的卖出信号数量</td>
+                        </tr>
+                        <tr>
+                            <td>实际买入</td>
+                            <td style="text-align: right;">{metrics['executed_buys_count']}</td>
+                            <td>实际执行的买入交易次数</td>
+                        </tr>
+                        <tr>
+                            <td>实际卖出</td>
+                            <td style="text-align: right;">{metrics['executed_sells_count']}</td>
+                            <td>实际执行的卖出交易次数</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        """
+
+    # 生成完整的HTML文件
+    chart_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
+    full_html = f"""
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>股票交易策略回测分析</title>
+        <style>
+            :root {{
+                --primary-color: #0a4b78; /* 深蓝色主色调 */
+                --secondary-color: #165d8c; /* 辅助蓝色 */
+                --accent-color: #2980b9; /* 强调蓝色 */
+                --success-color: #2ecc71; /* 绿色（上涨） */
+                --danger-color: #e74c3c; /* 红色（下跌） */
+                --warning-color: #f39c12; /* 黄色（警告） */
+                --info-color: #3498db; /* 信息蓝色 */
+                --text-color: #e0e0e0; /* 主要文本颜色 */
+                --text-secondary: #a0a0a0; /* 次要文本颜色 */
+                --background-color: #121212; /* 深色背景 */
+                --surface-color: #1e1e1e; /* 表面颜色 */
+                --card-bg: #252525; /* 卡片背景 */
+                --border-color: #333333; /* 边框颜色 */
+                --hover-color: #353535; /* 悬停颜色 */
+            }}
+
+            * {{
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }}
+
+            body {{
+                font-family: "Segoe UI", "Microsoft YaHei", "Arial", sans-serif;
+                background-color: var(--background-color);
+                color: var(--text-color);
+                line-height: 1.6;
+                font-size: 14px;
+            }}
+
+            .container {{
+                max-width: 1600px;
+                margin: 20px auto;
+                padding: 0 20px;
+            }}
+
+            .chart-container {{
+                background-color: var(--card-bg);
+                border-radius: 6px;
+                padding: 20px;
+                margin: 20px 0;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            }}
+
+            .metrics-container {{
+                margin-top: 20px;
+            }}
+
+            .card {{
+                background-color: var(--card-bg);
+                color: var(--text-color);
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+                transition: all 0.3s ease;
+                overflow: hidden;
+            }}
+
+            .card-header {{
+                background-color: var(--primary-color);
+                color: white;
+                font-weight: 600;
+                padding: 15px 20px;
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }}
+
+            .card-body {{
+                padding: 20px;
+            }}
+
+            .table {{
+                background-color: var(--card-bg);
+                border-radius: 6px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                border-collapse: collapse;
+                width: 100%;
+            }}
+
+            .table thead {{
+                background-color: var(--primary-color);
+                color: white;
+            }}
+
+            .table th, .table td {{
+                padding: 12px 15px;
+                text-align: left;
+                border-bottom: 1px solid var(--border-color);
+            }}
+
+            .table tbody tr {{
+                transition: background-color 0.2s ease;
+            }}
+
+            .table tbody tr:hover {{
+                background-color: var(--hover-color);
+            }}
+
+            .table tbody tr:last-child td {{
+                border-bottom: none;
+            }}
+
+            h1 {{
+                color: var(--text-color);
+                text-align: center;
+                margin: 20px 0;
+                font-size: 2em;
+            }}
+        </style>
+    </head>
+    <body class="result-viewer">
+        <div class="container">
+            <h1>股票交易策略回测分析</h1>
+            <div class="chart-container">
+                {chart_html}
+            </div>
+            <div class="metrics-container">
+                {metrics_table}
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    # 保存完整的HTML文件
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(full_html)
 
     # 在浏览器中显示图表
     if switch:
-        fig.show()
+        import webbrowser
+        webbrowser.open('file://' + file_path)
 
     return file_path
 
 
-def plotly_draw(kline_csv_path, strategy, initial_capital, html_file_name,html_file_path):
+def plotly_draw(kline_csv_path, strategy, initial_capital, html_file_name, html_file_path):
     signal_record_manager = strategy.indicator.signal_record_manager
     signals_df = signal_record_manager.transform_to_dataframe()
     trade_record_manager = strategy.trade_record_manager
@@ -599,7 +958,25 @@ def plotly_draw(kline_csv_path, strategy, initial_capital, html_file_name,html_f
     # 5. 计算持仓量和资产变化
     holdings_data = calculate_holdings(df_continuous, valid_trades, initial_capital)
 
-    # 6. 创建图表
+    # 6. 计算绩效指标
+    metrics = calculate_performance_metrics(strategy, initial_capital, df)
+    # 在控制台输出绩效指标
+    logger.info("策略绩效指标:")
+    logger.info(f"总收益率: {metrics['total_return']:.2f}% (策略整体盈利或亏损的百分比)")
+    logger.info(f"年化收益: {metrics['annual_return']:.2f}% (按年计算的平均收益率)")
+    logger.info(f"最终资金: {metrics['final_cash']:,.2f} 港元 (回测结束时的资金总额)")
+    logger.info(f"最大回撤: {metrics['max_drawdown']:.2f}% (策略历史上最大的亏损幅度)")
+    logger.info(f"Calmar比率: {metrics['calmar_ratio']:.2f} (年化收益与最大回撤的比值，衡量风险调整后的收益)")
+    logger.info(f"夏普比率: {metrics.get('sharpe_ratio', 0):.2f} (超额收益与波动率的比值，衡量风险调整后的收益)")
+    logger.info(f"总交易次数: {metrics['total_trades']} (实际成交的买入次数+卖出次数)")
+    logger.info(f"胜率: {metrics['win_rate']:.2f}% (盈利交易次数占总交易次数的百分比)")
+    logger.info(f"盈亏比: {metrics['profit_factor']:.2f} (平均盈利与平均亏损的比值)")
+    logger.info(f"买入信号: {metrics['buy_signals_count']} (策略生成的买入信号数量)")
+    logger.info(f"卖出信号: {metrics['sell_signals_count']} (策略生成的卖出信号数量)")
+    logger.info(f"实际买入: {metrics['executed_buys_count']} (实际执行的买入交易次数)")
+    logger.info(f"实际卖出: {metrics['executed_sells_count']} (实际执行的卖出交易次数)")
+
+    # 7. 创建图表
     # 从CSV路径中提取股票代码和名称
     file_name = os.path.basename(str(kline_csv_path))
     parts = file_name.split('_')
@@ -610,7 +987,7 @@ def plotly_draw(kline_csv_path, strategy, initial_capital, html_file_name,html_f
         stock_info = f"{stock_code} {stock_name}"
 
     fig = create_trading_chart(stock_info, df_continuous, valid_signals, valid_trades, holdings_data, initial_capital)
-    # 7. 保存和显示图表
-    output_path = save_and_show_chart(fig, html_file_name, html_file_path)
+    # 8. 保存和显示图表
+    output_path = save_and_show_chart(fig, html_file_name, html_file_path, metrics)
 
     return output_path

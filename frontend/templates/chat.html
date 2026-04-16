@@ -4,145 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 股票分析助手 - 股票量化回测系统</title>
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 自定义CSS -->
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>" type="image/svg+xml">
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        .chat-container {
-            max-width: 800px;
-            margin: 0 auto;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        .chat-header {
-            background-color: #0d6efd;
-            color: white;
-            padding: 15px;
-            font-weight: bold;
-        }
-        .chat-body {
-            height: 500px;
-            overflow-y: auto;
-            padding: 20px;
-            background-color: #f8f9fa;
-        }
-        .message {
-            margin-bottom: 15px;
-            max-width: 80%;
-        }
-        .user-message {
-            align-self: flex-end;
-            margin-left: auto;
-            background-color: #e3f2fd;
-            border-radius: 18px 18px 0 18px;
-            padding: 10px 15px;
-        }
-        .ai-message {
-            align-self: flex-start;
-            background-color: white;
-            border-radius: 18px 18px 18px 0;
-            padding: 10px 15px;
-            border: 1px solid #e0e0e0;
-        }
-        .message-content {
-            word-wrap: break-word;
-            color: #333333;
-        }
-        .message-time {
-            font-size: 0.75rem;
-            color: #6c757d;
-            margin-top: 5px;
-            text-align: right;
-        }
-        .chat-footer {
-            padding: 15px;
-            background-color: white;
-            border-top: 1px solid #e0e0e0;
-        }
-        .input-group {
-            border-radius: 25px;
-            overflow: hidden;
-        }
-        .form-control {
-            border-radius: 25px 0 0 25px;
-        }
-        .btn-primary {
-            border-radius: 0 25px 25px 0;
-        }
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
 </head>
 <body>
     <div class="container-fluid p-0">
         {% include 'navbar.html' %}
-        <!-- 主要内容区域 - 添加足够的顶部内边距，防止被吸顶导航栏遮挡 -->
+        
         <div class="content pt-4">
-            <div class="card mt-4">
-                <div class="card-header bg-primary text-white">
-                    AI 股票分析助手
+            <div class="page-header mb-4">
+                <div>
+                    <h1 class="page-title"><i class="fas fa-robot"></i>AI 股票分析助手</h1>
+                    <p class="page-subtitle">智能对话，深度分析股票市场趋势与量化策略</p>
                 </div>
-                <div class="card-body">
-                    <div class="chat-container">
-                        <div class="chat-header">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span><i class="fas fa-robot mr-2"></i>股票分析助手(每次沟通不包含上下文)</span>
-                                <select class="form-select form-select-sm btn-outline-light text-white bg-primary border-light" id="modelSelect" style="max-width: 200px;">
-                                    <option value="gpt-4o-mini" selected>gpt-4o-mini</option>
-                                    <option value="gpt-4o">gpt-4o</option>
-                                    <option value="DeepSeek-R1">DeepSeek-R1</option>
-                                    <option value="DeepSeek-V3-0324">DeepSeek-V3-0324</option>
-                                    <option value="grok-3">grok-3</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="chat-body" id="chatBody">
-                            <!-- 系统消息 -->
-                            <div class="message ai-message">
-                                <div class="message-content">
-                                    你好！我是股票分析助手，可以帮你分析股票市场数据、消息和趋势。请输入你的问题，例如：
-                                    <ul>
-                                        <li>分析近期科技股的走势</li>
-                                        <li>解读最新的宏观经济政策对股市的影响</li>
-                                        <li>分析某只股票的放量情况</li>
-                                        <li>对量化回测结果进行分析</li>
-                                    </ul>
-                                </div>
-                                <div class="message-time">系统</div>
-                            </div>
-                        </div>
-                        <div class="chat-footer">
-                            <form id="chatForm" class="input-group">
-                                <input type="text" class="form-control" id="promptInput" placeholder="请输入你的问题..." required>
-                                <button type="submit" class="btn btn-primary" id="sendButton">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            </form>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h5><i class="fas fa-brain"></i>股票分析助手</h5>
+                    <select class="model-select" id="modelSelect">
+                        <option value="gpt-4o-mini" selected>gpt-4o-mini</option>
+                        <option value="gpt-4o">gpt-4o</option>
+                        <option value="DeepSeek-R1">DeepSeek-R1</option>
+                        <option value="DeepSeek-V3-0324">DeepSeek-V3-0324</option>
+                        <option value="grok-3">grok-3</option>
+                    </select>
+                </div>
+                <div class="chat-body" id="chatBody">
+                    <div class="chat-message ai">
+                        <div class="message-bubble">
+                            <div>你好！我是股票分析助手，可以帮你分析股票市场数据、消息和趋势。请输入你的问题，例如：</div>
+                            <ul>
+                                <li>分析近期科技股的走势</li>
+                                <li>解读最新的宏观经济政策对股市的影响</li>
+                                <li>分析某只股票的放量情况</li>
+                                <li>对量化回测结果进行分析</li>
+                            </ul>
+                            <div class="message-time">系统</div>
                         </div>
                     </div>
+                </div>
+                <div class="chat-footer">
+                    <form id="chatForm" class="chat-input-wrapper">
+                        <input type="text" class="chat-input" id="promptInput" placeholder="输入你的问题，按 Enter 发送..." required>
+                        <button type="submit" class="chat-send-btn" id="sendButton">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript -->
+    <div id="notification" class="notification"></div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const chatBody = document.getElementById('chatBody');
@@ -153,40 +71,32 @@
 
             let currentModel = 'gpt-4o-mini';
 
-            // 模型选择
             modelSelect.addEventListener('change', function() {
                 currentModel = this.value;
-                console.log('模型已更改:', currentModel);
             });
 
-            // 发送消息
             chatForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
                 const prompt = promptInput.value.trim();
                 if (!prompt) return;
 
-                // 添加用户消息
                 addMessage('user', prompt);
                 promptInput.value = '';
 
-                // 显示加载状态
                 sendButton.disabled = true;
-                sendButton.innerHTML = '<div class="loading"></div>';
+                sendButton.innerHTML = '<div class="loading-spinner" style="width:20px;height:20px;border-width:2px;"></div>';
 
-                // 发送请求到后端
+                const loadingMsg = addMessage('ai', '正在思考...');
+
                 fetch('/api/ai-chat', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        type: currentModel,
-                        prompt: prompt
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: currentModel, prompt: prompt })
                 })
                 .then(response => response.json())
                 .then(data => {
+                    removeMessage(loadingMsg);
                     if (data.success) {
                         addMessage('ai', data.data.response);
                     } else {
@@ -194,6 +104,7 @@
                     }
                 })
                 .catch(error => {
+                    removeMessage(loadingMsg);
                     addMessage('ai', `错误: 网络请求失败，请稍后重试`);
                 })
                 .finally(() => {
@@ -202,28 +113,27 @@
                 });
             });
 
-            // 添加消息到聊天界面
             function addMessage(type, content) {
                 const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${type === 'user' ? 'user-message' : 'ai-message'}`;
-
-                const contentDiv = document.createElement('div');
-                contentDiv.className = 'message-content';
-                contentDiv.innerHTML = content;
-
-                const timeDiv = document.createElement('div');
-                timeDiv.className = 'message-time';
-                timeDiv.textContent = new Date().toLocaleTimeString();
-
-                messageDiv.appendChild(contentDiv);
-                messageDiv.appendChild(timeDiv);
+                messageDiv.className = `chat-message ${type}`;
+                
+                const bubble = document.createElement('div');
+                bubble.className = 'message-bubble';
+                bubble.innerHTML = `<div>${content}</div><div class="message-time">${new Date().toLocaleTimeString()}</div>`;
+                
+                messageDiv.appendChild(bubble);
                 chatBody.appendChild(messageDiv);
-
-                // 滚动到底部
                 chatBody.scrollTop = chatBody.scrollHeight;
+                
+                return messageDiv;
             }
 
-            // 按Enter键发送消息
+            function removeMessage(msgElement) {
+                if (msgElement && msgElement.parentNode) {
+                    msgElement.parentNode.removeChild(msgElement);
+                }
+            }
+
             promptInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();

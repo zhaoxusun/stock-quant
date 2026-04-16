@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>背景音乐</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 320px;
+            padding: 12px;
+        }
+    </style>
+</head>
+<body>
+    <audio id="audioPlayer" loop preload="auto"></audio>
+
+    <div class="music-header">
+        <h3>背景音乐</h3>
+        <button class="minimize-btn" onclick="window.close()">
+            <i class="fas fa-minus"></i> 最小化
+        </button>
+    </div>
+
+    <div class="music-info">
+        <div class="music-cover"><i class="fas fa-music"></i></div>
+        <div class="music-details">
+            <div class="music-title" id="musicTitle">加载中...</div>
+            <div class="music-artist">轻音乐</div>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-time">
+            <span id="currentTime">0:00</span>
+            <span id="totalTime">0:00</span>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" id="prevBtn"><i class="fas fa-backward"></i></button>
+        <button class="control-btn play-pause" id="playPauseBtn"><i class="fas fa-play"></i></button>
+        <button class="control-btn" id="nextBtn"><i class="fas fa-forward"></i></button>
+    </div>
+
+    <div class="volume-container">
+        <i class="fas fa-volume-down volume-icon" id="volDown"></i>
+        <div class="volume-slider" id="volumeBar"><div class="volume-fill" id="volumeFill"></div></div>
+        <i class="fas fa-volume-up volume-icon" id="volUp"></i>
+    </div>
+
+    <div class="playlist">
+        <div class="playlist-title">播放列表</div>
+        <div class="playlist-items" id="playlistItems"></div>
+    </div>
+
+    <script>
+        const audio = document.getElementById('audioPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalTimeEl = document.getElementById('totalTime');
+        const volumeBar = document.getElementById('volumeBar');
+        const volumeFill = document.getElementById('volumeFill');
+        const volDown = document.getElementById('volDown');
+        const volUp = document.getElementById('volUp');
+        const musicTitle = document.getElementById('musicTitle');
+        const playlistItems = document.getElementById('playlistItems');
+
+        let musicList = [];
+        let currentIndex = 0;
+        let isPlaying = false;
+        let volume = 0.7;
+
+        function init() {
+            audio.volume = volume;
+            updateVolumeUI();
+            loadMusicList();
+            bindEvents();
+        }
+
+        async function loadMusicList() {
+            try {
+                const res = await fetch('/api/music/list');
+                const data = await res.json();
+                if (data.success && data.data.music_list) {
+                    musicList = data.data.music_list;
+                    renderPlaylist();
+                    loadTrack(0);
+                }
+            } catch (e) { console.error('加载失败:', e); }
+        }
+
+        function renderPlaylist() {
+            playlistItems.innerHTML = '';
+            musicList.forEach((t, i) => {
+                const item = document.createElement('div');
+                item.className = 'playlist-item' + (i === currentIndex ? ' active' : '');
+                item.innerHTML = `<div class="item-icon"><div class="sound-waves"><div class="sound-wave"></div><div class="sound-wave"></div><div class="sound-wave"></div><div class="sound-wave"></div></div></div><div class="item-name">${t.name}</div>`;
+                item.onclick = () => playTrack(i);
+                playlistItems.appendChild(item);
+            });
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = musicList[index];
+            audio.src = track.url;
+            musicTitle.textContent = track.name;
+            audio.currentTime = 0;
+            renderPlaylist();
+        }
+
+        function playTrack(index) {
+            loadTrack(index);
+            play();
+        }
+
+        function play() {
+            audio.play().then(() => {
+                isPlaying = true;
+                updateUI();
+                notifyParent(true);
+            }).catch(() => { isPlaying = false; updateUI(); });
+        }
+
+        function pause() {
+            audio.pause();
+            isPlaying = false;
+            updateUI();
+            notifyParent(false);
+        }
+
+        function updateUI() {
+            playPauseBtn.querySelector('i').className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+            renderPlaylist();
+        }
+
+        function updateProgress() {
+            if (audio.duration) {
+                progressFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+            }
+        }
+
+        function onMetadata() {
+            totalTimeEl.textContent = formatTime(audio.duration);
+        }
+
+        function seek(e) {
+            audio.currentTime = ((e.clientX - progressBar.getBoundingClientRect().left) / progressBar.offsetWidth) * audio.duration;
+        }
+
+        function setVolume(e) {
+            volume = Math.max(0, Math.min(1, (e.clientX - volumeBar.getBoundingClientRect().left) / volumeBar.offsetWidth));
+            audio.volume = volume;
+            updateVolumeUI();
+        }
+
+        function updateVolumeUI() {
+            volumeFill.style.width = volume * 100 + '%';
+            const cls = volume === 0 ? 'fa-volume-mute' : (volume < 0.5 ? 'fa-volume-down' : 'fa-volume-up');
+            volDown.className = volUp.className = `fas ${cls} volume-icon`;
+        }
+
+        function formatTime(s) {
+            if (isNaN(s)) return '0:00';
+            return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
+        }
+
+        function notifyParent(playing) {
+            if (window.opener) window.opener.postMessage({ type: 'musicState', isPlaying: playing }, '*');
+        }
+
+        function bindEvents() {
+            playPauseBtn.onclick = () => isPlaying ? pause() : play();
+            document.getElementById('prevBtn').onclick = () => playTrack((currentIndex - 1 + musicList.length) % musicList.length);
+            document.getElementById('nextBtn').onclick = () => playTrack((currentIndex + 1) % musicList.length);
+            audio.onplay = () => { isPlaying = true; updateUI(); };
+            audio.onpause = () => { isPlaying = false; updateUI(); };
+            audio.ontimeupdate = updateProgress;
+            audio.onloadedmetadata = onMetadata;
+            audio.onended = () => playTrack((currentIndex + 1) % musicList.length);
+            progressBar.onclick = seek;
+            volumeBar.onclick = setVolume;
+        }
+
+        init();
+    </script>
+</body>
+</html>

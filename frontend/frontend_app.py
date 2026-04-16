@@ -18,6 +18,7 @@ from core.signal.signal_handler import signal_get, signals_analyze
 from core.task.task_timer import schedule_tasks
 from core.strategy.indicator_manager import global_indicator_manager
 from core.task.task_manager import TaskManager
+from core.task.task_execution_manager import task_execution_manager
 from flask import Flask, render_template, request, send_from_directory
 from flask_cors import CORS
 from flask import make_response
@@ -241,18 +242,40 @@ def run_backtest():
                     response = make_response(json.dumps(response_data, ensure_ascii=False))
                     response.headers['Content-Type'] = 'application/json; charset=utf-8'
                     return response
-
-            error_response_data = {'success': False, 'message': f'Backtest completed, but no result file found', 'data':{}}
-            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
-            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
-            return error_response
-
+            else:
+                response_data = {'success': False, 'message': 'No result files found', 'data': {}}
+                response = make_response(json.dumps(response_data, ensure_ascii=False))
+                response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                return response
     except Exception as e:
-        logger.error(f"Error running backtest: {str(e)}")
-        error_response_data = {'success': False, 'message': f'Error running backtest: {str(e)}', 'data':{}}
+        logger.error(f"回测执行失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'回测执行失败: {str(e)}', 'data': {}}
         error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response
+
+@app.route('/api/music/list', methods=['GET'])
+@log_request_details
+def get_music_list():
+    """获取音乐列表"""
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+    music_files = []
+    if os.path.exists(static_dir):
+        for f in os.listdir(static_dir):
+            if f.endswith('.mp3'):
+                music_files.append({
+                    'name': f.replace('.mp3', '').replace('-', ' ').replace('_', ' '),
+                    'file': f,
+                    'url': f'/static/{f}'
+                })
+    response_data = {
+        'success': True,
+        'message': 'Success',
+        'data': {'music_list': music_files}
+    }
+    response = make_response(json.dumps(response_data, ensure_ascii=False))
+    response.headers['Content-Type'] = 'application/json; charset=utf-8'
+    return response
 
 
 @app.route('/get_backtest_results')
@@ -269,8 +292,9 @@ def get_backtest_results():
         # 获取筛选参数
         stock_filter = request.args.get('stock', '')
         source_filter = request.args.get('source', '')
-        date_filter = request.args.get('date', '')
-        strategy_filter = request.args.get('strategy', '')  # 新增：获取策略筛选参数
+        date_start = request.args.get('date_start', '')
+        date_end = request.args.get('date_end', '')
+        strategy_filter = request.args.get('strategy', '')
 
         # 遍历所有数据源
         for source in DATA_SOURCES:
@@ -299,9 +323,12 @@ def get_backtest_results():
                                         # 获取文件创建时间
                                         file_path = strategy_path / result_file
                                         run_time = datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
+                                        run_time_date = run_time.split(' ')[0] if run_time else ''
 
-                                        # 应用日期筛选
-                                        if date_filter and not run_time.startswith(date_filter):
+                                        # 应用日期范围筛选
+                                        if date_start and run_time_date < date_start:
+                                            continue
+                                        if date_end and run_time_date > date_end:
                                             continue
 
                                         # 构建结果路径
@@ -602,6 +629,17 @@ def analyze_signals():
         file_paths = data.get('file_paths', [])
         filters = data.get('filters', {})
         combined_df = signals_analyze(file_paths, filters)
+        
+        # 计算时间范围
+        date_range = ''
+        if len(combined_df) > 0:
+            min_date = combined_df['date'].min()
+            max_date = combined_df['date'].max()
+            date_range = f"{min_date} 至 {max_date}"
+        
+        # 统计信号类型分布
+        signal_type_counts = combined_df['signal_type'].value_counts().to_dict()
+        
         response_data = {
             'success': True,
             'message': f'Found signals success',
@@ -611,8 +649,11 @@ def analyze_signals():
                     'total_signals': len(combined_df),
                     'buy_signals': len(combined_df[combined_df['signal_type'].str.contains('buy')]),
                     'sell_signals': len(combined_df[combined_df['signal_type'].str.contains('sell')]),
+                    'neutral_signals': len(combined_df[combined_df['signal_type'].str.contains('neutral')]),
                     'unique_stocks': combined_df['stock_info'].nunique(),
-                    'unique_strategies': combined_df['strategy_name'].nunique()
+                    'unique_strategies': combined_df['strategy_name'].nunique(),
+                    'date_range': date_range,
+                    'signal_type_counts': signal_type_counts
                 }
             }
         }
@@ -1077,11 +1118,98 @@ def check_task_exists(task_id):
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response
 
+
+@app.route('/api/executions/get_all', methods=['GET'])
+@log_request_details
+def get_all_executions():
+    """获取所有执行记录"""
+    try:
+        limit = request.args.get('limit', 100, type=int)
+        executions = task_execution_manager.read_all(limit=limit)
+        response_data = {'success': True, 'message': '获取执行记录成功', 'data': executions}
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"获取执行记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'获取执行记录失败: {str(e)}', 'data': []}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
+@app.route('/api/executions/get/<execution_id>', methods=['GET'])
+@log_request_details
+def get_execution(execution_id):
+    """获取单个执行记录"""
+    try:
+        execution = task_execution_manager.read(execution_id)
+        if execution:
+            response_data = {'success': True, 'message': '获取执行记录成功', 'data': execution}
+        else:
+            response_data = {'success': False, 'message': '执行记录不存在', 'data': None}
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"获取执行记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'获取执行记录失败: {str(e)}', 'data': None}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
+@app.route('/api/executions/by_task/<task_id>', methods=['GET'])
+@log_request_details
+def get_executions_by_task(task_id):
+    """获取指定任务的执行记录"""
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        executions = task_execution_manager.read_by_task(task_id, limit=limit)
+        response_data = {'success': True, 'message': '获取执行记录成功', 'data': executions}
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"获取执行记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'获取执行记录失败: {str(e)}', 'data': []}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
+@app.route('/api/executions/delete/<execution_id>', methods=['POST'])
+@log_request_details
+def delete_execution(execution_id):
+    """删除执行记录"""
+    try:
+        success = task_execution_manager.delete(execution_id)
+        if success:
+            response_data = {'success': True, 'message': '删除执行记录成功'}
+        else:
+            response_data = {'success': False, 'message': '删除执行记录失败'}
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"删除执行记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'删除执行记录失败: {str(e)}'}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
 @app.route('/chat')
 @log_request_details
 def chat_page():
     """AI聊天页面"""
     return render_template('chat.html')
+
+@app.route('/music_player')
+@log_request_details
+def music_player_page():
+    """背景音乐播放器页面"""
+    return render_template('music_player.html')
 
 @app.route('/api/ai-chat', methods=['POST'])
 @log_request_details

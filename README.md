@@ -64,6 +64,11 @@ date,open,high,low,close,volume,amount,stock_code,stock_name,market
 2021-11-04,439.15,440.8,438.78,440.69,3039933.0,,US.IVV,IVV,US
 ```
 
+```
+调用脚本也可以获取数据，参考test/test_get_data.py，支持从akshare、baostock、futu获取数据（futu需要额外申请OpenD账号）
+```
+
+
 ### 2 运行回测（两种方式）
 
 #### 2.1 带前端页面
@@ -74,11 +79,13 @@ date,open,high,low,close,volume,amount,stock_code,stock_name,market
   - 选择要回测的股票（支持A股、港股、美股）
   - 选择要回测的策略（当前代码中策略你可以在core/strategy/trading/volume/trading_strategy_volume.py中查看）
     - 或者通过代码添加你的策略（参考core/strategy/trading/volume/trading_strategy_volume.py中的EnhancedVolumeStrategy类）
-  - 点击“回测”按钮，即可执行回测
-  - ![index_page](https://zhaoxusun.github.io/stock-quant/resource/img/index.png)
+  - 点击"回测"按钮，即可执行回测
+  - ![index_page](https://zhaoxusun.github.io/stock-quant/resource/img/index_1.png)
+  - ![index_page](https://zhaoxusun.github.io/stock-quant/resource/img/index_2.png)
   - 回测结果会在前端页面上展示
   - ![result_page](https://zhaoxusun.github.io/stock-quant/resource/img/backtest_result_1.png)
   - ![result_page](https://zhaoxusun.github.io/stock-quant/resource/img/backtest_result_2.png)
+  - ![result_page](https://zhaoxusun.github.io/stock-quant/resource/img/backtest_result_3.png)
 
 #### 2.2 直接运行代码（不带前端页面）
 - 代码启动回测
@@ -93,19 +100,21 @@ from settings import stock_data_root
 logger = create_log('test_strategy')
 
 if __name__ == "__main__":
+    from settings import stock_data_root
+    from core.strategy.trading.volume.enhanced_volume import EnhancedVolumeStrategy
+    init_cash = 5000000
+    csv_path = stock_data_root / "futu/HK.00700_腾讯控股_20220414_20260414.csv"
     # 启动回测-单个股票
-    kline_csv_path = stock_data_root / "futu/HK.00175_吉利汽车_20211028_20251027.csv"
-    run_backtest_enhanced_volume_strategy(kline_csv_path, EnhancedVolumeStrategy)
+    run_backtest_enhanced_volume_strategy(csv_path, EnhancedVolumeStrategy, init_cash)
     # 启动回测-批量股票
-    kline_csv_path_folder = stock_data_root / "akshare"
-    run_backtest_enhanced_volume_strategy_multi(kline_csv_path_folder, EnhancedVolumeStrategy)
+    run_backtest_enhanced_volume_strategy_multi(stock_data_root / "futu", EnhancedVolumeStrategy,init_cash)
 ```
 
 ### 3. 回测结果分析
 #### 3.1 分析回测结果
 ```
 回测日志会输出到logs目录下
-回测图表会输出到html目录下（历史k线、策略触发信号、策略交易记录、持仓记录、资金记录）
+回测图表会输出到html目录下（历史k线、策略触发信号、策略交易记录、持仓记录，资金记录）
 ```
 ![demo_result](https://zhaoxusun.github.io/stock-quant/resource/img/result/demo_result_tencent_stock.png)
 
@@ -127,7 +136,7 @@ if __name__ == "__main__":
 ```
 1.配置任务名称、任务类型、描述、定时表达式
 2.配置目标股票列表（支持A股、港股、美股）
-3.配置回测策略、启动资金、回测天数（结束时间默认为当前时间前一天）
+3.配置回测策略、启动资金，回测天数（结束时间默认为当前时间前一天），手续费、滑点等参数在settings文件中配置
 4.启动任务即可实现离线执行
 5.配置企业微信webhook URL（环境变量增加WECHAT_WEBHOOK_QUANT），如果配置了，会在任务执行完成后发送通知到企业微信（企业微信群配置消息助手）（可选，申请webhook自行搜索即可）
 
@@ -136,7 +145,8 @@ if __name__ == "__main__":
 
 ![schedule_task](https://zhaoxusun.github.io/stock-quant/resource/img/schedule_task.png)
 ![report_message_summary](https://zhaoxusun.github.io/stock-quant/resource/img/report_message_summary.png)
-![report_message_detail](https://zhaoxusun.github.io/stock-quant/resource/img/report_message_detail.png)
+![report_message_detail](https://zhaoxusun.github.io/stock-quant/resource/img/report_message_detail_1.png)
+![report_message_detail](https://zhaoxusun.github.io/stock-quant/resource/img/report_message_detail_2.png)
 
 ### 6. 策略管理
 

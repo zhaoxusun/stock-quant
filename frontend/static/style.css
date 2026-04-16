@@ -2532,23 +2532,23 @@ input:checked + .slider:before {
     .form-section {
         padding: 15px;
     }
-    
+
     .action-btn {
         padding: 5px 8px;
         font-size: 11px;
     }
-    
+
     .task-table thead.thead-dark th,
     .task-table td {
         padding: 10px 8px !important;
         font-size: 12px;
     }
-    
+
     .modern-pagination {
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .pagination-controls {
         flex-wrap: wrap;
         justify-content: center;

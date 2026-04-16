@@ -104,21 +104,21 @@
             currentType = type;
             document.querySelectorAll('.nav-tab-item').forEach(t => t.classList.remove('active'));
             document.getElementById(type === 'strategy' ? 'strategyTypeTab' : 'indicatorTypeTab').classList.add('active');
-            
+
             document.getElementById('strategySelect').classList.toggle('d-none', type !== 'strategy');
             document.getElementById('indicatorSelect').classList.toggle('d-none', type !== 'indicator');
             document.getElementById('codeContainer').style.display = 'none';
         }
 
         function loadCode(type) {
-            const name = type === 'strategy' 
-                ? document.getElementById('strategySelect').value 
+            const name = type === 'strategy'
+                ? document.getElementById('strategySelect').value
                 : document.getElementById('indicatorSelect').value;
-            
+
             if (!name) return;
 
             const url = type === 'strategy' ? `/get_strategy_code/${name}` : `/get_indicator_code/${name}`;
-            
+
             document.getElementById('codeLoading').classList.remove('d-none');
             document.getElementById('codeContainer').style.display = 'none';
             document.getElementById('codeError').classList.add('d-none');

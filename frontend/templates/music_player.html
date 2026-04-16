@@ -76,7 +76,7 @@
         let musicList = [];
         let currentIndex = 0;
         let isPlaying = false;
-        let volume = parseFloat(localStorage.getItem('musicVolume')) || 0.7;
+        let volume = 0.7;
 
         function init() {
             audio.volume = volume;
@@ -91,10 +91,8 @@
                 const data = await res.json();
                 if (data.success && data.data.music_list) {
                     musicList = data.data.music_list;
-                    currentIndex = Math.min(parseInt(localStorage.getItem('musicIndex')) || 0, musicList.length - 1);
                     renderPlaylist();
-                    loadTrack(currentIndex);
-                    if (localStorage.getItem('musicPlaying') === '1') play();
+                    loadTrack(0);
                 }
             } catch (e) { console.error('加载失败:', e); }
         }
@@ -115,10 +113,7 @@
             const track = musicList[index];
             audio.src = track.url;
             musicTitle.textContent = track.name;
-            localStorage.setItem('musicIndex', index);
-
-            const saved = localStorage.getItem('musicTime_' + track.file);
-            if (saved) audio.currentTime = parseFloat(saved);
+            audio.currentTime = 0;
             renderPlaylist();
         }
 
@@ -131,7 +126,6 @@
             audio.play().then(() => {
                 isPlaying = true;
                 updateUI();
-                localStorage.setItem('musicPlaying', '1');
                 notifyParent(true);
             }).catch(() => { isPlaying = false; updateUI(); });
         }
@@ -140,8 +134,6 @@
             audio.pause();
             isPlaying = false;
             updateUI();
-            localStorage.setItem('musicPlaying', '0');
-            localStorage.setItem('musicTime_' + musicList[currentIndex].file, audio.currentTime);
             notifyParent(false);
         }
 
@@ -161,10 +153,6 @@
             totalTimeEl.textContent = formatTime(audio.duration);
         }
 
-        function onPause() {
-            localStorage.setItem('musicTime_' + musicList[currentIndex].file, audio.currentTime);
-        }
-
         function seek(e) {
             audio.currentTime = ((e.clientX - progressBar.getBoundingClientRect().left) / progressBar.offsetWidth) * audio.duration;
         }
@@ -172,7 +160,6 @@
         function setVolume(e) {
             volume = Math.max(0, Math.min(1, (e.clientX - volumeBar.getBoundingClientRect().left) / volumeBar.offsetWidth));
             audio.volume = volume;
-            localStorage.setItem('musicVolume', volume);
             updateVolumeUI();
         }
 
@@ -196,7 +183,7 @@
             document.getElementById('prevBtn').onclick = () => playTrack((currentIndex - 1 + musicList.length) % musicList.length);
             document.getElementById('nextBtn').onclick = () => playTrack((currentIndex + 1) % musicList.length);
             audio.onplay = () => { isPlaying = true; updateUI(); };
-            audio.onpause = () => { isPlaying = false; updateUI(); onPause(); };
+            audio.onpause = () => { isPlaying = false; updateUI(); };
             audio.ontimeupdate = updateProgress;
             audio.onloadedmetadata = onMetadata;
             audio.onended = () => playTrack((currentIndex + 1) % musicList.length);

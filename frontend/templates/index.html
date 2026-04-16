@@ -248,6 +248,68 @@
             opacity: 0.6;
         }
 
+        .search-select {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-select .modern-input {
+            width: 100%;
+        }
+
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            margin-top: 4px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-dropdown.show {
+            display: block;
+        }
+
+        .search-option {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-option:last-child {
+            border-bottom: none;
+        }
+
+        .search-option:hover {
+            background: var(--hover-color);
+        }
+
+        .search-option.selected {
+            background: rgba(41, 128, 185, 0.2);
+            color: var(--accent-color);
+        }
+
+        .search-option mark {
+            background: rgba(255, 193, 7, 0.4);
+            color: inherit;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .search-empty {
+            padding: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
         .modern-btn {
             width: 100%;
             padding: 14px 24px;
@@ -787,7 +849,13 @@
                                 </div>
                                 <div class="modern-form-group">
                                     <label class="modern-label"><i class="fas fa-file-alt"></i>股票</label>
-                                    <select class="modern-select" id="stockFile"></select>
+                                    <div class="search-select" id="stockSelectWrapper">
+                                        <input type="text" class="modern-input" id="stockSearch" placeholder="搜索股票..." autocomplete="off">
+                                        <input type="hidden" id="stockFile">
+                                        <div class="search-dropdown" id="stockDropdown">
+                                            <div class="search-options" id="stockOptions"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="modern-form-group">
                                     <label class="modern-label"><i class="fas fa-brain"></i>策略</label>
@@ -949,7 +1017,6 @@
 
     <script>
         let currentPage = 1;
-        let stocks = [];
         const pageSize = 10;
 
         function scrollToSection(sectionId) {
@@ -1096,26 +1163,122 @@
             });
         });
 
+        let stocks = [];
+        let selectedStockIndex = -1;
+
+        const stockSearch = document.getElementById('stockSearch');
+        const stockDropdown = document.getElementById('stockDropdown');
+        const stockOptions = document.getElementById('stockOptions');
+        const stockFileInput = document.getElementById('stockFile');
+
+        function renderStockOptions(filter = '') {
+            stockOptions.innerHTML = '';
+            const filtered = stocks.filter(s => {
+                const name = s.file.replace('.csv', '').toLowerCase();
+                return name.includes(filter.toLowerCase());
+            });
+
+            if (filtered.length === 0) {
+                stockOptions.innerHTML = '<div class="search-empty">没有找到匹配的股票</div>';
+                return;
+            }
+
+            filtered.forEach((stock, index) => {
+                const originalIndex = stocks.indexOf(stock);
+                const div = document.createElement('div');
+                div.className = 'search-option' + (originalIndex === selectedStockIndex ? ' selected' : '');
+
+                let displayName = stock.file.replace('.csv', '');
+                if (filter) {
+                    const regex = new RegExp(`(${filter})`, 'gi');
+                    displayName = displayName.replace(regex, '<mark>$1</mark>');
+                }
+                div.innerHTML = displayName;
+                div.addEventListener('click', () => selectStock(originalIndex));
+                stockOptions.appendChild(div);
+            });
+        }
+
+        function selectStock(index) {
+            if (index >= 0 && index < stocks.length) {
+                selectedStockIndex = index;
+                const stock = stocks[index];
+                stockFileInput.value = stock.file;
+                stockSearch.value = stock.file.replace('.csv', '');
+                stockDropdown.classList.remove('show');
+                renderStockOptions('');
+            }
+        }
+
+        stockSearch.addEventListener('focus', () => {
+            stockDropdown.classList.add('show');
+            renderStockOptions(stockSearch.value);
+        });
+
+        stockSearch.addEventListener('input', (e) => {
+            stockDropdown.classList.add('show');
+            renderStockOptions(e.target.value);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('stockSelectWrapper').contains(e.target)) {
+                stockDropdown.classList.remove('show');
+            }
+        });
+
+        stockSearch.addEventListener('keydown', (e) => {
+            const options = stockOptions.querySelectorAll('.search-option');
+            if (options.length === 0) return;
+
+            let currentIndex = -1;
+            options.forEach((opt, i) => {
+                if (opt.classList.contains('selected')) currentIndex = i;
+            });
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentIndex = currentIndex < options.length - 1 ? currentIndex + 1 : 0;
+                options.forEach(opt => opt.classList.remove('selected'));
+                options[currentIndex].classList.add('selected');
+                options[currentIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentIndex = currentIndex > 0 ? currentIndex - 1 : options.length - 1;
+                options.forEach(opt => opt.classList.remove('selected'));
+                options[currentIndex].classList.add('selected');
+                options[currentIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter' && currentIndex >= 0) {
+                e.preventDefault();
+                const filtered = stocks.filter(s => s.file.replace('.csv', '').toLowerCase().includes(stockSearch.value.toLowerCase()));
+                if (filtered[currentIndex]) {
+                    const originalIndex = stocks.indexOf(filtered[currentIndex]);
+                    selectStock(originalIndex);
+                }
+            } else if (e.key === 'Escape') {
+                stockDropdown.classList.remove('show');
+            }
+        });
+
         document.getElementById('dataSource').addEventListener('change', function() {
             const source = this.value;
-            const stockSelect = document.getElementById('stockFile');
 
             if (source) {
                 fetch(`/get_stocks/${source}`)
                     .then(response => response.json())
                     .then(data => {
-                        stocks = data.data.stocks;
-                        stockSelect.innerHTML = '';
-                        stocks.forEach(stock => {
-                            const option = document.createElement('option');
-                            option.value = stock.file;
-                            option.textContent = stock.file.replace('.csv', '');
-                            stockSelect.appendChild(option);
-                        });
-                        updateStockSelectState();
+                        stocks = data.data.stocks || [];
+                        selectedStockIndex = -1;
+                        stockFileInput.value = '';
+                        stockSearch.value = '';
+                        stockSearch.placeholder = stocks.length > 0 ? '搜索股票...' : '暂无股票数据';
+                        renderStockOptions();
                     });
             } else {
-                stockSelect.innerHTML = '';
+                stocks = [];
+                selectedStockIndex = -1;
+                stockFileInput.value = '';
+                stockSearch.value = '';
+                stockSearch.placeholder = '搜索股票...';
             }
         });
 
@@ -1125,7 +1288,16 @@
 
         function updateStockSelectState() {
             const isBatch = document.getElementById('batchTest').checked;
-            document.getElementById('stockFile').disabled = isBatch;
+            if (isBatch) {
+                stockSearch.disabled = true;
+                stockSearch.placeholder = '批量模式无需选择';
+                stockSearch.value = '';
+                stockFileInput.value = '';
+                stockDropdown.classList.remove('show');
+            } else {
+                stockSearch.disabled = false;
+                stockSearch.placeholder = stocks.length > 0 ? '搜索股票...' : '暂无股票数据';
+            }
         }
 
         document.getElementById('backtestForm').addEventListener('submit', function(e) {

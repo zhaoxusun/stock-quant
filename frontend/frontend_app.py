@@ -269,8 +269,9 @@ def get_backtest_results():
         # 获取筛选参数
         stock_filter = request.args.get('stock', '')
         source_filter = request.args.get('source', '')
-        date_filter = request.args.get('date', '')
-        strategy_filter = request.args.get('strategy', '')  # 新增：获取策略筛选参数
+        date_start = request.args.get('date_start', '')
+        date_end = request.args.get('date_end', '')
+        strategy_filter = request.args.get('strategy', '')
 
         # 遍历所有数据源
         for source in DATA_SOURCES:
@@ -299,9 +300,12 @@ def get_backtest_results():
                                         # 获取文件创建时间
                                         file_path = strategy_path / result_file
                                         run_time = datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
+                                        run_time_date = run_time.split(' ')[0] if run_time else ''
 
-                                        # 应用日期筛选
-                                        if date_filter and not run_time.startswith(date_filter):
+                                        # 应用日期范围筛选
+                                        if date_start and run_time_date < date_start:
+                                            continue
+                                        if date_end and run_time_date > date_end:
                                             continue
 
                                         # 构建结果路径

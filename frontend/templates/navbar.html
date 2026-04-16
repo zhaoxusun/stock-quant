@@ -14,7 +14,7 @@
                         <a class="nav-link{% if request.path == '/schedule' %} active{% endif %}" href="/schedule">定时任务</a>
                         <a class="nav-link{% if request.path == '/chat' %} active{% endif %}" href="/chat">AI 分析</a>
                     </div>
-                    <button id="musicToggleBtn" class="btn btn-outline-light btn-sm me-2" title="背景音乐" onclick="toggleMusicPanel()">
+                    <button id="musicToggleBtn" class="btn btn-outline-light btn-sm me-2" title="背景音乐">
                         <i class="fas fa-music"></i>
                     </button>
                     <a href="https://github.com/zhaoxusun/stock-quant" target="_blank" class="btn btn-outline-light btn-sm github-link">
@@ -30,26 +30,6 @@
 </nav>
 
 <style>
-    .music-iframe-container {
-        position: fixed;
-        top: 60px;
-        right: 20px;
-        z-index: 9999;
-        display: none;
-        animation: slideIn 0.2s ease;
-    }
-    .music-iframe-container.show {
-        display: block;
-    }
-    @keyframes slideIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .music-iframe-container iframe {
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    }
     #musicToggleBtn.playing {
         background: rgba(46, 204, 113, 0.3);
         border-color: #2ecc71;
@@ -57,43 +37,58 @@
     }
 </style>
 
-<div class="music-iframe-container" id="musicIframeContainer">
-    <iframe id="musicIframe" src="/music_player" width="320" height="380" frameborder="0"></iframe>
-</div>
-
 <script>
-    let musicPanelVisible = false;
+    let musicWindow = null;
 
-    function toggleMusicPanel() {
-        musicPanelVisible = !musicPanelVisible;
-        const container = document.getElementById('musicIframeContainer');
-        const btn = document.getElementById('musicToggleBtn');
+    function openMusicPlayer() {
+        if (musicWindow && !musicWindow.closed) {
+            musicWindow.focus();
+            return;
+        }
 
-        if (musicPanelVisible) {
-            container.classList.add('show');
-            btn.classList.add('active');
-        } else {
-            container.classList.remove('show');
-            btn.classList.remove('active');
+        musicWindow = window.open(
+            '/music_player',
+            'musicPlayer',
+            'width=340,height=420,menubar=no,toolbar=no,location=no,status=no,scrollbars=no'
+        );
+
+        if (musicWindow) {
+            musicWindow.focus();
         }
     }
 
-    document.addEventListener('click', function(e) {
-        const container = document.getElementById('musicIframeContainer');
+    document.getElementById('musicToggleBtn').addEventListener('click', openMusicPlayer);
+
+    function updateMusicBtn(playing) {
         const btn = document.getElementById('musicToggleBtn');
-        if (musicPanelVisible && !container.contains(e.target) && !btn.contains(e.target)) {
-            toggleMusicPanel();
+        if (playing) {
+            btn.classList.add('playing');
+        } else {
+            btn.classList.remove('playing');
+        }
+    }
+
+    function syncMusicState() {
+        const isPlaying = localStorage.getItem('musicIsPlaying') === 'true';
+        updateMusicBtn(isPlaying);
+
+        setInterval(() => {
+            const currentPlaying = localStorage.getItem('musicIsPlaying') === 'true';
+            updateMusicBtn(currentPlaying);
+        }, 1000);
+    }
+
+    window.addEventListener('message', (e) => {
+        if (e.data.type === 'musicState') {
+            updateMusicBtn(e.data.isPlaying);
         }
     });
 
-    window.addEventListener('message', function(e) {
-        if (e.data.type === 'musicPlaying') {
-            const btn = document.getElementById('musicToggleBtn');
-            if (e.data.isPlaying) {
-                btn.classList.add('playing');
-            } else {
-                btn.classList.remove('playing');
-            }
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'musicIsPlaying') {
+            updateMusicBtn(e.newValue === 'true');
         }
     });
+
+    syncMusicState();
 </script>

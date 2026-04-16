@@ -14,8 +14,7 @@
                         <a class="nav-link{% if request.path == '/schedule' %} active{% endif %}" href="/schedule">定时任务</a>
                         <a class="nav-link{% if request.path == '/chat' %} active{% endif %}" href="/chat">AI 分析</a>
                     </div>
-                    <!-- 音乐控制按钮 -->
-                    <button id="musicToggle" class="btn btn-outline-light btn-sm me-2" title="音乐开关">
+                    <button id="musicToggleBtn" class="btn btn-outline-light btn-sm me-2" title="背景音乐" onclick="toggleMusicPanel()">
                         <i class="fas fa-music"></i>
                     </button>
                     <a href="https://github.com/zhaoxusun/stock-quant" target="_blank" class="btn btn-outline-light btn-sm github-link">
@@ -29,4 +28,72 @@
         </div>
     </div>
 </nav>
-{% include 'background_music.html' %}
+
+<style>
+    .music-iframe-container {
+        position: fixed;
+        top: 60px;
+        right: 20px;
+        z-index: 9999;
+        display: none;
+        animation: slideIn 0.2s ease;
+    }
+    .music-iframe-container.show {
+        display: block;
+    }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .music-iframe-container iframe {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+    #musicToggleBtn.playing {
+        background: rgba(46, 204, 113, 0.3);
+        border-color: #2ecc71;
+        color: #2ecc71;
+    }
+</style>
+
+<div class="music-iframe-container" id="musicIframeContainer">
+    <iframe id="musicIframe" src="/music_player" width="320" height="380" frameborder="0"></iframe>
+</div>
+
+<script>
+    let musicPanelVisible = false;
+
+    function toggleMusicPanel() {
+        musicPanelVisible = !musicPanelVisible;
+        const container = document.getElementById('musicIframeContainer');
+        const btn = document.getElementById('musicToggleBtn');
+
+        if (musicPanelVisible) {
+            container.classList.add('show');
+            btn.classList.add('active');
+        } else {
+            container.classList.remove('show');
+            btn.classList.remove('active');
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        const container = document.getElementById('musicIframeContainer');
+        const btn = document.getElementById('musicToggleBtn');
+        if (musicPanelVisible && !container.contains(e.target) && !btn.contains(e.target)) {
+            toggleMusicPanel();
+        }
+    });
+
+    window.addEventListener('message', function(e) {
+        if (e.data.type === 'musicPlaying') {
+            const btn = document.getElementById('musicToggleBtn');
+            if (e.data.isPlaying) {
+                btn.classList.add('playing');
+            } else {
+                btn.classList.remove('playing');
+            }
+        }
+    });
+</script>

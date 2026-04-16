@@ -241,18 +241,40 @@ def run_backtest():
                     response = make_response(json.dumps(response_data, ensure_ascii=False))
                     response.headers['Content-Type'] = 'application/json; charset=utf-8'
                     return response
-
-            error_response_data = {'success': False, 'message': f'Backtest completed, but no result file found', 'data':{}}
-            error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
-            error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
-            return error_response
-
+            else:
+                response_data = {'success': False, 'message': 'No result files found', 'data': {}}
+                response = make_response(json.dumps(response_data, ensure_ascii=False))
+                response.headers['Content-Type'] = 'application/json; charset=utf-8'
+                return response
     except Exception as e:
-        logger.error(f"Error running backtest: {str(e)}")
-        error_response_data = {'success': False, 'message': f'Error running backtest: {str(e)}', 'data':{}}
+        logger.error(f"回测执行失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'回测执行失败: {str(e)}', 'data': {}}
         error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response
+
+@app.route('/api/music/list', methods=['GET'])
+@log_request_details
+def get_music_list():
+    """获取音乐列表"""
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+    music_files = []
+    if os.path.exists(static_dir):
+        for f in os.listdir(static_dir):
+            if f.endswith('.mp3'):
+                music_files.append({
+                    'name': f.replace('.mp3', '').replace('-', ' ').replace('_', ' '),
+                    'file': f,
+                    'url': f'/static/{f}'
+                })
+    response_data = {
+        'success': True,
+        'message': 'Success',
+        'data': {'music_list': music_files}
+    }
+    response = make_response(json.dumps(response_data, ensure_ascii=False))
+    response.headers['Content-Type'] = 'application/json; charset=utf-8'
+    return response
 
 
 @app.route('/get_backtest_results')
@@ -1100,6 +1122,12 @@ def check_task_exists(task_id):
 def chat_page():
     """AI聊天页面"""
     return render_template('chat.html')
+
+@app.route('/music_player')
+@log_request_details
+def music_player_page():
+    """背景音乐播放器页面"""
+    return render_template('music_player.html')
 
 @app.route('/api/ai-chat', methods=['POST'])
 @log_request_details

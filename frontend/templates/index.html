@@ -673,6 +673,24 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .section-highlight {
+            animation: sectionPulse 0.6s ease;
+        }
+
+        @keyframes sectionPulse {
+            0% { box-shadow: 0 0 0 0 rgba(41, 128, 185, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(41, 128, 185, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(41, 128, 185, 0); }
+        }
+
+        .action-card {
+            transition: all 0.3s ease;
+        }
+
+        .action-card:target {
+            animation: sectionPulse 0.6s ease;
+        }
     </style>
 </head>
 <body>
@@ -720,7 +738,7 @@
             </div>
 
             <div class="action-cards">
-                <div class="action-card">
+                <div class="action-card" id="data-acquisition">
                     <div class="action-card-header">
                         <div class="action-card-icon data"><i class="fas fa-database"></i></div>
                         <div>
@@ -777,7 +795,7 @@
                     </div>
                 </div>
 
-                <div class="action-card">
+                <div class="action-card" id="backtest">
                     <div class="action-card-header">
                         <div class="action-card-icon backtest"><i class="fas fa-robot"></i></div>
                         <div>
@@ -839,7 +857,7 @@
                 </div>
             </div>
 
-            <div class="table-container">
+            <div class="table-container" id="results">
                 <div class="table-header-custom">
                     <div class="table-title">
                         <i class="fas fa-history"></i>
@@ -933,6 +951,38 @@
         let stocks = [];
         const pageSize = 10;
 
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                const offset = 80;
+                const elementPosition = section.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+
+                setTimeout(() => {
+                    section.classList.remove('section-highlight');
+                    void section.offsetWidth;
+                    section.classList.add('section-highlight');
+                }, 300);
+            }
+        }
+
+        function updateNavActiveState(hash) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            const targetId = hash.replace('#', '') || 'data-acquisition';
+            const activeLink = document.querySelector(`.nav-link[href="#${targetId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             const fourYearsAgo = new Date();
@@ -952,6 +1002,30 @@
             document.getElementById('strategyCount').textContent = {{ strategies|length }};
 
             loadResults(1);
+
+            const hash = window.location.hash;
+            if (hash) {
+                updateNavActiveState(hash);
+                setTimeout(() => scrollToSection(hash.replace('#', '')), 100);
+            }
+        });
+
+        document.querySelectorAll('.nav-link[href^="#"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const hash = this.getAttribute('href').replace('#', '');
+                window.history.pushState(null, '', '#' + hash);
+                updateNavActiveState(hash);
+                scrollToSection(hash);
+            });
+        });
+
+        window.addEventListener('hashchange', function() {
+            const hash = window.location.hash.replace('#', '');
+            if (hash) {
+                updateNavActiveState(hash);
+                scrollToSection(hash);
+            }
         });
 
         document.getElementById('dataSourceAcquire').addEventListener('change', function() {

@@ -75,7 +75,17 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
     # 执行回测
     logger.info("【回测执行】正在运行回测...")
     try:
-        results = cerebro.run()
+        if settings.BACKTEST_MODE == 'BACKTEST':
+            logger.info(f"【回测模式】{settings.BACKTEST_MODE}：历史回测，批量K线数据直接给Cerebro，一起计算")
+            # 历史回测，批量K线数据直接给Cerebro，一起计算
+            results = cerebro.run()
+        elif settings.BACKTEST_MODE == 'LIVE':
+            logger.info(f"【回测模式】{settings.BACKTEST_MODE}：实盘 / 模拟盘，每条K线喂给Cerebro，每条K线依次计算")
+            # 实盘 / 模拟盘，每条K线喂给Cerebro，每条K线依次计算
+            results = cerebro.run(runonce=False, preload=False)
+        else:
+            logger.warning(f"【回测失败】未知回测模式：{settings.BACKTEST_MODE}")
+            return
     except Exception as e:
         logger.warning(f"【回测失败】执行出错：{str(e)}")
         return

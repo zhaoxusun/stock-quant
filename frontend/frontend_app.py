@@ -29,7 +29,7 @@ from core.stock import manager_baostock, manager_akshare, manager_futu
 from core.strategy.strategy_manager import global_strategy_manager
 from common.logger import create_log
 from core.quant.quant_manage import run_backtest_enhanced_volume_strategy, run_backtest_enhanced_volume_strategy_multi
-from settings import stock_data_root, html_root, signals_root
+from settings import stock_data_root, html_root, signals_root, BACKTEST_MODE_LIST, BACKTEST_MODE
 
 # 初始化Flask应用
 app = Flask(__name__)
@@ -121,7 +121,10 @@ def log_request_details(f):
 def index():
     """主页，显示数据源和股票选择界面"""
     strategies = global_strategy_manager.get_strategy_names()
-    return render_template('index.html', data_sources=DATA_SOURCES, strategies=strategies)
+    backtest_mode_list = BACKTEST_MODE_LIST
+    backtest_mode = BACKTEST_MODE
+    return render_template('index.html', data_sources=DATA_SOURCES, strategies=strategies,
+                         backtest_mode_list=backtest_mode_list, backtest_mode=backtest_mode)
 
 
 @app.route('/get_stocks/<source>')
@@ -184,6 +187,7 @@ def run_backtest():
         is_batch = data.get('is_batch', False)
         init_cash = float(data.get('init_cash', 5000000))
         strategy_name = data.get('strategy')
+        backtest_mode = data.get('backtest_mode')  # 'BACKTEST' 或 'LIVE'，None时使用settings默认配置
 
         # 验证策略名称
         strategy_class = global_strategy_manager.get_strategy(strategy_name)
@@ -202,7 +206,7 @@ def run_backtest():
         if is_batch:
             # 批量回测
             folder_path = stock_data_root / source
-            run_backtest_enhanced_volume_strategy_multi(str(folder_path), strategy_class, init_cash)
+            run_backtest_enhanced_volume_strategy_multi(str(folder_path), strategy_class, init_cash, backtest_mode)
             response_data = {
                 'success': True,
                 'message': 'Batch backtest completed',
@@ -220,7 +224,7 @@ def run_backtest():
                 return error_response
 
             file_path = stock_data_root / source / stock_file
-            run_backtest_enhanced_volume_strategy(str(file_path), strategy_class, init_cash)
+            run_backtest_enhanced_volume_strategy(str(file_path), strategy_class, init_cash, backtest_mode)
 
             # 构建回测结果的HTML路径，添加策略名称作为最后一层
             relative_path = f"{source}/{stock_file.rsplit('.', 1)[0]}/{strategy_class.__name__}"

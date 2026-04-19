@@ -20,8 +20,11 @@ result_root = project_root / 'result'
 signals_root = project_root / 'signals'
 # chart_show_switch = False
 
-BACKTEST_MODE = 'BACKTEST' # 回测模式：历史回测，批量K线数据直接给Cerebro，一起计算
-# BACKTEST_MODE = 'LIVE' # 回测模式：实盘 / 模拟盘，每条K线喂给Cerebro，每条K线依次计算
+# 回测模式列表：['BACKTEST', 'LIVE']
+# BACKTEST: 历史回测，批量K线数据直接给Cerebro，一起计算
+# LIVE: 实盘/模拟盘，每条K线喂给Cerebro，每条K线依次计算
+BACKTEST_MODE_LIST = ['BACKTEST', 'LIVE']
+BACKTEST_MODE = 'BACKTEST'
 
 # 交易策略相关参数
 MIN_ORDER_SIZE = 100    # 交易股票最小单位（股）

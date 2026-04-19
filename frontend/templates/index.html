@@ -125,8 +125,27 @@
                                     <label class="modern-label"><i class="fas fa-coins"></i>初始资金</label>
                                     <input type="number" class="modern-input" id="initCash" value="5000000" min="10000" step="10000">
                                 </div>
+                                <div class="modern-form-group">
+                                    <label class="modern-label"><i class="fas fa-rocket"></i>计算模式</label>
+                                    <select class="modern-select" id="backtestMode">
+                                        {% for mode in backtest_mode_list %}
+                                        <option value="{{ mode }}" {% if mode == backtest_mode %}selected{% endif %}>
+                                            {% if mode == 'BACKTEST' %}回测模式（批量计算）
+                                            {% elif mode == 'LIVE' %}实盘模式（逐根计算）
+                                            {% else %}{{ mode }}{% endif %}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="mode-desc-text" id="modeDescText">
+                                        {% if backtest_mode == 'BACKTEST' %}
+                                        一次性加载所有K线，批量计算，速度快，适合历史验证
+                                        {% else %}
+                                        逐根K线喂入数据，每根K线依次计算，模拟实盘
+                                        {% endif %}
+                                    </div>
+                                </div>
                                 <div class="modern-form-group col-span-2">
-                                    <label class="modern-label"><i class="fas fa-cog"></i>回测模式</label>
+                                    <label class="modern-label"><i class="fas fa-cog"></i>回测类型</label>
                                     <div class="radio-group mt-2">
                                         <div class="radio-item">
                                             <input type="radio" name="backtestType" id="singleTest" value="single" checked>
@@ -560,6 +579,16 @@
             }
         }
 
+        document.getElementById('backtestMode').addEventListener('change', function() {
+            const mode = this.value;
+            const modeDescText = document.getElementById('modeDescText');
+            if (mode === 'BACKTEST') {
+                modeDescText.textContent = '一次性加载所有K线，批量计算，速度快，适合历史验证';
+            } else if (mode === 'LIVE') {
+                modeDescText.textContent = '逐根K线喂入数据，每根K线依次计算，模拟实盘';
+            }
+        });
+
         document.getElementById('backtestForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -582,7 +611,8 @@
                     stock_file: document.getElementById('stockFile').value,
                     is_batch: document.getElementById('batchTest').checked,
                     init_cash: document.getElementById('initCash').value,
-                    strategy: document.getElementById('strategy').value
+                    strategy: document.getElementById('strategy').value,
+                    backtest_mode: document.getElementById('backtestMode').value
                 })
             })
             .then(response => response.json())

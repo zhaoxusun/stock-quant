@@ -6,8 +6,9 @@ logger = create_log('test_strategy')
 
 if __name__ == "__main__":
     init_cash = 5000000
+    backtest_mode = 'BACKTEST'
     csv_path = stock_data_root / "futu/HK.00700_腾讯控股_20220414_20260414.csv"
     # 启动回测-单个股票
-    run_backtest_enhanced_volume_strategy(csv_path, EnhancedVolumeStrategy, init_cash)
+    run_backtest_enhanced_volume_strategy(csv_path, EnhancedVolumeStrategy, init_cash, backtest_mode)
     # 启动回测-批量股票
     # run_backtest_enhanced_volume_strategy_multi(stock_data_root / "futu", EnhancedVolumeStrategy,init_cash)

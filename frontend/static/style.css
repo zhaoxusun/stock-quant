@@ -147,6 +147,14 @@ body {
 .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 .badge-success { background-color: var(--success-color); color: white; }
 .badge-danger { background-color: var(--danger-color); color: white; }
+
+/* Mode Description */
+.mode-desc-text {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    line-height: 1.4;
+}
 .badge-warning { background-color: var(--warning-color); color: white; }
 .badge-info { background-color: var(--info-color); color: white; }
 

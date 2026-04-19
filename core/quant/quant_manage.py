@@ -13,18 +13,24 @@ import settings
 logger = create_log('quant_manage')
 
 
-def run_backtest_enhanced_volume_strategy_multi(kline_csv_folder_path, trading_strategy: bt.Strategy, init_cash=settings.INIT_CASH):
+def run_backtest_enhanced_volume_strategy_multi(kline_csv_folder_path, trading_strategy: bt.Strategy, init_cash=settings.INIT_CASH,
+                                                backtest_mode=settings.BACKTEST_MODE):
     """
     批量运行增强成交量策略回测
     :param kline_csv_folder_path: 包含CSV文件的文件夹路径
     :param trading_strategy: 交易策略类
     :param init_cash: 初始资金
+    :param backtest_mode: 回测模式，'BACKTEST'或'LIVE'，默认读取settings.BACKTEST_MODE
     """
     folder = Path(kline_csv_folder_path)
     for kline_csv_path in folder.glob("*.csv"):
-        run_backtest_enhanced_volume_strategy(kline_csv_path, trading_strategy, init_cash)
+        run_backtest_enhanced_volume_strategy(kline_csv_path, trading_strategy, init_cash, backtest_mode)
 
-def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strategy, init_cash=settings.INIT_CASH):
+def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strategy, init_cash=settings.INIT_CASH,
+                                        backtest_mode=settings.BACKTEST_MODE):
+    # 获取实际配置，优先使用传入参数，否则使用settings默认值
+    actual_backtest_mode = backtest_mode if backtest_mode in settings.BACKTEST_MODE_LIST else settings.BACKTEST_MODE
+
     current_time = get_current_time()
     relative_path = str(csv_path).replace(str(settings.stock_data_root) + '/', '')
     logger.info("=" * 60)
@@ -70,21 +76,22 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
     # 启动回测
     logger.info(f"【回测启动】初始资金：{cerebro.broker.getcash():,.2f} 港元")
     logger.info(f"【回测周期】：{data.p.dataname.index[0].date()} ~ {data.p.dataname.index[-1].date()}")
+    logger.info(f"【回测模式】：{actual_backtest_mode}")
     logger.info("=" * 60)
 
     # 执行回测
     logger.info("【回测执行】正在运行回测...")
     try:
-        if settings.BACKTEST_MODE == 'BACKTEST':
-            logger.info(f"【回测模式】{settings.BACKTEST_MODE}：历史回测，批量K线数据直接给Cerebro，一起计算")
+        if actual_backtest_mode == 'BACKTEST':
+            logger.info(f"【回测模式】{actual_backtest_mode}：历史回测，批量K线数据直接给Cerebro，一起计算")
             # 历史回测，批量K线数据直接给Cerebro，一起计算
             results = cerebro.run()
-        elif settings.BACKTEST_MODE == 'LIVE':
-            logger.info(f"【回测模式】{settings.BACKTEST_MODE}：实盘 / 模拟盘，每条K线喂给Cerebro，每条K线依次计算")
+        elif actual_backtest_mode == 'LIVE':
+            logger.info(f"【回测模式】{actual_backtest_mode}：实盘 / 模拟盘，每条K线喂给Cerebro，每条K线依次计算")
             # 实盘 / 模拟盘，每条K线喂给Cerebro，每条K线依次计算
             results = cerebro.run(runonce=False, preload=False)
         else:
-            logger.warning(f"【回测失败】未知回测模式：{settings.BACKTEST_MODE}")
+            logger.warning(f"【回测失败】未知回测模式：{actual_backtest_mode}")
             return
     except Exception as e:
         logger.warning(f"【回测失败】执行出错：{str(e)}")

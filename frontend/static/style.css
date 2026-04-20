@@ -632,3 +632,14 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
     .result-viewer .card { max-width: 100%; margin: 0; }
     .result-viewer .card-body { padding: 10px 10px; }
 }
+
+/* fix plotly table style bug */
+body.result-viewer table thead th {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    background: var(--primary-color);
+}
+body.result-viewer table tr {
+    background: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}

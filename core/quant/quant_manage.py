@@ -236,6 +236,7 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
     try:
         record_data['after_data'] = {
             'result_html_path': str(html_path) if html_path else '',
+            'result_html_relative_path': f"{relative_path.rsplit('.', 1)[0]}/{strategy.__class__.__name__}/{html_file_name}" if html_path else '',
             'signal_stats': {
                 'buy_signals': strategy.buy_signals_count,
                 'sell_signals': strategy.sell_signals_count,

@@ -174,130 +174,11 @@
                 </div>
             </div>
 
-            <div class="table-container" id="results">
-                <div class="table-header-custom">
-                    <div class="table-title">
-                        <i class="fas fa-history"></i>
-                        历史回测结果
-                    </div>
-                </div>
-
-                <div class="filter-bar-custom">
-                    <div class="filter-bar-row">
-                        <div class="filter-item-custom">
-                            <label><i class="fas fa-search"></i></label>
-                            <input type="text" class="filter-input" id="stockFilter" placeholder="股票名称" oninput="debounceFilter()">
-                        </div>
-                        <div class="filter-item-custom">
-                            <label><i class="fas fa-database"></i></label>
-                            <select class="filter-select" id="sourceFilter">
-                                <option value="">数据源</option>
-                                {% for source in data_sources %}
-                                <option value="{{ source }}">{{ source }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="filter-item-custom">
-                            <label><i class="fas fa-brain"></i></label>
-                            <select class="filter-select" id="strategyFilter">
-                                <option value="">策略</option>
-                                {% for strategy_name in strategies %}
-                                <option value="{{ strategy_name }}">{{ strategy_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="filter-item-custom date-range">
-                            <label><i class="fas fa-calendar"></i></label>
-                            <input type="date" class="filter-input" id="dateFilterStart" placeholder="开始日期">
-                            <span class="date-separator">至</span>
-                            <input type="date" class="filter-input" id="dateFilterEnd" placeholder="结束日期">
-                        </div>
-                        <button class="filter-btn" onclick="applyFilters()">
-                            <i class="fas fa-search"></i> 搜索
-                        </button>
-                        <button class="filter-btn reset" onclick="resetFilters()">
-                            <i class="fas fa-undo"></i> 重置
-                        </button>
-                    </div>
-                </div>
-
-                <div class="stats-row">
-                    <div class="mini-stat">
-                        <div class="mini-stat-icon blue"><i class="fas fa-database"></i></div>
-                        <div>
-                            <div class="mini-stat-value">3</div>
-                            <div class="mini-stat-label">数据源</div>
-                        </div>
-                    </div>
-                    <div class="mini-stat">
-                        <div class="mini-stat-icon green"><i class="fas fa-brain"></i></div>
-                        <div>
-                            <div class="mini-stat-value" id="strategyCount">-</div>
-                            <div class="mini-stat-label">交易策略</div>
-                        </div>
-                    </div>
-                    <div class="mini-stat">
-                        <div class="mini-stat-icon orange"><i class="fas fa-chart-bar"></i></div>
-                        <div>
-                            <div class="mini-stat-value" id="resultCountValue">-</div>
-                            <div class="mini-stat-label">回测结果</div>
-                        </div>
-                    </div>
-                    <div class="mini-stat">
-                        <div class="mini-stat-icon purple"><i class="fas fa-clock"></i></div>
-                        <div>
-                            <div class="mini-stat-value">4年</div>
-                            <div class="mini-stat-label">历史数据</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="data-table-custom">
-                        <thead>
-                            <tr>
-                                <th><i class="fas fa-hashtag me-1"></i>序号</th>
-                                <th><i class="fas fa-chart-bar me-1"></i>股票</th>
-                                <th><i class="fas fa-database me-1"></i>数据源</th>
-                                <th><i class="fas fa-brain me-1"></i>策略</th>
-                                <th><i class="fas fa-clock me-1"></i>运行时间</th>
-                                <th><i class="fas fa-cog me-1"></i>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultsTable"></tbody>
-                    </table>
-                </div>
-
-                <div id="noResults" class="empty-state-custom d-none">
-                    <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
-                    <div class="empty-title">暂无历史记录</div>
-                    <div class="empty-text">运行一次回测后，结果将显示在这里</div>
-                </div>
-
-                <div class="pagination-custom" id="paginationContainer">
-                    <div class="pagination-info-custom">
-                        共 <strong id="totalResults">0</strong> 条记录
-                    </div>
-                    <div class="pagination-controls-custom">
-                        <button class="page-btn-custom" id="prevPage" onclick="goToPage(currentPage - 1)">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <div id="pagination"></div>
-                        <button class="page-btn-custom" id="nextPage" onclick="goToPage(currentPage + 1)">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+            
 
     <div id="notification" class="notification"></div>
 
     <script>
-        let currentPage = 1;
-        const pageSize = 10;
-
         function scrollToSection(sectionId) {
             const section = document.getElementById(sectionId);
             if (section) {
@@ -347,8 +228,6 @@
             document.getElementById('endDate').max = formatDate(today);
 
             document.getElementById('strategyCount').textContent = {{ strategies|length }};
-
-            loadResults(1);
 
             const hash = window.location.hash;
             if (hash) {
@@ -631,7 +510,6 @@
                             </a>
                         `;
                     }
-                    loadResults(1);
                 } else {
                     resultMessage.innerHTML = `
                         <div class="result-message error">
@@ -651,115 +529,6 @@
             });
         });
 
-        let filterTimeout;
-
-        function debounceFilter() {
-            clearTimeout(filterTimeout);
-            filterTimeout = setTimeout(applyFilters, 500);
-        }
-
-        function applyFilters() {
-            loadResults(1);
-        }
-
-        function loadResults(page = 1) {
-            const stockFilter = document.getElementById('stockFilter')?.value || '';
-            const sourceFilter = document.getElementById('sourceFilter')?.value || '';
-            const dateFilterStart = document.getElementById('dateFilterStart')?.value || '';
-            const dateFilterEnd = document.getElementById('dateFilterEnd')?.value || '';
-            const strategyFilter = document.getElementById('strategyFilter')?.value || '';
-
-            const params = new URLSearchParams();
-            params.append('page', page);
-            params.append('page_size', pageSize);
-            if (stockFilter) params.append('stock', stockFilter);
-            if (sourceFilter) params.append('source', sourceFilter);
-            if (strategyFilter) params.append('strategy', strategyFilter);
-            if (dateFilterStart) params.append('date_start', dateFilterStart);
-            if (dateFilterEnd) params.append('date_end', dateFilterEnd);
-
-            fetch(`/get_backtest_results?${params.toString()}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.success) return;
-
-                    currentPage = page;
-                    const resultsTable = document.getElementById('resultsTable');
-                    const noResults = document.getElementById('noResults');
-                    const paginationContainer = document.getElementById('paginationContainer');
-
-                    resultsTable.innerHTML = '';
-                    document.getElementById('resultCountValue').textContent = data.data.total || 0;
-
-                    if (data.data.results.length > 0) {
-                        noResults.classList.add('d-none');
-                        paginationContainer.style.display = 'flex';
-
-                        data.data.results.forEach((result, index) => {
-                            const row = document.createElement('tr');
-                            const serialNumber = (page - 1) * pageSize + index + 1;
-                            row.innerHTML = `
-                                <td class="text-secondary">#${serialNumber}</td>
-                                <td><a href="/data/${result.source}/${result.stock}.csv" target="_blank" class="stock-link" title="下载CSV">${result.stock}</a></td>
-                                <td><span class="stock-badge">${result.source}</span></td>
-                                <td>${result.strategy ? `<a href="/strategy_code?strategy=${encodeURIComponent(result.strategy)}" target="_blank" class="strategy-link">${result.strategy}</a>` : '-'}</td>
-                                <td class="text-secondary">${result.run_time}</td>
-                                <td><a href="/show_result/${result.path}" target="_blank" class="view-btn"><i class="fas fa-chart-line"></i> 查看</a></td>
-                            `;
-                            resultsTable.appendChild(row);
-                        });
-
-                        document.getElementById('totalResults').textContent = data.data.total;
-                        renderPagination(page, data.data.total_pages);
-                    } else {
-                        noResults.classList.remove('d-none');
-                        paginationContainer.style.display = 'none';
-                        document.getElementById('totalResults').textContent = '0';
-                    }
-                });
-        }
-
-        function renderPagination(page, totalPages) {
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
-
-            document.getElementById('prevPage').className = `page-btn-custom ${page === 1 ? 'disabled' : ''}`;
-            document.getElementById('nextPage').className = `page-btn-custom ${page === totalPages ? 'disabled' : ''}`;
-
-            const maxButtons = 5;
-            let startPage = Math.max(1, page - Math.floor(maxButtons / 2));
-            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-
-            if (endPage - startPage + 1 < maxButtons) {
-                startPage = Math.max(1, endPage - maxButtons + 1);
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                const pageItem = document.createElement('button');
-                pageItem.className = `page-btn-custom ${i === page ? 'active' : ''}`;
-                pageItem.textContent = i;
-                pageItem.addEventListener('click', () => goToPage(i));
-                pagination.appendChild(pageItem);
-            }
-        }
-
-        function goToPage(page) {
-            const totalPages = parseInt(document.getElementById('totalResults').textContent) || 0;
-            const totalPageCalc = Math.ceil(totalPages / pageSize);
-            if (page >= 1 && page <= totalPageCalc) {
-                loadResults(page);
-            }
-        }
-
-        function resetFilters() {
-            document.getElementById('stockFilter').value = '';
-            document.getElementById('sourceFilter').value = '';
-            document.getElementById('dateFilterStart').value = '';
-            document.getElementById('dateFilterEnd').value = '';
-            document.getElementById('strategyFilter').value = '';
-            loadResults(1);
-        }
-
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
@@ -776,8 +545,6 @@
                 notification.classList.remove('show');
             }, 3000);
         }
-
-        window.addEventListener('load', () => loadResults(1));
     </script>
 </body>
 </html>

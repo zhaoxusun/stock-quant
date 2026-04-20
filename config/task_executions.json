@@ -229,5 +229,236 @@
     "stocks_processed": 10,
     "stocks_success": 10,
     "stocks_failed": 0
+  },
+  {
+    "id": "exec_20260420162800054067",
+    "task_id": "task_20260302180714",
+    "task_name": "恒生科技互联网",
+    "status": "success",
+    "start_time": "2026-04-20 16:28:00",
+    "end_time": "2026-04-20 16:28:21",
+    "duration": 21.0,
+    "details": {
+      "schedule_time": "28 16 0 0 1-5"
+    },
+    "stocks": [
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.00700",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09988",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.03690",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09618",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.01810",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.01024",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09888",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.02015",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09866",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.03032",
+        "adjust_type": "qfq"
+      }
+    ],
+    "stocks_processed": 10,
+    "stocks_success": 10,
+    "stocks_failed": 0
+  },
+  {
+    "id": "exec_20260420170500011153",
+    "task_id": "task_20260302180714",
+    "task_name": "恒生科技互联网",
+    "status": "success",
+    "start_time": "2026-04-20 17:05:00",
+    "end_time": "2026-04-20 17:05:20",
+    "duration": 20.0,
+    "details": {
+      "schedule_time": "05 17 0 0 1-5"
+    },
+    "stocks": [
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.00700",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09988",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.03690",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09618",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.01810",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.01024",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09888",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.02015",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09866",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.03032",
+        "adjust_type": "qfq"
+      }
+    ],
+    "stocks_processed": 10,
+    "stocks_success": 10,
+    "stocks_failed": 0
+  },
+  {
+    "id": "exec_20260420171600521960",
+    "task_id": "task_20260302180714",
+    "task_name": "恒生科技互联网",
+    "status": "success",
+    "start_time": "2026-04-20 17:16:00",
+    "end_time": "2026-04-20 17:16:26",
+    "duration": 26.0,
+    "details": {
+      "schedule_time": "16 17 0 0 1-5"
+    },
+    "stocks": [
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.00700",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09988",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.03690",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09618",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.01810",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.01024",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09888",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.02015",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.09866",
+        "adjust_type": "qfq"
+      },
+      {
+        "market": "hk",
+        "data_source": "futu",
+        "stock_code": "HK.03032",
+        "adjust_type": "qfq"
+      }
+    ],
+    "stocks_processed": 10,
+    "stocks_success": 10,
+    "stocks_failed": 0
   }
 ]

@@ -8,7 +8,7 @@
                     <div class="navbar-nav me-4">
                         <a class="nav-link{% if request.path == '/' and (request.args.get('tab') == 'data-acquisition' or not request.args.get('tab')) %} active{% endif %}" href="/#data-acquisition">数据获取</a>
                         <a class="nav-link{% if request.path == '/' and (request.args.get('tab') == 'backtest' or not request.args.get('tab')) %} active{% endif %}" href="/#backtest">回测</a>
-                        <a class="nav-link{% if request.path == '/' and request.args.get('tab') == 'results' %} active{% endif %}" href="/#results">历史结果</a>
+                        <a class="nav-link" href="/backtest_records">回测记录</a>
                         <a class="nav-link{% if request.path == '/signal_analysis' %} active{% endif %}" href="/signal_analysis">信号分析</a>
                         <a class="nav-link{% if request.path == '/strategy_code' %} active{% endif %}" href="/strategy_code">策略管理</a>
                         <a class="nav-link{% if request.path == '/schedule' %} active{% endif %}" href="/schedule">定时任务</a>

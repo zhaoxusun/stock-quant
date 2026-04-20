@@ -135,7 +135,7 @@
                                         回测配置
                                     </div>
                                     <div class="row g-3">
-                                        <div class="col-md-4" id="strategyField">
+                                        <div class="col-md-3" id="strategyField">
                                             <label for="strategy" class="form-label">策略选择<span class="required-star">*</span></label>
                                             <select class="form-select" id="strategy" name="strategy" required>
                                                 {% for strategy_name in strategies %}
@@ -143,15 +143,22 @@
                                                 {% endfor %}
                                             </select>
                                         </div>
-                                        <div class="col-md-4" id="initCashField">
+                                        <div class="col-md-3" id="initCashField">
                                             <label for="initCash" class="form-label">初始资金<span class="required-star">*</span></label>
                                             <input type="number" class="form-control" id="initCash" name="initCash" value="5000000" required>
                                             <div class="invalid-feedback">初始资金不能为空</div>
                                         </div>
-                                        <div class="col-md-4" id="duringField">
+                                        <div class="col-md-3" id="duringField">
                                             <label for="during" class="form-label">回测周期(天)<span class="required-star">*</span></label>
                                             <input type="number" class="form-control" id="during" name="during" value="1460" max="1460" required>
                                             <div class="invalid-feedback">回测周期不能为空</div>
+                                        </div>
+                                        <div class="col-md-3" id="backtestModeField">
+                                            <label for="backtestMode" class="form-label">计算模式</label>
+                                            <select class="form-select" id="backtestMode" name="backtestMode">
+                                                <option value="BACKTEST">回测模式（批量计算）</option>
+                                                <option value="LIVE">实盘模式（逐根计算）</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -392,6 +399,7 @@
                     if (document.getElementById('during').required) {
                         taskData.backtest_config.during = parseInt(document.getElementById('during').value);
                     }
+                    taskData.backtest_config.backtest_mode = document.getElementById('backtestMode').value;
                 }
 
                 if (taskId) {
@@ -711,6 +719,7 @@
                         document.getElementById('strategy').value = task.backtest_config.strategy || '';
                         document.getElementById('initCash').value = task.backtest_config.init_cash || 5000000;
                         document.getElementById('during').value = task.backtest_config.during || 1460;
+                        document.getElementById('backtestMode').value = task.backtest_config.backtest_mode || 'BACKTEST';
                     } else if (task.strategy) {
                         document.getElementById('strategy').value = task.strategy;
                     }

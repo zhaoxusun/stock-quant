@@ -128,6 +128,101 @@ def index():
                          backtest_mode_list=backtest_mode_list, backtest_mode=backtest_mode)
 
 
+@app.route('/backtest_records')
+@log_request_details
+def backtest_records_page():
+    return render_template('backtest_records.html')
+
+
+@app.route('/api/backtest_records')
+@log_request_details
+def get_backtest_records():
+    try:
+        page = int(request.args.get('page', 1))
+        page_size = int(request.args.get('page_size', 10))
+        stock_filter = request.args.get('stock', '').lower()
+        source_filter = request.args.get('source', '')
+        strategy_filter = request.args.get('strategy', '')
+        mode_filter = request.args.get('mode', '')
+        date_start = request.args.get('date_start', '')
+        date_end = request.args.get('date_end', '')
+
+        all_records = backtest_record_manager.read_all(limit=10000)
+
+        filtered_records = []
+        for record in all_records:
+            initData = record.get('init_data', {})
+            stockName = (initData.get('stock_name') or initData.get('stock_code') or '').lower()
+            dataSource = initData.get('data_source', '')
+            strategy = initData.get('strategy', '')
+            backtestMode = initData.get('backtest_mode', '')
+            createdAt = record.get('created_at', '')
+            createdDate = createdAt.split('T')[0] if createdAt else ''
+
+            if stock_filter and stock_filter not in stockName:
+                continue
+            if source_filter and dataSource != source_filter:
+                continue
+            if strategy_filter and strategy != strategy_filter:
+                continue
+            if mode_filter and backtestMode != mode_filter:
+                continue
+            if date_start and createdDate < date_start:
+                continue
+            if date_end and createdDate > date_end:
+                continue
+
+            filtered_records.append(record)
+
+        total = len(filtered_records)
+        total_pages = (total + page_size - 1) // page_size if total > 0 else 1
+        start_idx = (page - 1) * page_size
+        
+        end_idx = start_idx + page_size
+        paginated_records = filtered_records[start_idx:end_idx]
+
+        response_data = {
+            'success': True,
+            'message': '获取回测记录成功',
+            'data': {
+                'records': paginated_records,
+                'page': page,
+                'page_size': page_size,
+                'total': total,
+                'total_pages': total_pages
+            }
+        }
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"获取回测记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'获取回测记录失败: {str(e)}', 'data': {'records': [], 'total': 0}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
+@app.route('/api/backtest_records/<record_id>')
+@log_request_details
+def get_backtest_record_by_id(record_id):
+    try:
+        record = backtest_record_manager.read(record_id)
+        if record:
+            response_data = {'success': True, 'message': '获取回测记录成功', 'data': record}
+        else:
+            response_data = {'success': False, 'message': '回测记录不存在', 'data': None}
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"获取回测记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'获取回测记录失败: {str(e)}', 'data': None}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
 @app.route('/get_stocks/<source>')
 @log_request_details
 def get_stocks(source):
@@ -287,101 +382,6 @@ def get_music_list():
 @log_request_details
 def get_data_file(filename):
     return send_from_directory(stock_data_root, filename)
-
-@app.route('/get_backtest_results')
-@log_request_details
-def get_backtest_results():
-    """获取所有回测结果"""
-    results = []
-    try:
-        # 获取分页和筛选参数
-        page = int(request.args.get('page', 1))
-        page_size = int(request.args.get('page_size', 20))
-        start_idx = (page - 1) * page_size
-
-        # 获取筛选参数
-        stock_filter = request.args.get('stock', '')
-        source_filter = request.args.get('source', '')
-        date_start = request.args.get('date_start', '')
-        date_end = request.args.get('date_end', '')
-        strategy_filter = request.args.get('strategy', '')
-
-        # 遍历所有数据源
-        for source in DATA_SOURCES:
-            # 应用数据源筛选
-            if source_filter and source != source_filter:
-                continue
-
-            source_path = html_root / source
-            if os.path.exists(source_path):
-                for stock_dir in os.listdir(source_path):
-                    # 应用股票筛选
-                    if stock_filter and stock_filter.lower() not in stock_dir.lower():
-                        continue
-
-                    stock_path = source_path / stock_dir
-                    if os.path.isdir(stock_path):
-                        for strategy_dir in os.listdir(stock_path):
-                            # 应用策略筛选
-                            if strategy_filter and strategy_dir != strategy_filter:
-                                continue
-
-                            strategy_path = stock_path / strategy_dir
-                            if os.path.isdir(strategy_path):
-                                for result_file in os.listdir(strategy_path):
-                                    if result_file.endswith('.html'):
-                                        # 获取文件创建时间
-                                        file_path = strategy_path / result_file
-                                        run_time = datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
-                                        run_time_date = run_time.split(' ')[0] if run_time else ''
-
-                                        # 应用日期范围筛选
-                                        if date_start and run_time_date < date_start:
-                                            continue
-                                        if date_end and run_time_date > date_end:
-                                            continue
-
-                                        # 构建结果路径
-                                        relative_path = f"{source}/{stock_dir}/{strategy_dir}/{result_file}"
-
-                                        results.append({
-                                            'stock': stock_dir,
-                                            'source': source,
-                                            'strategy': strategy_dir,
-                                            'run_time': run_time,
-                                            'path': relative_path
-                                        })
-
-        # 按运行时间降序排序
-        results.sort(key=lambda x: x['run_time'], reverse=True)
-
-        # 计算总页数
-        total = len(results)
-        total_pages = (total + page_size - 1) // page_size
-
-        # 分页
-        paginated_results = results[start_idx:start_idx + page_size]
-
-        response_data = {
-            'success': True,
-            'message': f'Found {total} backtest results',
-            'data':{
-                'results': paginated_results,
-                'page': page,
-                'total_pages': total_pages,
-                'total': total
-            }
-        }
-        response = make_response(json.dumps(response_data, ensure_ascii=False))
-        response.headers['Content-Type'] = 'application/json; charset=utf-8'
-        return response
-
-    except Exception as e:
-        logger.error(f"Error getting backtest results: {str(e)}")
-        error_response_data = {'success': False, 'message': f'Error getting backtest results: {str(e)}', 'data':{}}
-        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
-        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
-        return error_response
 
 
 @app.route('/api/backtest_records/get_all')

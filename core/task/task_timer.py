@@ -97,7 +97,7 @@ def run_backtest(csv_path, backtest_config):
 
     Args:
         csv_path: CSV文件路径
-        backtest_config: 回测配置，包含strategy, init_cash等
+        backtest_config: 回测配置，包含strategy, init_cash, backtest_mode等
 
     Returns:
         bool: 是否成功
@@ -105,6 +105,7 @@ def run_backtest(csv_path, backtest_config):
     try:
         strategy_name = backtest_config.get('strategy', 'EnhancedVolumeStrategy')
         init_cash = backtest_config.get('init_cash', settings.INIT_CASH)
+        backtest_mode = backtest_config.get('backtest_mode', settings.BACKTEST_MODE)
 
         # 获取策略类
         strategy_class = global_strategy_manager.get_strategy(strategy_name)
@@ -113,8 +114,8 @@ def run_backtest(csv_path, backtest_config):
             return False
 
         # 执行回测
-        run_backtest_enhanced_volume_strategy(csv_path, strategy_class, init_cash)
-        logger.info(f"回测完成: {csv_path}, 策略: {strategy_name}")
+        run_backtest_enhanced_volume_strategy(csv_path, strategy_class, init_cash, backtest_mode)
+        logger.info(f"回测完成: {csv_path}, 策略: {strategy_name}, 模式: {backtest_mode}")
         return True
     except Exception as e:
         logger.error(f"回测失败: {str(e)}")

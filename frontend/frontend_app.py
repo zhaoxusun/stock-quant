@@ -128,12 +128,6 @@ def index():
                          backtest_mode_list=backtest_mode_list, backtest_mode=backtest_mode)
 
 
-@app.route('/data/<path:filename>')
-@log_request_details
-def get_data_file(filename):
-    return send_from_directory(stock_data_root, filename)
-
-
 @app.route('/get_stocks/<source>')
 @log_request_details
 def get_stocks(source):
@@ -288,6 +282,11 @@ def get_music_list():
     response.headers['Content-Type'] = 'application/json; charset=utf-8'
     return response
 
+
+@app.route('/data/<path:filename>')
+@log_request_details
+def get_data_file(filename):
+    return send_from_directory(stock_data_root, filename)
 
 @app.route('/get_backtest_results')
 @log_request_details

@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import backtrader as bt
 import pandas as pd
@@ -9,6 +10,7 @@ from core.strategy.trading.trading_commition import CommissionFactory
 from core.visualization.visual_tools_plotly import plotly_draw
 from pathlib import Path
 import settings
+from core.quant.backtest_record_manager import backtest_record_manager
 
 logger = create_log('quant_manage')
 
@@ -32,11 +34,42 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
     actual_backtest_mode = backtest_mode if backtest_mode in settings.BACKTEST_MODE_LIST else settings.BACKTEST_MODE
 
     current_time = get_current_time()
+    record_id = backtest_record_manager.create_record_id()
     relative_path = str(csv_path).replace(str(settings.stock_data_root) + '/', '')
+
+    # 解析股票信息
+    stock_code = ''
+    stock_name = ''
+    data_source = ''
+    if '_' in relative_path:
+        parts = relative_path.split('/')
+        if len(parts) >= 2:
+            file_name = parts[-1].replace('.csv', '')
+            stock_code, stock_name = file_name.split('_', 1) if '_' in file_name else (file_name, '')
+            data_source = parts[0] if len(parts) >= 2 else ''
+
     logger.info("=" * 60)
     logger.info("【程序启动】VolumeIndicatorStrategy回测程序")
     logger.info(f"【目标文件】{csv_path}")
+    logger.info(f"【回测记录ID】{record_id}")
     logger.info("=" * 60)
+
+    # 初始化记录数据
+    record_data = {
+        'record_id': record_id,
+        'created_at': datetime.now().isoformat(),
+        'init_data': {
+            'csv_path': str(csv_path),
+            'relative_path': relative_path,
+            'stock_code': stock_code,
+            'stock_name': stock_name,
+            'data_source': data_source,
+            'strategy': trading_strategy.__name__,
+            'backtest_mode': actual_backtest_mode,
+            'init_cash': init_cash,
+            'start_time': current_time
+        }
+    }
 
     logger.info("=" * 60)
     logger.info("【回测配置】开始初始化回测参数")
@@ -54,6 +87,20 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
 
     market_series = data.p.dataname.get('market', pd.Series(['HK']))
     market = market_series.iloc[0] if not market_series.empty else None
+
+    # 回测前数据
+    start_date = data.p.dataname.index[0].strftime('%Y-%m-%d')
+    end_date = data.p.dataname.index[-1].strftime('%Y-%m-%d')
+    commission = CommissionFactory.get_commission(market)  # 获取对应市场的佣金配置
+    record_data['before_data'] = {
+        'start_date': start_date,
+        'end_date': end_date,
+        'data_days': data_length,
+        'market': market,
+        'initial_cash': init_cash,
+        'commission_rate': commission.p.commission if 'commission' in dir() else 0,
+        'slippage': commission.p.slippage if 'commission' in dir() else 0
+    }
 
     cerebro = bt.Cerebro()
     cerebro.adddata(data)
@@ -75,7 +122,7 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
 
     # 启动回测
     logger.info(f"【回测启动】初始资金：{cerebro.broker.getcash():,.2f} 港元")
-    logger.info(f"【回测周期】：{data.p.dataname.index[0].date()} ~ {data.p.dataname.index[-1].date()}")
+    logger.info(f"【回测周期】：{start_date} ~ {end_date}")
     logger.info(f"【回测模式】：{actual_backtest_mode}")
     logger.info("=" * 60)
 
@@ -184,6 +231,62 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
     html_path = plotly_draw(csv_path, strategy, init_cash, html_file_name, html_file_path)
     logger.info(f"7. 回测可视化图表将保存至：{html_path}，对应股票数据：{csv_path}")
     logger.info("=" * 60)
+
+    # 回测完成后保存记录
+    try:
+        record_data['after_data'] = {
+            'result_html_path': str(html_path) if html_path else '',
+            'signal_stats': {
+                'buy_signals': strategy.buy_signals_count,
+                'sell_signals': strategy.sell_signals_count,
+                'executed_buys': strategy.executed_buys_count,
+                'executed_sells': strategy.executed_sells_count
+            }
+        }
+
+        # 尝试添加收益数据
+        try:
+            record_data['after_data']['return_stats'] = {
+                'total_return': total_return,
+                'annual_return': annual_return,
+                'final_cash': final_cash
+            }
+        except:
+            pass
+
+        # 尝试添加风险数据
+        try:
+            record_data['after_data']['risk_stats'] = {
+                'max_drawdown': max_dd,
+                'calmar_ratio': calmar_ratio
+            }
+        except:
+            pass
+
+        # 尝试添加交易数据
+        try:
+            record_data['after_data']['trade_stats'] = {
+                'total_trades': total_trades,
+                'won_trades': won_trades,
+                'lost_trades': lost_trades,
+                'win_rate': win_rate,
+                'profit_factor': profit_factor
+            }
+        except:
+            pass
+
+        # 尝试添加夏普比率
+        try:
+            record_data['after_data']['sharpe_ratio'] = sharpe_ratio
+        except:
+            pass
+
+        record_data['complete_time'] = datetime.now().isoformat()
+
+        backtest_record_manager.save(record_data)
+    except Exception as e:
+        logger.warning(f"保存回测记录失败: {str(e)}")
+
     logger.info("【回测结束】\n")
 
 

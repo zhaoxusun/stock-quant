@@ -29,6 +29,7 @@ from core.stock import manager_baostock, manager_akshare, manager_futu
 from core.strategy.strategy_manager import global_strategy_manager
 from common.logger import create_log
 from core.quant.quant_manage import run_backtest_enhanced_volume_strategy, run_backtest_enhanced_volume_strategy_multi
+from core.quant.backtest_record_manager import backtest_record_manager
 from settings import stock_data_root, html_root, signals_root, BACKTEST_MODE_LIST, BACKTEST_MODE
 
 # 初始化Flask应用
@@ -373,6 +374,46 @@ def get_backtest_results():
     except Exception as e:
         logger.error(f"Error getting backtest results: {str(e)}")
         error_response_data = {'success': False, 'message': f'Error getting backtest results: {str(e)}', 'data':{}}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
+@app.route('/api/backtest_records/get_all')
+@log_request_details
+def get_all_backtest_records():
+    """获取所有回测记录"""
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        records = backtest_record_manager.read_all(limit=limit)
+        response_data = {'success': True, 'message': '获取回测记录成功', 'data': records}
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"获取回测记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'获取回测记录失败: {str(e)}', 'data': []}
+        error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
+        error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return error_response
+
+
+@app.route('/api/backtest_records/get/<record_id>')
+@log_request_details
+def get_backtest_record(record_id):
+    """获取单条回测记录"""
+    try:
+        record = backtest_record_manager.read(record_id)
+        if record:
+            response_data = {'success': True, 'message': '获取回测记录成功', 'data': record}
+        else:
+            response_data = {'success': False, 'message': '回测记录不存在', 'data': None}
+        response = make_response(json.dumps(response_data, ensure_ascii=False))
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    except Exception as e:
+        logger.error(f"获取回测记录失败: {str(e)}")
+        error_response_data = {'success': False, 'message': f'获取回测记录失败: {str(e)}', 'data': None}
         error_response = make_response(json.dumps(error_response_data, ensure_ascii=False))
         error_response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return error_response

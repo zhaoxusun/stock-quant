@@ -213,8 +213,13 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
 .toast-message { color: #e0e0e0; font-size: 14px; font-weight: 500; }
 
 /* Page Header */
-.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
-.page-title { font-size: 1.5rem; font-weight: 700; color: var(--text-color); display: flex; align-items: center; gap: 12px; }
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 25px; gap: 20px; }
+.page-header-gradient { background: linear-gradient(135deg, var(--card-bg) 0%, #1a2a3a 100%); border-radius: 16px; padding: 24px 30px; border: 1px solid var(--border-color); position: relative; overflow: hidden; }
+.page-header-gradient::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary-color), var(--accent-color), var(--success-color)); }
+.page-header-gradient .page-title { color: #fff; }
+.page-header-gradient .page-title i { font-size: 1.3rem; }
+.page-header-gradient .page-subtitle { font-size: 13px; }
+.page-title { font-size: 1.5rem; font-weight: 700; color: var(--text-color); display: flex; align-items: center; gap: 12px; margin: 0; }
 .page-title i { color: var(--accent-color); }
 .page-subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 5px; }
 
@@ -530,6 +535,7 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
 .stock-link:hover { color: var(--accent-color); text-decoration: underline; }
 .view-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: linear-gradient(135deg, var(--accent-color), var(--primary-color)); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; text-decoration: none; transition: var(--transition-normal); }
 .view-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(41, 128, 185, 0.4); color: white; }
+.view-btn-sm { padding: 4px 8px; font-size: 11px; margin-left: 4px; }
 .empty-state-custom { text-align: center; padding: 60px 20px; }
 .empty-icon { font-size: 4rem; color: var(--text-secondary); opacity: 0.3; margin-bottom: 20px; }
 .empty-title { font-size: 1.1rem; color: var(--text-color); margin-bottom: 8px; }
@@ -541,8 +547,6 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
 .page-btn-custom:hover:not(.disabled):not(.active) { background: var(--hover-color); border-color: var(--accent-color); }
 .page-btn-custom.active { background: var(--accent-color); border-color: var(--accent-color); color: white; }
 .page-btn-custom.disabled { opacity: 0.5; cursor: not-allowed; }
-.section-highlight { animation: sectionPulse 0.6s ease; }
-@keyframes sectionPulse { 0% { box-shadow: 0 0 0 0 rgba(41, 128, 185, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(41, 128, 185, 0); } 100% { box-shadow: 0 0 0 0 rgba(41, 128, 185, 0); } }
 
 /* Music Player */
 #musicToggleBtn.playing { background: rgba(46, 204, 113, 0.3); border-color: #2ecc71; color: #2ecc71; }

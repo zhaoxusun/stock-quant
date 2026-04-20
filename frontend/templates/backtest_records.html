@@ -15,10 +15,10 @@
         {% include 'navbar.html' %}
 
         <div class="content pt-4">
-            <div class="section-header">
-                <div class="section-title">
-                    <i class="fas fa-history"></i>
-                    回测记录
+            <div class="page-header page-header-gradient mb-4">
+                <div>
+                    <h1 class="page-title"><i class="fas fa-history"></i>回测记录</h1>
+                    <p class="page-subtitle">查看历史回测记录、筛选分析结果、点击查看详情或跳转到回测报表</p>
                 </div>
             </div>
 
@@ -243,17 +243,17 @@
 
                     row.innerHTML = `
                         <td class="text-secondary">#${(currentPage - 1) * pageSize + index + 1}</td>
-                        <td>${stockCsvLink ? `<a href="${stockCsvLink}" target="_blank" class="stock-link"><strong>${stockName}</strong></a>` : stockName}</td>
+                        <td>${stockCsvLink ? `<a href="${stockCsvLink}" target="_blank" class="stock-link">${stockName}</a>` : stockName}</td>
                         <td><span class="stock-badge">${dataSource}</span></td>
                         <td>${strategy ? `<a href="/strategy_code?strategy=${encodeURIComponent(strategy)}" target="_blank" class="strategy-link">${strategy}</a>` : '-'}</td>
                         <td>${modeLabel}</td>
                         <td>${initData.init_cash ? initData.init_cash.toLocaleString() : '-'}</td>
                         <td class="text-secondary">${record.created_at ? record.created_at.substring(0, 19) : '-'}</td>
                         <td>
-                            <button class="view-btn btn-sm" style="padding: 4px 8px; font-size: 11px;" onclick="viewRecord('${record.record_id}')">
+                            <button class="view-btn view-btn-sm" onclick="viewRecord('${record.record_id}')">
                                 <i class="fas fa-eye"></i> 详情
                             </button>
-                            ${resultPath ? `<a href="/show_result/${resultPath}" target="_blank" class="view-btn btn-sm" style="padding: 4px 8px; font-size: 11px; margin-left: 4px;"><i class="fas fa-chart-line"></i> 报表</a>` : ''}
+                            ${resultPath ? `<a href="/show_result/${resultPath}" target="_blank" class="view-btn view-btn-sm"><i class="fas fa-chart-line"></i> 报表</a>` : ''}
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -339,8 +339,8 @@
             const modalHtml = `
                 <div class="modal fade" id="recordModal" tabindex="-1">
                     <div class="modal-dialog modal-lg">
-                        <div class="modal-content" style="background: var(--surface-color); color: var(--text-color);">
-                            <div class="modal-header" style="background: linear-gradient(135deg, #0a4b78, #165d8c);">
+                        <div class="modal-content record-modal-content">
+                            <div class="modal-header record-modal-header">
                                 <h5 class="modal-title text-white">回测记录详情 - ${(initData.stock_name || initData.stock_code) || '-'}</h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>

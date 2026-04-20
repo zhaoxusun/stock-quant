@@ -523,8 +523,10 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
 .data-table-custom tbody tr:hover { background: rgba(41, 128, 185, 0.1); }
 .data-table-custom tbody tr:last-child td { border-bottom: none; }
 .stock-badge { display: inline-flex; align-items: center; padding: 4px 10px; background: var(--primary-color); color: white; border-radius: 6px; font-size: 11px; font-weight: 500; }
-.strategy-link { color: var(--accent-color); text-decoration: none; transition: var(--transition-fast); }
-.strategy-link:hover { color: #fff; text-decoration: underline; }
+.strategy-link { color: var(--text-color); text-decoration: none; transition: var(--transition-fast); }
+.strategy-link:hover { color: var(--accent-color); text-decoration: underline; }
+.stock-link { color: var(--text-color); text-decoration: none; transition: var(--transition-fast); }
+.stock-link:hover { color: var(--accent-color); text-decoration: underline; }
 .view-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: linear-gradient(135deg, var(--accent-color), var(--primary-color)); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; text-decoration: none; transition: var(--transition-normal); }
 .view-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(41, 128, 185, 0.4); color: white; }
 .empty-state-custom { text-align: center; padding: 60px 20px; }

@@ -8,7 +8,8 @@ import core.stock.manager_baostock as manager_baostock
 
 logger = create_log('test_get_data')
 
-if __name__ == "__main__":
+
+def test_futu_get_data():
 
 
     '''
@@ -41,6 +42,7 @@ if __name__ == "__main__":
         adjust_type=ft.AuType.QFQ
     )
 
+def test_akshare_get_data():
 
     '''
     akshare get data
@@ -63,6 +65,7 @@ if __name__ == "__main__":
         end_date=end_date
     )
 
+def test_baostock_get_data():
 
     '''
     baostock get data
@@ -78,3 +81,7 @@ if __name__ == "__main__":
         adjust_type='2'
     )
 
+if __name__ == "__main__":
+    # test_futu_get_data()
+    test_akshare_get_data()
+    # test_baostock_get_data()

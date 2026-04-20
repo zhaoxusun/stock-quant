@@ -700,7 +700,7 @@
                             const serialNumber = (page - 1) * pageSize + index + 1;
                             row.innerHTML = `
                                 <td class="text-secondary">#${serialNumber}</td>
-                                <td><strong>${result.stock}</strong></td>
+                                <td><a href="/data/${result.source}/${result.stock}.csv" target="_blank" class="stock-link" title="下载CSV">${result.stock}</a></td>
                                 <td><span class="stock-badge">${result.source}</span></td>
                                 <td>${result.strategy ? `<a href="/strategy_code?strategy=${encodeURIComponent(result.strategy)}" target="_blank" class="strategy-link">${result.strategy}</a>` : '-'}</td>
                                 <td class="text-secondary">${result.run_time}</td>

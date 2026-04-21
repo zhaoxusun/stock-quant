@@ -15,9 +15,9 @@ project_root = get_project_root()
 data_root = project_root / 'data'
 stock_data_root = data_root / 'stock'
 log_root = project_root / 'log'
-html_root = project_root / 'html'
 result_root = project_root / 'result'
-signals_root = project_root / 'signals'
+html_root = result_root / 'html'
+signals_root = result_root / 'signals'
 # chart_show_switch = False
 
 # 回测模式列表：['BACKTEST', 'LIVE']

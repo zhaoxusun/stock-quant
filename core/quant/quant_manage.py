@@ -234,15 +234,22 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
 
     # 回测完成后保存记录
     try:
+        # 获取已保存的信号文件路径
+        signal_csv_relative_path = ''
+        try:
+            if hasattr(strategy, 'indicator') and hasattr(strategy.indicator, 'signal_record_manager'):
+                signals_df = strategy.indicator.signal_record_manager.transform_to_dataframe()
+                if not signals_df.empty:
+                    signal_file_folder = settings.signals_root / relative_path.rsplit('.', 1)[0] / strategy.__class__.__name__
+                    signals_file_path = os.path.join(signal_file_folder, f"stock_signals_{current_time}.csv")
+                    signal_csv_relative_path = signals_file_path.replace(str(settings.signals_root) + '/', '') if signals_file_path else ''
+        except:
+            pass
+
         record_data['after_data'] = {
             'result_html_path': str(html_path) if html_path else '',
             'result_html_relative_path': f"{relative_path.rsplit('.', 1)[0]}/{strategy.__class__.__name__}/{html_file_name}" if html_path else '',
-            'signal_stats': {
-                'buy_signals': strategy.buy_signals_count,
-                'sell_signals': strategy.sell_signals_count,
-                'executed_buys': strategy.executed_buys_count,
-                'executed_sells': strategy.executed_sells_count
-            }
+            'signal_csv_relative_path': signal_csv_relative_path,
         }
 
         # 尝试添加收益数据

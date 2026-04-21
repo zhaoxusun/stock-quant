@@ -126,7 +126,7 @@
                                     <input type="number" class="modern-input" id="initCash" value="5000000" min="10000" step="10000">
                                 </div>
                                 <div class="modern-form-group">
-                                    <label class="modern-label"><i class="fas fa-rocket"></i>计算模式</label>
+                                    <label class="modern-label"><i class="fas fa-rocket"></i>运行模式</label>
                                     <select class="modern-select" id="backtestMode">
                                         {% for mode in backtest_mode_list %}
                                         <option value="{{ mode }}" {% if mode == backtest_mode %}selected{% endif %}>

@@ -1,5 +1,6 @@
 import os
 import sys
+import pandas as pd
 
 
 # 首先设置系统路径
@@ -387,10 +388,9 @@ def get_data_file(filename):
 @app.route('/api/backtest_records/get_all')
 @log_request_details
 def get_all_backtest_records():
-    """获取所有回测记录"""
+    """获取所有回测记录（不分页）"""
     try:
-        limit = request.args.get('limit', 50, type=int)
-        records = backtest_record_manager.read_all(limit=limit)
+        records = backtest_record_manager.read_all(limit=999999)
         response_data = {'success': True, 'message': '获取回测记录成功', 'data': records}
         response = make_response(json.dumps(response_data, ensure_ascii=False))
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
@@ -672,36 +672,117 @@ def get_signal_files():
 @app.route('/analyze_signals', methods=['POST'])
 @log_request_details
 def analyze_signals():
-    """分析信号文件"""
+    """分析回测记录信号"""
 
     try:
         data = request.json
-        file_paths = data.get('file_paths', [])
+        record_ids = data.get('record_ids', [])
         filters = data.get('filters', {})
-        combined_df = signals_analyze(file_paths, filters)
-        
-        # 计算时间范围
-        date_range = ''
-        if len(combined_df) > 0:
-            min_date = combined_df['date'].min()
-            max_date = combined_df['date'].max()
-            date_range = f"{min_date} 至 {max_date}"
-        
-        # 统计信号类型分布
-        signal_type_counts = combined_df['signal_type'].value_counts().to_dict()
-        
+
+        all_records = backtest_record_manager.read_all(limit=999999)
+        selected_records = []
+        for record in all_records:
+            if record.get('record_id') in record_ids:
+                selected_records.append(record)
+
+        if not selected_records:
+            return json.dumps({'success': False, 'message': '没有找到对应的回测记录', 'data': {}})
+
+        # 汇总所有CSV信号数据
+        all_signals_df = pd.DataFrame()
+        unique_strategies = set()
+        unique_sources = set()
+        date_ranges = []
+
+        for record in selected_records:
+            init_data = record.get('init_data', {})
+            after_data = record.get('after_data', {})
+            before_data = record.get('before_data', {})
+
+            stock_name = init_data.get('stock_name', '')
+            stock_code = init_data.get('stock_code', '')
+            strategy = init_data.get('strategy', '')
+            data_source = init_data.get('data_source', '')
+
+            unique_strategies.add(strategy)
+            unique_sources.add(data_source)
+
+            signal_csv_path = after_data.get('signal_csv_relative_path', '')
+            if signal_csv_path:
+                full_path = os.path.join(signals_root, signal_csv_path)
+                if os.path.exists(full_path):
+                    try:
+                        df = pd.read_csv(full_path)
+                        df['stock_info'] = stock_name
+                        df['stock_code'] = stock_code
+                        df['data_source'] = data_source
+                        df['strategy_name'] = strategy
+                        df['backtest_mode'] = init_data.get('backtest_mode', '')
+                        df['start_date'] = before_data.get('start_date', '')
+                        df['end_date'] = before_data.get('end_date', '')
+                        df['total_return'] = after_data.get('return_stats', {}).get('total_return', 0)
+                        df['annual_return'] = after_data.get('return_stats', {}).get('annual_return', 0)
+                        df['max_drawdown'] = after_data.get('risk_stats', {}).get('max_drawdown', 0)
+                        all_signals_df = pd.concat([all_signals_df, df], ignore_index=True)
+                    except Exception as e:
+                        logger.warning(f"读取信号文件失败: {e}")
+
+            start_date = before_data.get('start_date', '')
+            end_date = before_data.get('end_date', '')
+            if start_date and end_date:
+                date_ranges.append(f"{start_date} 至 {end_date}")
+
+        date_range = date_ranges[0] if date_ranges else ''
+
+        # 应用筛选条件
+        if filters:
+            if filters.get('signal_type') and 'signal_type' in all_signals_df.columns:
+                all_signals_df = all_signals_df[all_signals_df['signal_type'] == filters['signal_type']]
+            if filters.get('strategy_name') and 'strategy_name' in all_signals_df.columns:
+                all_signals_df = all_signals_df[all_signals_df['strategy_name'] == filters['strategy_name']]
+            if filters.get('stock_code') and 'stock_info' in all_signals_df.columns:
+                all_signals_df = all_signals_df[all_signals_df['stock_info'].str.contains(filters['stock_code'], na=False)]
+            if filters.get('backtest_mode') and 'backtest_mode' in all_signals_df.columns:
+                all_signals_df = all_signals_df[all_signals_df['backtest_mode'] == filters['backtest_mode']]
+            if filters.get('start_date') and 'date' in all_signals_df.columns:
+                all_signals_df = all_signals_df[all_signals_df['date'] >= filters['start_date']]
+            if filters.get('end_date') and 'date' in all_signals_df.columns:
+                all_signals_df = all_signals_df[all_signals_df['date'] <= filters['end_date']]
+
+        # 统计汇总
+        if 'signal_type' in all_signals_df.columns:
+            total_buy_signals = len(all_signals_df[all_signals_df['signal_type'].str.contains('buy', na=False)])
+            total_sell_signals = len(all_signals_df[all_signals_df['signal_type'].str.contains('sell', na=False)])
+            normal_buy = len(all_signals_df[all_signals_df['signal_type'] == 'normal_buy'])
+            strong_buy = len(all_signals_df[all_signals_df['signal_type'] == 'strong_buy'])
+            normal_sell = len(all_signals_df[all_signals_df['signal_type'] == 'normal_sell'])
+            strong_sell = len(all_signals_df[all_signals_df['signal_type'] == 'strong_sell'])
+            signal_type_counts = {
+                '普通买入': normal_buy,
+                '强势买入': strong_buy,
+                '普通卖出': normal_sell,
+                '强势卖出': strong_sell,
+            }
+        else:
+            total_buy_signals = 0
+            total_sell_signals = 0
+            signal_type_counts = {}
+
+        signals_data = all_signals_df.to_dict('records')
+
         response_data = {
             'success': True,
-            'message': f'Found signals success',
+            'message': f'分析成功',
             'data': {
-                'signals': combined_df.to_dict('records'),
+                'signals': signals_data,
                 'summary': {
-                    'total_signals': len(combined_df),
-                    'buy_signals': len(combined_df[combined_df['signal_type'].str.contains('buy')]),
-                    'sell_signals': len(combined_df[combined_df['signal_type'].str.contains('sell')]),
-                    'neutral_signals': len(combined_df[combined_df['signal_type'].str.contains('neutral')]),
-                    'unique_stocks': combined_df['stock_info'].nunique(),
-                    'unique_strategies': combined_df['strategy_name'].nunique(),
+                    'total_signals': total_buy_signals + total_sell_signals,
+                    'buy_signals': total_buy_signals,
+                    'sell_signals': total_sell_signals,
+                    'unique_stocks': all_signals_df['stock_code'].nunique() if 'stock_code' in all_signals_df.columns else all_signals_df['stock_info'].nunique() if 'stock_info' in all_signals_df.columns else 0,
+                    'unique_strategies': all_signals_df['strategy_name'].nunique() if 'strategy_name' in all_signals_df.columns else len(unique_strategies),
+                    'unique_sources': len(unique_sources),
+                    'unique_modes': all_signals_df['backtest_mode'].nunique() if 'backtest_mode' in all_signals_df.columns else 0,
                     'date_range': date_range,
                     'signal_type_counts': signal_type_counts
                 }

@@ -22,40 +22,40 @@
                 </div>
             </div>
 
-            <div class="card form-panel mb-4">
-                <div class="form-panel-header">
-                    <h5><i class="fas fa-filter"></i>筛选条件</h5>
-                </div>
-                <div class="form-panel-body">
-                    <div class="filter-bar">
-                        <div class="filter-row">
-                            <div class="filter-item">
-                                <label><i class="fas fa-brain me-1"></i>策略</label>
-                                <select class="form-select" id="strategyFilter">
-                                    <option value="">全部策略</option>
-                                </select>
-                            </div>
-                            <div class="filter-item">
-                                <label><i class="fas fa-search me-1"></i>股票</label>
-                                <input type="text" class="form-control" id="stockFilter" placeholder="输入股票代码或名称">
-                            </div>
-                            <div class="filter-item">
-                                <label><i class="fas fa-clock me-1"></i>文件创建时间</label>
-                                <div class="d-flex gap-2">
-                                    <input type="date" class="form-control" id="fileCreateStartDate">
-                                    <input type="date" class="form-control" id="fileCreateEndDate">
-                                </div>
-                            </div>
-                            <div class="filter-actions align-self-end">
-                                <button class="btn btn-secondary" onclick="resetSignalFilters()">
-                                    <i class="fas fa-undo me-1"></i>重置
-                                </button>
-                            </div>
-                        </div>
+            <div class="filter-bar-custom">
+                <div class="filter-bar-row">
+                    <div class="filter-item-custom">
+                        <label><i class="fas fa-brain"></i></label>
+                        <select class="filter-select" id="strategyFilter">
+                            <option value="">策略</option>
+                        </select>
                     </div>
+                    <div class="filter-item-custom">
+                        <label><i class="fas fa-search"></i></label>
+                        <input type="text" class="filter-input" id="stockFilter" placeholder="股票代码或名称">
+                    </div>
+                    <div class="filter-item-custom">
+                        <label><i class="fas fa-rocket"></i></label>
+                        <select class="filter-select" id="modeFilter">
+                            <option value="">模式</option>
+                            <option value="LIVE">实盘</option>
+                            <option value="BACKTEST">回测</option>
+                        </select>
+                    </div>
+                    <div class="filter-item-custom date-range">
+                        <label><i class="fas fa-clock"></i></label>
+                        <input type="date" class="filter-input" id="fileCreateStartDate">
+                        <span class="date-separator">至</span>
+                        <input type="date" class="filter-input" id="fileCreateEndDate">
+                    </div>
+                    <button class="filter-btn reset" onclick="resetSignalFilters()">
+                        <i class="fas fa-undo"></i> 重置
+                    </button>
+                </div>
+            </div>
 
-                    <div class="signal-files-wrapper mt-4">
-                        <div class="signal-files-container">
+            <div class="signal-files-wrapper mt-4">
+                <div class="signal-files-container">
                             <div class="signal-files-header">
                                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                     <div class="d-flex align-items-center gap-3">
@@ -127,20 +127,25 @@
                             <div class="stat-card-label">卖出信号</div>
                             <div class="stat-card-value" id="sellSignals">0</div>
                         </div>
-                        <div class="stat-card neutral">
-                            <div class="stat-card-icon"><i class="fas fa-minus"></i></div>
-                            <div class="stat-card-label">中性信号（暂未实现）</div>
-                            <div class="stat-card-value" id="neutralSignals">0</div>
-                        </div>
                         <div class="stat-card info">
                             <div class="stat-card-icon"><i class="fas fa-chart-bar"></i></div>
-                            <div class="stat-card-label">涉及股票（不聚合，每个文件代表一只股票）</div>
+                            <div class="stat-card-label">涉及股票</div>
                             <div class="stat-card-value" id="uniqueStocks">0</div>
                         </div>
                         <div class="stat-card strategy">
                             <div class="stat-card-icon"><i class="fas fa-brain"></i></div>
                             <div class="stat-card-label">涉及策略</div>
                             <div class="stat-card-value" id="uniqueStrategies">0</div>
+                        </div>
+                        <div class="stat-card info">
+                            <div class="stat-card-icon"><i class="fas fa-database"></i></div>
+                            <div class="stat-card-label">涉及数据源</div>
+                            <div class="stat-card-value" id="uniqueSources">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-icon"><i class="fas fa-rocket"></i></div>
+                            <div class="stat-card-label">运行模式</div>
+                            <div class="stat-card-value" id="uniqueModes">-</div>
                         </div>
                     </div>
                     <div class="analysis-extra-info">
@@ -196,6 +201,7 @@
         let allSignalFiles = [];
         let filteredSignalFiles = [];
         let allSignalsData = [];
+        let currentSummary = {};
         const pageSize = 20;
         let currentPage = 1;
 
@@ -212,6 +218,7 @@
             document.getElementById('stockFilter').addEventListener('input', debounce(filterSignalFiles, 300));
             document.getElementById('fileCreateStartDate').addEventListener('change', filterSignalFiles);
             document.getElementById('fileCreateEndDate').addEventListener('change', filterSignalFiles);
+            document.getElementById('modeFilter').addEventListener('change', filterSignalFiles);
             document.getElementById('signalTypeFilter').addEventListener('change', filterSignalFiles);
             document.getElementById('startDate').addEventListener('change', filterSignalFiles);
             document.getElementById('endDate').addEventListener('change', filterSignalFiles);
@@ -234,11 +241,18 @@
         }
 
         function loadSignalFiles() {
-            fetch('/get_signal_files')
+            fetch('/api/backtest_records/get_all')
                 .then(r => r.json())
                 .then(data => {
-                    if (data.success && data.data.signal_files) {
-                        allSignalFiles = data.data.signal_files;
+                    if (data.success && data.data) {
+                        allSignalFiles = data.data.map(r => ({
+                            file_path: r.record_id,
+                            data_source: r.init_data?.data_source || '',
+                            stock_info: r.init_data?.stock_name || r.init_data?.stock_code || '',
+                            strategy_name: r.init_data?.strategy || '',
+                            backtest_mode: r.init_data?.backtest_mode || 'BACKTEST',
+                            file_time: r.created_at ? r.created_at.replace('T', ' ').substring(0, 19) : ''
+                        }));
                         filteredSignalFiles = [...allSignalFiles];
                         renderSignalFiles(filteredSignalFiles);
                     }
@@ -250,12 +264,14 @@
             const stock = document.getElementById('stockFilter').value;
             const fileCreateStart = document.getElementById('fileCreateStartDate').value;
             const fileCreateEnd = document.getElementById('fileCreateEndDate').value;
+            const mode = document.getElementById('modeFilter').value;
 
             filteredSignalFiles = allSignalFiles.filter(f => {
                 if (strategy && !f.strategy_name.includes(strategy)) return false;
                 if (stock && !f.stock_info.toLowerCase().includes(stock.toLowerCase())) return false;
                 if (fileCreateStart && new Date(f.file_time) < new Date(fileCreateStart)) return false;
                 if (fileCreateEnd && new Date(f.file_time) > new Date(fileCreateEnd + 'T23:59:59')) return false;
+                if (mode && f.backtest_mode !== mode) return false;
                 return true;
             });
 
@@ -278,23 +294,30 @@
                 updateFileCount();
                 return;
             }
-            
-            container.innerHTML = files.map(f => `
-                <div class="signal-file-item">
-                    <input type="checkbox" name="signalFile" value="${f.file_path}" checked onchange="updateFileCount()">
-                    <div class="signal-file-content">
-                        <div class="signal-file-info">
-                            <span class="signal-file-source">${f.data_source}</span>
-                            <i class="fas fa-chevron-right text-muted mx-2"></i>
-                            <span class="signal-file-stock">${f.stock_info}</span>
-                            <i class="fas fa-chevron-right text-muted mx-2"></i>
-                            <span class="signal-file-strategy">${f.strategy_name}</span>
-                            <i class="fas fa-clock text-muted mx-2"></i>
-                            <span class="signal-file-time">${f.file_time}</span>
+
+            container.innerHTML = files.map(f => {
+                const modeLabel = f.backtest_mode === 'LIVE'
+                    ? '<span class="badge bg-warning text-dark">实盘</span>'
+                    : '<span class="badge bg-primary">回测</span>';
+                return `
+                    <div class="signal-file-item">
+                        <input type="checkbox" name="signalFile" value="${f.file_path}" checked onchange="updateFileCount()">
+                        <div class="signal-file-content">
+                            <div class="signal-file-info">
+                                <span class="signal-file-source">${f.data_source}</span>
+                                <i class="fas fa-chevron-right text-muted mx-2"></i>
+                                <span class="signal-file-stock">${f.stock_info}</span>
+                                <i class="fas fa-chevron-right text-muted mx-2"></i>
+                                <span class="signal-file-strategy">${f.strategy_name}</span>
+                                <i class="fas fa-chevron-right text-muted mx-2"></i>
+                                <span class="signal-file-mode">${modeLabel}</span>
+                                <i class="fas fa-clock text-muted mx-2"></i>
+                                <span class="signal-file-time">${f.file_time}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             updateFileCount();
         }
@@ -344,18 +367,21 @@
             fetch('/analyze_signals', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ file_paths: selectedFiles, filters })
+                body: JSON.stringify({ record_ids: selectedFiles, filters })
             })
             .then(r => r.json())
             .then(data => {
                 if (data.success && data.data) {
                     const summary = data.data.summary;
+                    currentSummary = summary;
                     document.getElementById('totalSignals').textContent = summary.total_signals;
                     document.getElementById('buySignals').textContent = summary.buy_signals;
                     document.getElementById('sellSignals').textContent = summary.sell_signals;
-                    document.getElementById('neutralSignals').textContent = summary.neutral_signals || 0;
+                    
                     document.getElementById('uniqueStocks').textContent = summary.unique_stocks;
                     document.getElementById('uniqueStrategies').textContent = summary.unique_strategies;
+                    document.getElementById('uniqueSources').textContent = summary.unique_sources || 0;
+                    document.getElementById('uniqueModes').textContent = summary.unique_modes || '-';
                     document.getElementById('dateRange').textContent = summary.date_range || '-';
                     document.getElementById('downloadHtmlBtn').style.display = 'inline-flex';
                     
@@ -426,25 +452,21 @@
         function renderSignalDistribution(typeCounts, total) {
             const container = document.getElementById('distributionBars');
             const typeColors = {
-                'normal_buy': '#2ecc71',
-                'strong_buy': '#27ae60',
-                'buy': '#2ecc71',
-                'normal_sell': '#e74c3c',
-                'strong_sell': '#c0392b',
-                'sell': '#e74c3c',
-                'neutral': '#f39c12',
-                'hold': '#95a5a6'
+                '普通买入': '#2ecc71',
+                '强势买入': '#27ae60',
+                '买入': '#2ecc71',
+                '普通卖出': '#e74c3c',
+                '强势卖出': '#c0392b',
+                '卖出': '#e74c3c',
             };
-            
+
             const typeNames = {
-                'normal_buy': '普通买入',
-                'strong_buy': '强势买入',
-                'buy': '买入',
-                'normal_sell': '普通卖出',
-                'strong_sell': '强势卖出',
-                'sell': '卖出',
-                'neutral': '中性',
-                'hold': '持有'
+                '普通买入': '普通买入',
+                '强势买入': '强势买入',
+                '买入': '买入',
+                '普通卖出': '普通卖出',
+                '强势卖出': '强势卖出',
+                '卖出': '卖出',
             };
             
             container.innerHTML = '';
@@ -476,6 +498,7 @@
             document.getElementById('stockFilter').value = '';
             document.getElementById('fileCreateStartDate').value = '';
             document.getElementById('fileCreateEndDate').value = '';
+            document.getElementById('modeFilter').value = '';
             filteredSignalFiles = [...allSignalFiles];
             renderSignalFiles(filteredSignalFiles);
         }
@@ -502,38 +525,20 @@
                 showNotification('没有可下载的数据', 'error');
                 return;
             }
-            
+
             const filters = {
                 strategy_name: document.getElementById('strategyFilter').value,
                 stock_code: document.getElementById('stockFilter').value,
                 signal_type: document.getElementById('signalTypeFilter').value,
+                mode: document.getElementById('modeFilter').value,
                 start_date: document.getElementById('startDate').value,
-                end_date: document.getElementById('endDate').value
+                end_date: document.getElementById('endDate').value,
+                date_start: document.getElementById('fileCreateStartDate').value,
+                date_end: document.getElementById('fileCreateEndDate').value
             };
-            
-            const summary = {
-                total_signals: allSignalsData.length,
-                buy_signals: allSignalsData.filter(s => s.signal_type && s.signal_type.includes('buy')).length,
-                sell_signals: allSignalsData.filter(s => s.signal_type && s.signal_type.includes('sell')).length,
-                neutral_signals: allSignalsData.filter(s => s.signal_type && s.signal_type.includes('neutral')).length,
-                unique_stocks: [...new Set(allSignalsData.map(s => s.stock_info))].length,
-                unique_strategies: [...new Set(allSignalsData.map(s => s.strategy_name))].length,
-                date_range: '',
-                signal_type_counts: {}
-            };
-            
-            const dates = allSignalsData.map(s => s.date).filter(d => d).sort();
-            if (dates.length > 0) {
-                summary.date_range = `${dates[0]} 至 ${dates[dates.length - 1]}`;
-            }
-            
-            allSignalsData.forEach(s => {
-                const st = s.signal_type || '';
-                if (st) {
-                    summary.signal_type_counts[st] = (summary.signal_type_counts[st] || 0) + 1;
-                }
-            });
-            
+
+            const summary = { ...currentSummary };
+
             fetch('/generate_html_report', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -550,6 +555,8 @@
                     a.click();
                     URL.revokeObjectURL(url);
                     showNotification('报告下载成功');
+                } else {
+                    showNotification(data.message || '报告生成失败', 'error');
                 }
             });
         }

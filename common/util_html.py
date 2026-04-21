@@ -43,16 +43,20 @@ def signals_to_html(signals_data, filters=None, summary=None):
         strategy_filter = filters.get('strategy_name', '')
         stock_filter = filters.get('stock_code', '')
         signal_type_filter = filters.get('signal_type', '')
+        mode_filter = filters.get('mode', '')
         start_date = filters.get('start_date', '')
         end_date = filters.get('end_date', '')
+        date_start = filters.get('date_start', '')
+        date_end = filters.get('date_end', '')
 
         # 获取统计信息
         total_signals = summary.get('total_signals', 0)
         buy_signals = summary.get('buy_signals', 0)
         sell_signals = summary.get('sell_signals', 0)
-        neutral_signals = summary.get('neutral_signals', 0)
         unique_stocks = summary.get('unique_stocks', 0)
         unique_strategies = summary.get('unique_strategies', 0)
+        unique_sources = summary.get('unique_sources', 0)
+        unique_modes = summary.get('unique_modes', 0)
         date_range = summary.get('date_range', '')
         signal_type_counts = summary.get('signal_type_counts', {})
         
@@ -206,22 +210,25 @@ def signals_to_html(signals_data, filters=None, summary=None):
         <div class="filters">
             <h3>筛选条件</h3>
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <strong>策略：</strong>{strategy_filter or '全部策略'}
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <strong>股票：</strong>{stock_filter or '全部股票'}
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <strong>信号类型：</strong>{signal_type_filter or '全部类型'}
+                </div>
+                <div class="col-md-3">
+                    <strong>运行模式：</strong>{mode_filter or '全部模式'}
                 </div>
             </div>
             <div class="row mt-2">
                 <div class="col-md-6">
-                    <strong>起始时间：</strong>{start_date or '不限制'}
+                    <strong>信号时间：</strong>{start_date or '不限制'} 至 {end_date or '不限制'}
                 </div>
                 <div class="col-md-6">
-                    <strong>结束时间：</strong>{end_date or '不限制'}
+                    <strong>文件创建时间：</strong>{date_start or '不限制'} 至 {date_end or '不限制'}
                 </div>
             </div>
         </div>
@@ -240,16 +247,20 @@ def signals_to_html(signals_data, filters=None, summary=None):
                 <div class="stat-value price-down">{sell_signals}</div>
             </div>
             <div class="stat-box">
-                <div>中性信号（暂未实现）</div>
-                <div class="stat-value" style="color: #f39c12;">{neutral_signals}</div>
-            </div>
-            <div class="stat-box">
-                <div>涉及股票（不聚合，每个文件代表一只股票）</div>
+                <div>聚合股票数</div>
                 <div class="stat-value">{unique_stocks}</div>
             </div>
             <div class="stat-box">
-                <div>涉及策略数</div>
+                <div>策略数</div>
                 <div class="stat-value" style="color: #9b59b6;">{unique_strategies}</div>
+            </div>
+            <div class="stat-box">
+                <div>数据源数</div>
+                <div class="stat-value" style="color: #3498db;">{unique_sources}</div>
+            </div>
+            <div class="stat-box">
+                <div>运行模式</div>
+                <div class="stat-value" style="color: #14b8a6;">{unique_modes}</div>
             </div>
         </div>
         

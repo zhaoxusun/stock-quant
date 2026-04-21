@@ -26,6 +26,7 @@ def signal_get():
                     data_source = parts[0] if len(parts) > 0 else 'unknown'
                     stock_info = parts[1] if len(parts) > 1 else 'unknown'
                     strategy_name = parts[2] if len(parts) > 2 else 'unknown'
+                    backtest_mode = parts[3] if len(parts) > 3 else 'BACKTEST'
 
                     # 获取文件创建时间
                     file_time = datetime.datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
@@ -35,6 +36,7 @@ def signal_get():
                         'data_source': data_source,
                         'stock_info': stock_info,
                         'strategy_name': strategy_name,
+                        'backtest_mode': backtest_mode,
                         'file_time': file_time
                     })
 
@@ -53,10 +55,17 @@ def signals_analyze(file_paths, filters):
     try:
         all_signals = []
 
+        if not file_paths:
+            raise Exception('没有选择任何回测记录')
+
         for file_path in file_paths:
             full_path = os.path.join(signals_root, file_path)
 
             if not os.path.exists(full_path):
+                logger.warning(f"文件不存在: {full_path}")
+                continue
+
+            if not file_path.endswith('.csv'):
                 continue
 
             # 读取CSV文件
@@ -67,11 +76,13 @@ def signals_analyze(file_paths, filters):
             data_source = parts[0] if len(parts) > 0 else 'unknown'
             stock_info = parts[1] if len(parts) > 1 else 'unknown'
             strategy_name = parts[2] if len(parts) > 2 else 'unknown'
+            backtest_mode = parts[3] if len(parts) > 3 else 'BACKTEST'
 
             # 添加元数据到DataFrame
             df['data_source'] = data_source
             df['stock_info'] = stock_info
             df['strategy_name'] = strategy_name
+            df['backtest_mode'] = backtest_mode
             df['file_path'] = file_path
 
             all_signals.append(df)
@@ -83,14 +94,14 @@ def signals_analyze(file_paths, filters):
         combined_df = combine_data(all_signals, True)
 
         # 应用筛选条件
-        if filters:
+        if filters and len(combined_df) > 0:
             if 'strategy_name' in filters and filters['strategy_name']:
                 combined_df = combined_df[combined_df['strategy_name'] == filters['strategy_name']]
 
             if 'stock_code' in filters and filters['stock_code']:
                 combined_df = combined_df[combined_df['stock_info'].str.contains(filters['stock_code'])]
 
-            if 'signal_type' in filters and filters['signal_type']:
+            if 'signal_type' in filters and filters['signal_type'] and 'signal_type' in combined_df.columns:
                 combined_df = combined_df[combined_df['signal_type'] == filters['signal_type']]
 
             # 添加时间范围筛选

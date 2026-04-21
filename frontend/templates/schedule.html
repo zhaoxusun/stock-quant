@@ -117,9 +117,12 @@
                                             </thead>
                                             <tbody id="stockEntitiesTableBody"></tbody>
                                         </table>
-                                        <div id="noStockEntities" class="empty-state">
+                                        <div id="noStockEntities" class="empty-state d-none">
                                             <div class="empty-state-icon"><i class="fas fa-inbox"></i></div>
                                             <div class="empty-state-text">暂无股票实体，请添加至少一个</div>
+                                        </div>
+                                        <div id="stockEntitiesHint" style="text-align: center; padding: 12px; background: rgba(41, 128, 185, 0.15); border: 1px dashed var(--accent-color); border-radius: 8px; color: var(--accent-color); font-size: 12px;">
+                                            <i class="fas fa-info-circle me-1"></i>请在上方添加股票实体后创建任务
                                         </div>
                                     </div>
                                 </div>
@@ -233,7 +236,7 @@
                         <div class="card-header">
                             <div class="schedule-header">
                                 <span><i class="fas fa-history me-2"></i>执行记录</span>
-                                <button class="btn btn-sm btn-secondary" onclick="loadExecutions()">
+                                <button class="status-badge enabled" onclick="loadExecutions()" style="cursor: pointer;">
                                     <i class="fas fa-sync-alt me-1"></i>刷新
                                 </button>
                             </div>
@@ -352,6 +355,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadTasks();
             loadExecutions();
+            renderStockEntities();
 
             document.getElementById('taskType').addEventListener('change', function() {
                 const taskType = this.value;
@@ -409,6 +413,13 @@
 
                 if (stockEntities.length === 0) {
                     showNotification('请至少添加一个股票实体', 'error');
+                    const hintDiv = document.getElementById('stockEntitiesHint');
+                    hintDiv.style.animation = 'none';
+                    hintDiv.offsetHeight;
+                    hintDiv.style.cssText = 'text-align: center; padding: 12px; background: rgba(231, 76, 60, 0.15); border: 1px dashed var(--danger-color); border-radius: 8px; color: var(--danger-color); font-size: 12px; animation: flash 0.5s 1;';
+                    setTimeout(() => {
+                        hintDiv.style.cssText = 'text-align: center; padding: 12px; background: rgba(41, 128, 185, 0.15); border: 1px dashed var(--accent-color); border-radius: 8px; color: var(--accent-color); font-size: 12px;';
+                    }, 1500);
                     return;
                 }
 
@@ -543,11 +554,13 @@
         function renderStockEntities() {
             const tableBody = document.getElementById('stockEntitiesTableBody');
             const noStockEntitiesDiv = document.getElementById('noStockEntities');
+            const hintDiv = document.getElementById('stockEntitiesHint');
 
             tableBody.innerHTML = '';
 
             if (stockEntities.length > 0) {
                 noStockEntitiesDiv.classList.add('d-none');
+                hintDiv.classList.add('d-none');
                 stockEntities.forEach((entity, index) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -564,7 +577,8 @@
                     tableBody.appendChild(row);
                 });
             } else {
-                noStockEntitiesDiv.classList.remove('d-none');
+                noStockEntitiesDiv.classList.add('d-none');
+                hintDiv.classList.remove('d-none');
             }
         }
 

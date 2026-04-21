@@ -561,6 +561,16 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
 .page-btn-custom.active { background: var(--accent-color); border-color: var(--accent-color); color: white; }
 .page-btn-custom.disabled { opacity: 0.5; cursor: not-allowed; }
 
+.record-modal-content { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; }
+.record-modal-header { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-bottom: 1px solid var(--border-color); border-radius: 12px 12px 0 0; padding: 16px 20px; }
+.record-modal-header .modal-title { font-weight: 600; font-size: 16px; }
+.modal-body { background: var(--surface-color); color: var(--text-color); padding: 20px; }
+.modal-body h6 { color: var(--accent-color); font-weight: 600; font-size: 13px; }
+.modal-body table { background: var(--card-bg); }
+.modal-body table td { color: var(--text-color); border-color: var(--border-color); }
+.modal-body table td:first-child { color: var(--text-secondary); width: 40%; }
+.modal-body .text-muted { color: var(--accent-color) !important; font-weight: 600; }
+
 /* Music Player */
 #musicToggleBtn.playing { background: rgba(46, 204, 113, 0.3); border-color: #2ecc71; color: #2ecc71; }
 .music-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }

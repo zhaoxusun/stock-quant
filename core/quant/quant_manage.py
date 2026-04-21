@@ -252,6 +252,17 @@ def run_backtest_enhanced_volume_strategy(csv_path, trading_strategy: bt.Strateg
             'signal_csv_relative_path': signal_csv_relative_path,
         }
 
+        # 尝试添加信号统计数据
+        try:
+            record_data['after_data']['signal_stats'] = {
+                'buy_signals': strategy.buy_signals_count,
+                'sell_signals': strategy.sell_signals_count,
+                'executed_buys': strategy.executed_buys_count,
+                'executed_sells': strategy.executed_sells_count,
+            }
+        except:
+            pass
+
         # 尝试添加收益数据
         try:
             record_data['after_data']['return_stats'] = {

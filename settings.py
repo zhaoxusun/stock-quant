@@ -18,6 +18,7 @@ log_root = project_root / 'log'
 result_root = project_root / 'result'
 html_root = result_root / 'html'
 signals_root = result_root / 'signals'
+backtest_records_root = result_root / 'backtest_records'
 # chart_show_switch = False
 
 # 回测模式列表：['BACKTEST', 'LIVE']

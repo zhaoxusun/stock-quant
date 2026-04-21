@@ -10,8 +10,11 @@ logger = create_log('backtest_record_manager')
 
 
 class BacktestRecordManager:
-    def __init__(self):
-        self.record_dir = settings.result_root / 'backtest_records'
+    @property
+    def record_dir(self):
+        return settings.backtest_records_root
+
+    def _ensure_dir(self):
         os.makedirs(self.record_dir, exist_ok=True)
 
     def create_record_id(self):
@@ -19,6 +22,7 @@ class BacktestRecordManager:
 
     def save(self, record_data):
         try:
+            self._ensure_dir()
             record_id = record_data.get('record_id')
             if not record_id:
                 record_id = self.create_record_id()
@@ -36,6 +40,7 @@ class BacktestRecordManager:
 
     def read(self, record_id):
         try:
+            self._ensure_dir()
             record_path = self.record_dir / f"{record_id}.json"
             if not record_path.exists():
                 return None
@@ -47,6 +52,7 @@ class BacktestRecordManager:
 
     def read_all(self, limit=None):
         try:
+            self._ensure_dir()
             records = []
             for record_file in sorted(self.record_dir.glob('*.json'), reverse=True):
                 with open(record_file, 'r', encoding='utf-8') as f:

@@ -33,36 +33,31 @@
                         <div class="card-body">
                             <form id="taskForm">
                                 <input type="hidden" id="taskId" name="taskId">
-                                
+
                                 <div class="form-section">
                                     <div class="form-section-title">
                                         <i class="fas fa-info-circle"></i>
                                         基础信息
                                     </div>
-                                    <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <label for="taskName" class="form-label">任务名称<span class="required-star">*</span></label>
+                                    <div class="row g-3 align-items-center">
+                                        <div class="col-md-3">
+                                            <label class="form-label"><i class="fas fa-tag"></i>任务名称</label>
                                             <input type="text" class="form-control" id="taskName" name="taskName" placeholder="请输入任务名称" required>
-                                            <div class="invalid-feedback">任务名称不能为空</div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <label for="taskType" class="form-label">任务类型<span class="required-star">*</span></label>
+                                        <div class="col-md-3">
+                                            <label class="form-label"><i class="fas fa-tasks"></i>任务类型</label>
                                             <select class="form-select" id="taskType" name="taskType" required>
                                                 <option value="">请选择任务类型</option>
                                                 <option value="backtest">股票数据获取+回测+信号检查</option>
                                             </select>
-                                            <div class="invalid-feedback">请选择任务类型</div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <label for="description" class="form-label">描述<span class="required-star">*</span></label>
+                                        <div class="col-md-3">
+                                            <label class="form-label"><i class="fas fa-align-left"></i>描述</label>
                                             <input type="text" class="form-control" id="description" name="description" placeholder="请输入任务描述" required>
-                                            <div class="invalid-feedback">任务描述不能为空</div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <label for="scheduleTime" class="form-label">定时表达式<span class="required-star">*</span></label>
-                                            <input type="text" class="form-control" id="scheduleTime" name="scheduleTime" placeholder="例如: 0 8 * * 1-5" required>
-                                            <div class="invalid-feedback">定时表达式不能为空</div>
-                                            <div class="form-text">Cron格式: 分 时 日 月 周 (例: 0 8 * * 1-5 表示工作日8点)</div>
+                                        <div class="col-md-3">
+                                            <label class="form-label"><i class="fas fa-clock"></i>定时表达式 <a href="javascript:void(0)" onclick="showCronHelp()" title="点击查看Cron格式说明"><i class="fas fa-question-circle text-info"></i></a></label>
+                                            <input type="text" class="form-control" id="scheduleTime" name="scheduleTime" placeholder="如: 0 8 * * 1-5" required>
                                         </div>
                                     </div>
                                 </div>
@@ -70,12 +65,12 @@
                                 <div class="form-section" id="stockEntitiesContainer">
                                     <div class="form-section-title">
                                         <i class="fas fa-chart-line"></i>
-                                        目标股票<span class="required-star">*</span>
+                                        目标股票
                                     </div>
                                     <div class="stock-add-form">
-                                        <div class="row g-3">
+                                        <div class="row g-3 align-items-center">
                                             <div class="col-md-3">
-                                                <label for="newDataSource" class="form-label">数据源</label>
+                                                <label class="form-label"><i class="fas fa-database"></i>数据源</label>
                                                 <select class="form-select" id="newDataSource">
                                                     <option value="akshare">akshare</option>
                                                     <option value="baostock">baostock</option>
@@ -83,7 +78,7 @@
                                                 </select>
                                             </div>
                                             <div class="col-md-3">
-                                                <label for="newMarket" class="form-label">市场</label>
+                                                <label class="form-label"><i class="fas fa-globe"></i>市场</label>
                                                 <select class="form-select" id="newMarket">
                                                     <option value="us">美股</option>
                                                     <option value="cn">A股</option>
@@ -91,11 +86,11 @@
                                                 </select>
                                             </div>
                                             <div class="col-md-3">
-                                                <label for="newStockCode" class="form-label">股票代码</label>
-                                                <input type="text" class="form-control" id="newStockCode" placeholder="US.IVV, SH.600519, HK.00700">
+                                                <label class="form-label"><i class="fas fa-code"></i>股票代码</label>
+                                                <input type="text" class="form-control" id="newStockCode" placeholder="如: US.IVV">
                                             </div>
                                             <div class="col-md-2">
-                                                <label for="newAdjustType" class="form-label">复权类型</label>
+                                                <label class="form-label"><i class="fas fa-adjust"></i>复权类型</label>
                                                 <select class="form-select" id="newAdjustType">
                                                     <option value="qfq">前复权</option>
                                                     <option value="hfq">后复权</option>
@@ -134,30 +129,29 @@
                                         <i class="fas fa-cogs"></i>
                                         回测配置
                                     </div>
-                                    <div class="row g-3">
+                                    <div class="row g-3 align-items-center">
                                         <div class="col-md-3" id="strategyField">
-                                            <label for="strategy" class="form-label">策略选择<span class="required-star">*</span></label>
+                                            <label class="form-label"><i class="fas fa-brain"></i>策略选择</label>
                                             <select class="form-select" id="strategy" name="strategy" required>
+                                                <option value="">请选择策略</option>
                                                 {% for strategy_name in strategies %}
                                                 <option value="{{ strategy_name }}">{{ strategy_name }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
                                         <div class="col-md-3" id="initCashField">
-                                            <label for="initCash" class="form-label">初始资金<span class="required-star">*</span></label>
+                                            <label class="form-label"><i class="fas fa-coins"></i>初始资金</label>
                                             <input type="number" class="form-control" id="initCash" name="initCash" value="5000000" required>
-                                            <div class="invalid-feedback">初始资金不能为空</div>
                                         </div>
                                         <div class="col-md-3" id="duringField">
-                                            <label for="during" class="form-label">回测周期(天)<span class="required-star">*</span></label>
+                                            <label class="form-label"><i class="fas fa-calendar"></i>回测周期(天)</label>
                                             <input type="number" class="form-control" id="during" name="during" value="1460" max="1460" required>
-                                            <div class="invalid-feedback">回测周期不能为空</div>
                                         </div>
                                         <div class="col-md-3" id="backtestModeField">
-                                            <label for="backtestMode" class="form-label">运行模式</label>
+                                            <label class="form-label"><i class="fas fa-rocket"></i>运行模式</label>
                                             <select class="form-select" id="backtestMode" name="backtestMode">
-                                                <option value="BACKTEST">回测模式（批量计算）</option>
-                                                <option value="LIVE">实盘模式（逐根计算）</option>
+                                                <option value="BACKTEST">回测模式</option>
+                                                <option value="LIVE">实盘模式</option>
                                             </select>
                                         </div>
                                     </div>
@@ -292,6 +286,45 @@
     </div>
 
     <div id="notification" class="notification"></div>
+
+    <div id="cronHelpModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: var(--surface-color); border: 1px solid var(--border-color);">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                    <h5 class="modal-title text-white"><i class="fas fa-clock me-2"></i>Cron 定时表达式说明</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6 class="text-warning"><i class="fas fa-cog me-1"></i>格式</h6>
+                        <p class="text-secondary mb-0">分 时 日 月 周 (用空格分隔)</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-warning"><i class="fas fa-asterisk me-1"></i>符号说明</h6>
+                        <p class="text-secondary mb-0">
+                            <code>*</code> 任意值 &nbsp;
+                            <code>/</code> 间隔 &nbsp;
+                            <code>,</code> 枚举 &nbsp;
+                            <code>-</code> 范围
+                        </p>
+                    </div>
+                    <div>
+                        <h6 class="text-warning"><i class="fas fa-list me-1"></i>常用示例</h6>
+                        <div class="row g-2">
+                            <div class="col-md-6"><code>0 8 * * 1-5</code> 工作日8点执行</div>
+                            <div class="col-md-6"><code>0 9 * * *</code> 每天9点执行</div>
+                            <div class="col-md-6"><code>0 0 * * *</code> 每天0点执行</div>
+                            <div class="col-md-6"><code>0 */4 * * *</code> 每4小时执行</div>
+                            <div class="col-md-6"><code>0 0 1 * *</code> 每月1号0点执行</div>
+                            <div class="col-md-6"><code>30 10 * * 1,3,5</code> 周一三五10:30执行</div>
+                            <div class="col-md-6"><code>0 30 9 * * 0</code> 每周日9:30执行</div>
+                            <div class="col-md-6"><code>0 15,18 * * *</code> 每天15点和18点执行</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <div id="confirmDialog" class="modern-dialog hidden">
         <div class="modern-dialog-content">
@@ -857,6 +890,11 @@
         function taskTypeDisplay(type) {
             const typeMap = { 'backtest': '股票数据获取+回测+信号检查' };
             return typeMap[type] || type;
+        }
+
+        function showCronHelp() {
+            const modal = new bootstrap.Modal(document.getElementById('cronHelpModal'));
+            modal.show();
         }
 
         function formatDate(timestamp) {

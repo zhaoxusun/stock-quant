@@ -74,13 +74,19 @@ body {
 
 /* Form */
 .form-control, .form-select {
-    background-color: var(--surface-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 14px; font-size: 14px; transition: all 0.3s ease; outline: none;
+    background-color: var(--surface-color) !important; color: #ffffff !important; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 12px; font-size: 13px; transition: all 0.3s ease; outline: none;
+}
+input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active, input:-webkit-autofill::first-line {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--surface-color) inset !important;
+    caret-color: #ffffff;
 }
 .form-control:focus, .form-select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.15); }
 .form-control::placeholder { color: var(--text-secondary); }
 .form-select option { background-color: var(--surface-color); color: var(--text-color); padding: 8px; }
 .form-group { margin-bottom: 16px; }
-.form-label { color: var(--text-color); font-weight: 500; margin-bottom: 6px; font-size: 13px; }
+.form-label { color: var(--text-secondary); font-weight: 500; margin-bottom: 6px; font-size: 12px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-label i { color: var(--accent-color); }
 .form-text { color: var(--text-secondary); font-size: 12px; }
 
 /* Table - 统一表格样式 */
@@ -247,7 +253,7 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
 .stock-entity-card .card-header i { opacity: 0.8; }
 .stock-add-form { background: linear-gradient(135deg, rgba(10, 75, 120, 0.3), rgba(22, 93, 140, 0.3)); border: 1px dashed var(--accent-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; }
 .stock-add-form .form-control, .stock-add-form .form-select { background-color: rgba(0, 0, 0, 0.3); border-color: rgba(255, 255, 255, 0.1); }
-.stock-add-form .form-label { color: var(--text-color); font-size: 12px; margin-bottom: 4px; }
+.stock-add-form .form-label { color: var(--text-secondary); font-weight: 500; margin-bottom: 4px; font-size: 12px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
 
 /* Task Card */
 .task-form-card, .task-list-card { background: linear-gradient(145deg, var(--card-bg), #1a1a1a); border: 1px solid var(--border-color); position: relative; overflow: hidden; }

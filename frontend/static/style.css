@@ -372,6 +372,7 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
 
 /* Signal Files */
 .signal-files-wrapper { display: flex; flex-direction: column; }
+.signal-analysis-content { max-width: 100%; }
 .signal-files-container { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
 .signal-files-header { padding: 14px 16px; background: var(--card-bg); border-bottom: 1px solid var(--border-color); }
 .filter-result-count { font-size: 14px; color: #e0e0e0; }

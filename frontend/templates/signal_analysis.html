@@ -11,184 +11,186 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <div class="container-fluid p-0">
-        {% include 'navbar.html' %}
+    {% include 'navbar.html' %}
 
-        <div class="content pt-4">
-            <div class="page-header page-header-gradient mb-4">
-                <div>
-                    <div class="page-title"><i class="fas fa-chart-line"></i>信号分析</div>
-                    <div class="page-subtitle">深度分析交易信号，挖掘市场规律与投资机会</div>
+    <div class="content pt-4">
+        <div class="page-header page-header-gradient mb-4">
+            <div>
+                <div class="page-title"><i class="fas fa-chart-line"></i>信号分析</div>
+                <div class="page-subtitle">深度分析交易信号，挖掘市场规律与投资机会</div>
+            </div>
+        </div>
+
+        <div class="filter-bar-custom">
+            <div class="filter-bar-row">
+                <div class="filter-item-custom">
+                    <label><i class="fas fa-brain"></i></label>
+                    <select class="filter-select" id="strategyFilter">
+                        <option value="">策略</option>
+                    </select>
+                </div>
+                <div class="filter-item-custom">
+                    <label><i class="fas fa-search"></i></label>
+                    <input type="text" class="filter-input" id="stockFilter" placeholder="股票代码或名称">
+                </div>
+                <div class="filter-item-custom">
+                    <label><i class="fas fa-rocket"></i></label>
+                    <select class="filter-select" id="modeFilter">
+                        <option value="">模式</option>
+                        <option value="LIVE">实盘</option>
+                        <option value="BACKTEST">回测</option>
+                    </select>
+                </div>
+                <div class="filter-item-custom date-range">
+                    <label><i class="fas fa-clock"></i></label>
+                    <input type="date" class="filter-input" id="fileCreateStartDate">
+                    <span class="date-separator">至</span>
+                    <input type="date" class="filter-input" id="fileCreateEndDate">
+                </div>
+                <button class="filter-btn reset" onclick="resetSignalFilters()">
+                    <i class="fas fa-undo"></i> 重置
+                </button>
+            </div>
+        </div>
+
+        <div class="signal-files-wrapper mt-4">
+            <div class="signal-files-container">
+                <div class="signal-files-header">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="selectAllFiles" checked>
+                                <label class="form-check-label" for="selectAllFiles">全选</label>
+                            </div>
+                            <span class="text-secondary">|</span>
+                            <span class="filter-result-count">
+                                已筛选 <strong id="filteredFileCount">0</strong> 条
+                            </span>
+                            <span class="text-secondary">|</span>
+                            <span class="selected-info">
+                                已勾选 <strong id="selectedFileCount">0</strong> 条
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="signal-files-list" id="signalFilesContainer">
+                    <div class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin me-2"></i>加载信号文件中...</div>
                 </div>
             </div>
-
-            <div class="filter-bar-custom">
-                <div class="filter-bar-row">
-                    <div class="filter-item-custom">
-                        <label><i class="fas fa-brain"></i></label>
-                        <select class="filter-select" id="strategyFilter">
-                            <option value="">策略</option>
-                        </select>
+            <div class="signal-files-stats">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="filter-item-inline">
+                            <span class="filter-label">信号类型：</span>
+                            <select class="form-select form-select-sm" id="signalTypeFilter">
+                                <option value="">全部类型</option>
+                            </select>
+                        </div>
+                        <div class="filter-item-inline">
+                            <span class="filter-label">筛选信号时间区间：</span>
+                            <input type="date" class="form-control form-control-sm" id="startDate">
+                            <span class="text-muted mx-1">至</span>
+                            <input type="date" class="form-control form-control-sm" id="endDate">
+                        </div>
                     </div>
-                    <div class="filter-item-custom">
-                        <label><i class="fas fa-search"></i></label>
-                        <input type="text" class="filter-input" id="stockFilter" placeholder="股票代码或名称">
-                    </div>
-                    <div class="filter-item-custom">
-                        <label><i class="fas fa-rocket"></i></label>
-                        <select class="filter-select" id="modeFilter">
-                            <option value="">模式</option>
-                            <option value="LIVE">实盘</option>
-                            <option value="BACKTEST">回测</option>
-                        </select>
-                    </div>
-                    <div class="filter-item-custom date-range">
-                        <label><i class="fas fa-clock"></i></label>
-                        <input type="date" class="filter-input" id="fileCreateStartDate">
-                        <span class="date-separator">至</span>
-                        <input type="date" class="filter-input" id="fileCreateEndDate">
-                    </div>
-                    <button class="filter-btn reset" onclick="resetSignalFilters()">
-                        <i class="fas fa-undo"></i> 重置
+                    <button class="btn btn-primary analyze-btn" onclick="analyzeSelectedSignals()">
+                        <i class="fas fa-chart-bar me-1"></i>分析信号
                     </button>
                 </div>
             </div>
+        </div>
 
-            <div class="signal-files-wrapper mt-4">
-                <div class="signal-files-container">
-                            <div class="signal-files-header">
-                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="selectAllFiles" checked>
-                                            <label class="form-check-label" for="selectAllFiles">全选</label>
-                                        </div>
-                                        <span class="text-secondary">|</span>
-                                        <span class="filter-result-count">
-                                            已筛选 <strong id="filteredFileCount">0</strong> 条
-                                        </span>
-                                        <span class="text-secondary">|</span>
-                                        <span class="selected-info">
-                                            已勾选 <strong id="selectedFileCount">0</strong> 条
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="signal-files-list" id="signalFilesContainer">
-                                <div class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin me-2"></i>加载信号文件中...</div>
-                            </div>
-                        </div>
-                        <div class="signal-files-stats">
-                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="filter-item-inline">
-                                        <span class="filter-label">信号类型：</span>
-                                        <select class="form-select form-select-sm" id="signalTypeFilter">
-                                            <option value="">全部类型</option>
-                                        </select>
-                                    </div>
-                                    <div class="filter-item-inline">
-                                        <span class="filter-label">筛选信号时间区间：</span>
-                                        <input type="date" class="form-control form-control-sm" id="startDate">
-                                        <span class="text-muted mx-1">至</span>
-                                        <input type="date" class="form-control form-control-sm" id="endDate">
-                                    </div>
-                                </div>
-                                <button class="btn btn-primary analyze-btn" onclick="analyzeSelectedSignals()">
-                                    <i class="fas fa-chart-bar me-1"></i>分析信号
-                                </button>
-                            </div>
-                        </div>
+        <div id="analysisSummaryCard" class="card form-panel mt-4 mb-4" style="display: none;">
+            <div class="form-panel-header">
+                <h5><i class="fas fa-chart-pie"></i>分析摘要</h5>
+                <button id="downloadHtmlBtn" class="download-btn" style="display: none;">
+                    <i class="fas fa-download"></i>下载报告
+                </button>
+            </div>
+            <div class="form-panel-body">
+                <div class="stats-grid">
+                    <div class="stat-card primary">
+                        <div class="stat-card-icon"><i class="fas fa-list"></i></div>
+                        <div class="stat-card-label">总信号数</div>
+                        <div class="stat-card-value" id="totalSignals">0</div>
                     </div>
+                    <div class="stat-card success">
+                        <div class="stat-card-icon"><i class="fas fa-arrow-up"></i></div>
+                        <div class="stat-card-label">买入信号</div>
+                        <div class="stat-card-value" id="buySignals">0</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <div class="stat-card-icon"><i class="fas fa-arrow-down"></i></div>
+                        <div class="stat-card-label">卖出信号</div>
+                        <div class="stat-card-value" id="sellSignals">0</div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-card-icon"><i class="fas fa-chart-bar"></i></div>
+                        <div class="stat-card-label">股票数</div>
+                        <div class="stat-card-value" id="uniqueStocks">0</div>
+                    </div>
+                    <div class="stat-card strategy">
+                        <div class="stat-card-icon"><i class="fas fa-brain"></i></div>
+                        <div class="stat-card-label">策略数</div>
+                        <div class="stat-card-value" id="uniqueStrategies">0</div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-card-icon"><i class="fas fa-database"></i></div>
+                        <div class="stat-card-label">数据源数</div>
+                        <div class="stat-card-value" id="uniqueSources">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon"><i class="fas fa-rocket"></i></div>
+                        <div class="stat-card-label">运行模式</div>
+                        <div class="stat-card-value" id="uniqueModes">-</div>
+                    </div>
+                </div>
+                <div class="analysis-extra-info">
+                    <div class="extra-info-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>信号时间范围：<strong id="dateRange">-</strong></span>
+                    </div>
+                </div>
+                <div class="signal-type-distribution" id="signalTypeDistribution">
+                    <div class="distribution-title">信号类型分布</div>
+                    <div class="distribution-bars" id="distributionBars"></div>
                 </div>
             </div>
+        </div>
 
-            <div id="analysisSummaryCard" class="card form-panel mb-4" style="display: none;">
-                <div class="form-panel-header">
-                    <h5><i class="fas fa-chart-pie"></i>分析摘要</h5>
-                    <button id="downloadHtmlBtn" class="download-btn" style="display: none;">
-                        <i class="fas fa-download"></i>下载报告
-                    </button>
-                </div>
-                <div class="form-panel-body">
-                    <div class="stats-grid">
-                        <div class="stat-card primary">
-                            <div class="stat-card-icon"><i class="fas fa-list"></i></div>
-                            <div class="stat-card-label">总信号数</div>
-                            <div class="stat-card-value" id="totalSignals">0</div>
-                        </div>
-                        <div class="stat-card success">
-                            <div class="stat-card-icon"><i class="fas fa-arrow-up"></i></div>
-                            <div class="stat-card-label">买入信号</div>
-                            <div class="stat-card-value" id="buySignals">0</div>
-                        </div>
-                        <div class="stat-card danger">
-                            <div class="stat-card-icon"><i class="fas fa-arrow-down"></i></div>
-                            <div class="stat-card-label">卖出信号</div>
-                            <div class="stat-card-value" id="sellSignals">0</div>
-                        </div>
-                        <div class="stat-card info">
-                            <div class="stat-card-icon"><i class="fas fa-chart-bar"></i></div>
-                            <div class="stat-card-label">涉及股票</div>
-                            <div class="stat-card-value" id="uniqueStocks">0</div>
-                        </div>
-                        <div class="stat-card strategy">
-                            <div class="stat-card-icon"><i class="fas fa-brain"></i></div>
-                            <div class="stat-card-label">涉及策略</div>
-                            <div class="stat-card-value" id="uniqueStrategies">0</div>
-                        </div>
-                        <div class="stat-card info">
-                            <div class="stat-card-icon"><i class="fas fa-database"></i></div>
-                            <div class="stat-card-label">涉及数据源</div>
-                            <div class="stat-card-value" id="uniqueSources">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-icon"><i class="fas fa-rocket"></i></div>
-                            <div class="stat-card-label">运行模式</div>
-                            <div class="stat-card-value" id="uniqueModes">-</div>
-                        </div>
-                    </div>
-                    <div class="analysis-extra-info">
-                        <div class="extra-info-item">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span>信号时间范围：<strong id="dateRange">-</strong></span>
-                        </div>
-                    </div>
-                    <div class="signal-type-distribution" id="signalTypeDistribution">
-                        <div class="distribution-title">信号类型分布</div>
-                        <div class="distribution-bars" id="distributionBars"></div>
-                    </div>
-                </div>
+        <div id="analysisResultCard" class="card form-panel mt-4" style="display: none;">
+            <div class="form-panel-header">
+                <h5><i class="fas fa-table"></i>信号分析结果</h5>
             </div>
-
-            <div id="analysisResultCard" class="card form-panel" style="display: none;">
-                <div class="form-panel-header">
-                    <h5><i class="fas fa-table"></i>信号分析结果</h5>
+            <div class="form-panel-body">
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>信号类型</th>
+                                <th>描述</th>
+                                <th>股票信息</th>
+                                <th>数据源</th>
+                                <th>策略</th>
+                            </tr>
+                        </thead>
+                        <tbody id="signalsTable"></tbody>
+                    </table>
                 </div>
-                <div class="form-panel-body">
-                    <div class="data-table-wrapper">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>日期</th>
-                                    <th>信号类型</th>
-                                    <th>描述</th>
-                                    <th>股票信息</th>
-                                    <th>数据源</th>
-                                    <th>策略</th>
-                                </tr>
-                            </thead>
-                            <tbody id="signalsTable"></tbody>
-                        </table>
-                    </div>
 
-                    <div class="modern-pagination" id="paginationContainer">
-                        <div class="pagination-info">共 <span id="totalSignalResults" class="fw-bold">0</span> 条记录</div>
-                        <div class="pagination-controls">
-                            <button class="page-btn nav-btn" id="prevPage" onclick="goToPage(currentPage - 1)"><i class="fas fa-chevron-left"></i></button>
-                            <div id="signalPagination"></div>
-                            <button class="page-btn nav-btn" id="nextPage" onclick="goToPage(currentPage + 1)"><i class="fas fa-chevron-right"></i></button>
-                        </div>
+                <div class="pagination-custom" id="paginationContainer">
+                    <div class="pagination-info-custom">
+                        共 <strong id="totalSignalResults">0</strong> 条记录
+                    </div>
+                    <div class="pagination-controls-custom">
+                        <button class="page-btn-custom" id="prevPageBtn" onclick="changePage(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div id="pagination"></div>
+                        <button class="page-btn-custom" id="nextPageBtn" onclick="changePage(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -206,39 +208,15 @@
         let currentPage = 1;
 
         document.addEventListener('DOMContentLoaded', function() {
-            loadSignalFiles();
-            loadSignalMetadata();
-
-            document.getElementById('selectAllFiles').addEventListener('change', function() {
-                document.querySelectorAll('input[name="signalFile"]').forEach(cb => cb.checked = this.checked);
-                updateFileCount();
-            });
-
-            document.getElementById('strategyFilter').addEventListener('change', filterSignalFiles);
-            document.getElementById('stockFilter').addEventListener('input', debounce(filterSignalFiles, 300));
-            document.getElementById('fileCreateStartDate').addEventListener('change', filterSignalFiles);
-            document.getElementById('fileCreateEndDate').addEventListener('change', filterSignalFiles);
-            document.getElementById('modeFilter').addEventListener('change', filterSignalFiles);
-            document.getElementById('signalTypeFilter').addEventListener('change', filterSignalFiles);
-            document.getElementById('startDate').addEventListener('change', filterSignalFiles);
-            document.getElementById('endDate').addEventListener('change', filterSignalFiles);
-            document.getElementById('downloadHtmlBtn').addEventListener('click', downloadResultsAsHTML);
-
             const today = new Date();
-            const oneWeekAgo = new Date(today);
-            oneWeekAgo.setDate(today.getDate() - 7);
-            document.getElementById('startDate').value = oneWeekAgo.toISOString().split('T')[0];
-            document.getElementById('endDate').value = today.toISOString().split('T')[0];
-            document.getElementById('fileCreateEndDate').value = today.toISOString().split('T')[0];
-        });
+            const twoWeeksAgo = new Date(today);
+            twoWeeksAgo.setDate(today.getDate() - 14);
 
-        function debounce(func, wait) {
-            let timeout;
-            return function(...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
-            };
-        }
+            document.getElementById('startDate').value = twoWeeksAgo.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+
+            loadSignalFiles();
+        });
 
         function loadSignalFiles() {
             fetch('/api/backtest_records/get_all')
@@ -251,12 +229,63 @@
                             stock_info: r.init_data?.stock_name || r.init_data?.stock_code || '',
                             strategy_name: r.init_data?.strategy || '',
                             backtest_mode: r.init_data?.backtest_mode || 'BACKTEST',
-                            file_time: r.created_at ? r.created_at.replace('T', ' ').substring(0, 19) : ''
+                            file_time: r.created_at ? r.created_at.substring(0, 10) : ''
                         }));
                         filteredSignalFiles = [...allSignalFiles];
                         renderSignalFiles(filteredSignalFiles);
+                        loadSignalMetadata();
                     }
                 });
+        }
+
+        function loadSignalMetadata() {
+            const strategies = new Set();
+            const signalTypes = new Set(['normal_buy', 'strong_buy', 'normal_sell', 'strong_sell']);
+
+            allSignalFiles.forEach(f => {
+                if (f.strategy_name) strategies.add(f.strategy_name);
+            });
+
+            const strategySelect = document.getElementById('strategyFilter');
+            [...strategies].sort().forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                strategySelect.appendChild(opt);
+            });
+
+            const signalTypeSelect = document.getElementById('signalTypeFilter');
+            [...signalTypes].sort().forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.textContent = t;
+                signalTypeSelect.appendChild(opt);
+            });
+
+            document.getElementById('selectAllFiles').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('input[name="signalFile"]');
+                checkboxes.forEach(cb => cb.checked = this.checked);
+                updateFileCount();
+            });
+
+            document.getElementById('strategyFilter').addEventListener('change', filterSignalFiles);
+            document.getElementById('stockFilter').addEventListener('input', debounce(filterSignalFiles, 300));
+            document.getElementById('modeFilter').addEventListener('change', filterSignalFiles);
+            document.getElementById('signalTypeFilter').addEventListener('change', filterSignalFiles);
+            document.getElementById('fileCreateStartDate').addEventListener('change', filterSignalFiles);
+            document.getElementById('fileCreateEndDate').addEventListener('change', filterSignalFiles);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
 
         function filterSignalFiles() {
@@ -269,8 +298,8 @@
             filteredSignalFiles = allSignalFiles.filter(f => {
                 if (strategy && !f.strategy_name.includes(strategy)) return false;
                 if (stock && !f.stock_info.toLowerCase().includes(stock.toLowerCase())) return false;
-                if (fileCreateStart && new Date(f.file_time) < new Date(fileCreateStart)) return false;
-                if (fileCreateEnd && new Date(f.file_time) > new Date(fileCreateEnd + 'T23:59:59')) return false;
+                if (fileCreateStart && f.file_time < fileCreateStart) return false;
+                if (fileCreateEnd && f.file_time > fileCreateEnd) return false;
                 if (mode && f.backtest_mode !== mode) return false;
                 return true;
             });
@@ -280,9 +309,8 @@
 
         function renderSignalFiles(files) {
             const container = document.getElementById('signalFilesContainer');
-            
             document.getElementById('filteredFileCount').textContent = files.length;
-            
+
             if (files.length === 0) {
                 container.innerHTML = `
                     <div class="signal-files-empty">
@@ -291,7 +319,7 @@
                         <small>尝试调整筛选条件</small>
                     </div>
                 `;
-                updateFileCount();
+                document.getElementById('selectedFileCount').textContent = '0';
                 return;
             }
 
@@ -318,32 +346,34 @@
                     </div>
                 `;
             }).join('');
-            
+
             updateFileCount();
         }
 
         function updateFileCount() {
-            const checkedCount = document.querySelectorAll('input[name="signalFile"]:checked').length;
-            document.getElementById('selectedFileCount').textContent = checkedCount;
+            const allCheckboxes = document.querySelectorAll('input[name="signalFile"]');
+            const checked = Array.from(allCheckboxes).filter(cb => cb.checked).length;
+            document.getElementById('selectedFileCount').textContent = checked;
         }
 
-        function loadSignalMetadata() {
-            fetch('/get_signal_metadata')
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success && data.data.metadata) {
-                        data.data.metadata.strategies.forEach(s => {
-                            const opt = document.createElement('option');
-                            opt.value = s; opt.textContent = s;
-                            document.getElementById('strategyFilter').appendChild(opt);
-                        });
-                        data.data.metadata.signal_types.forEach(t => {
-                            const opt = document.createElement('option');
-                            opt.value = t; opt.textContent = t;
-                            document.getElementById('signalTypeFilter').appendChild(opt);
-                        });
-                    }
-                });
+        function resetFilters() {
+            document.getElementById('stockFilter').value = '';
+            document.getElementById('sourceFilter').value = '';
+            document.getElementById('strategyFilter').value = '';
+            document.getElementById('modeFilter').value = '';
+            document.getElementById('dateFilterStart').value = '';
+            document.getElementById('dateFilterEnd').value = '';
+            loadRecords(1);
+        }
+
+        function resetSignalFilters() {
+            document.getElementById('strategyFilter').value = '';
+            document.getElementById('stockFilter').value = '';
+            document.getElementById('fileCreateStartDate').value = '';
+            document.getElementById('fileCreateEndDate').value = '';
+            document.getElementById('modeFilter').value = '';
+            filteredSignalFiles = [...allSignalFiles];
+            renderSignalFiles(filteredSignalFiles);
         }
 
         function analyzeSelectedSignals() {
@@ -377,21 +407,21 @@
                     document.getElementById('totalSignals').textContent = summary.total_signals;
                     document.getElementById('buySignals').textContent = summary.buy_signals;
                     document.getElementById('sellSignals').textContent = summary.sell_signals;
-                    
                     document.getElementById('uniqueStocks').textContent = summary.unique_stocks;
                     document.getElementById('uniqueStrategies').textContent = summary.unique_strategies;
                     document.getElementById('uniqueSources').textContent = summary.unique_sources || 0;
                     document.getElementById('uniqueModes').textContent = summary.unique_modes || '-';
                     document.getElementById('dateRange').textContent = summary.date_range || '-';
                     document.getElementById('downloadHtmlBtn').style.display = 'inline-flex';
-                    
-                    // 渲染信号类型分布图
+                    document.getElementById('downloadHtmlBtn').onclick = downloadResultsAsHTML;
+
                     renderSignalDistribution(summary.signal_type_counts, summary.total_signals);
-                    
+
                     allSignalsData = data.data.signals;
                     currentPage = 1;
                     renderPageData();
                     document.getElementById('totalSignalResults').textContent = summary.total_signals;
+                    document.getElementById('analysisResultCard').style.display = 'block';
                     showNotification(`分析完成，共找到 ${summary.total_signals} 条信号`);
                 } else {
                     showNotification(data.message || '分析失败', 'error');
@@ -403,24 +433,28 @@
             const start = (currentPage - 1) * pageSize;
             const end = start + pageSize;
             const pageData = allSignalsData.slice(start, end);
-            updateSignalsTable(pageData);
-            renderSignalPagination(currentPage, Math.ceil(allSignalsData.length / pageSize));
+            renderTable(pageData, start);
+            updatePagination();
         }
 
-        function goToPage(page) {
-            const totalPages = Math.ceil(allSignalsData.length / pageSize);
-            if (page >= 1 && page <= totalPages) {
-                currentPage = page;
-                renderPageData();
-            }
-        }
-
-        function updateSignalsTable(signals) {
+        function renderTable(data, startIndex) {
             const tbody = document.getElementById('signalsTable');
-            tbody.innerHTML = signals.map(s => `
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">暂无数据</td></tr>';
+                return;
+            }
+
+            const typeColors = {
+                'normal_buy': 'color: #2ecc71;',
+                'strong_buy': 'color: #27ae60;',
+                'normal_sell': 'color: #e74c3c;',
+                'strong_sell': 'color: #c0392b;'
+            };
+
+            tbody.innerHTML = data.map((s, i) => `
                 <tr>
                     <td>${s.date || '-'}</td>
-                    <td class="${s.signal_type?.includes('buy') ? 'price-up' : s.signal_type?.includes('sell') ? 'price-down' : ''}">${s.signal_type || '-'}</td>
+                    <td style="${typeColors[s.signal_type] || ''}">${s.signal_type || '-'}</td>
                     <td>${s.description || '-'}</td>
                     <td>${s.stock_info || '-'}</td>
                     <td>${s.data_source || '-'}</td>
@@ -429,23 +463,32 @@
             `).join('');
         }
 
-        function renderSignalPagination(page, totalPages) {
-            const pagination = document.getElementById('signalPagination');
-            document.getElementById('prevPage').className = `page-btn nav-btn ${page === 1 ? 'disabled' : ''}`;
-            document.getElementById('nextPage').className = `page-btn nav-btn ${page === totalPages ? 'disabled' : ''}`;
+        function updatePagination() {
+            const totalPages = Math.ceil(allSignalsData.length / pageSize) || 1;
+            const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
 
-            const max = 5;
-            let start = Math.max(1, page - Math.floor(max / 2));
-            let end = Math.min(totalPages, start + max - 1);
-            if (end - start + 1 < max) start = Math.max(1, end - max + 1);
+            for (let i = 1; i <= totalPages; i++) {
+                const pageItem = document.createElement('button');
+                pageItem.className = `page-btn-custom ${i === currentPage ? 'active' : ''}`;
+                pageItem.textContent = i;
+                pageItem.onclick = () => {
+                    currentPage = i;
+                    renderPageData();
+                };
+                pagination.appendChild(pageItem);
+            }
 
-            for (let i = start; i <= end; i++) {
-                const btn = document.createElement('button');
-                btn.className = `page-btn ${i === page ? 'active' : ''}`;
-                btn.textContent = i;
-                btn.onclick = () => goToPage(i);
-                pagination.appendChild(btn);
+            document.getElementById('prevPageBtn').classList.toggle('disabled', currentPage === 1);
+            document.getElementById('nextPageBtn').classList.toggle('disabled', currentPage === totalPages);
+        }
+
+        function changePage(delta) {
+            const totalPages = Math.ceil(allSignalsData.length / pageSize) || 1;
+            const newPage = currentPage + delta;
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderPageData();
             }
         }
 
@@ -454,34 +497,22 @@
             const typeColors = {
                 '普通买入': '#2ecc71',
                 '强势买入': '#27ae60',
-                '买入': '#2ecc71',
                 '普通卖出': '#e74c3c',
                 '强势卖出': '#c0392b',
-                '卖出': '#e74c3c',
             };
 
-            const typeNames = {
-                '普通买入': '普通买入',
-                '强势买入': '强势买入',
-                '买入': '买入',
-                '普通卖出': '普通卖出',
-                '强势卖出': '强势卖出',
-                '卖出': '卖出',
-            };
-            
             container.innerHTML = '';
-            
+
             const entries = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
             entries.forEach(([type, count]) => {
                 const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
                 const color = typeColors[type] || '#3498db';
-                const name = typeNames[type] || type;
-                
+
                 const bar = document.createElement('div');
                 bar.className = 'distribution-bar';
                 bar.innerHTML = `
                     <div class="bar-label">
-                        <span class="bar-name">${name}</span>
+                        <span class="bar-name">${type}</span>
                         <span class="bar-count">${count} 条</span>
                     </div>
                     <div class="bar-track">
@@ -491,33 +522,6 @@
                 `;
                 container.appendChild(bar);
             });
-        }
-
-        function resetSignalFilters() {
-            document.getElementById('strategyFilter').value = '';
-            document.getElementById('stockFilter').value = '';
-            document.getElementById('fileCreateStartDate').value = '';
-            document.getElementById('fileCreateEndDate').value = '';
-            document.getElementById('modeFilter').value = '';
-            filteredSignalFiles = [...allSignalFiles];
-            renderSignalFiles(filteredSignalFiles);
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            notification.innerHTML = `
-                <div class="toast-content ${type}">
-                    <i class="fas ${icon} toast-icon"></i>
-                    <span class="toast-message">${message}</span>
-                </div>
-            `;
-            notification.className = `notification ${type} show`;
-            
-            clearTimeout(notification.hideTimeout);
-            notification.hideTimeout = setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
         }
 
         function downloadResultsAsHTML() {
@@ -559,6 +563,21 @@
                     showNotification(data.message || '报告生成失败', 'error');
                 }
             });
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.innerHTML = `
+                <div class="toast-content ${type}">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} toast-icon"></i>
+                    <span class="toast-message">${message}</span>
+                </div>
+            `;
+            notification.className = `notification ${type} show`;
+            clearTimeout(notification.hideTimeout);
+            notification.hideTimeout = setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
         }
     </script>
 </body>

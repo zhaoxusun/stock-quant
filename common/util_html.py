@@ -247,7 +247,7 @@ def signals_to_html(signals_data, filters=None, summary=None):
                 <div class="stat-value price-down">{sell_signals}</div>
             </div>
             <div class="stat-box">
-                <div>聚合股票数</div>
+                <div>股票数</div>
                 <div class="stat-value">{unique_stocks}</div>
             </div>
             <div class="stat-box">

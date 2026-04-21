@@ -11,6 +11,88 @@ from settings import stock_data_root
 
 logger = create_log('manage_akshare')
 
+'''接口报错，换一个接口'''
+# def get_hk_stock_history(stock_code: str, start_date: str, end_date: str, adjust_type: str = 'qfq') -> DataFrame:
+#     """
+#     获取港股历史数据
+#     """
+#     try:
+#         logger.info(f"开始获取({stock_code}.HK)历史数据...")
+#
+#         # 尝试获取港股历史数据
+#         df = ak.stock_hk_hist(
+#             symbol=stock_code,
+#             period="daily",
+#             start_date=start_date,
+#             end_date=end_date,
+#             adjust=adjust_type  # 前复权
+#         )
+#
+#         if df.empty:
+#             logger.warning("未能获取到数据，尝试备用方法...")
+#             # 尝试备用方法
+#             df = ak.stock_hk_daily(symbol=stock_code)
+#             # 日期过滤
+#             if not df.empty and '日期' in df.columns:
+#                 df['日期'] = pd.to_datetime(df['日期'])
+#                 mask = (df['日期'] >= start_date) & (df['日期'] <= end_date)
+#                 df = df.loc[mask]
+#
+#         if not df.empty:
+#             # 使用简单的股票名称格式
+#             stock_name = f"港股{stock_code}"
+#
+#             # 标准化数据格式
+#             df = standardize_stock_data(df, stock_code, stock_name, 'HK')
+#
+#             logger.info(f"成功获取{stock_name}历史数据，共 {len(df)} 条记录")
+#             if not df.empty:
+#                 logger.info(f"数据时间范围: {df['date'].min()} 至 {df['date'].max()}")
+#
+#             return df
+#         else:
+#             logger.warning(f"无法获取{stock_code}历史数据")
+#             return pd.DataFrame()
+#
+#     except Exception as e:
+#         logger.error(f"获取港股 {stock_code} 数据时出错: {str(e)}")
+#         return pd.DataFrame()
+#
+#
+# def get_single_hk_stock_history(stock_code: str, start_date: str, end_date: str,
+#                                 adjust_type: str = 'qfq', output_dir: str = 'akshare'):
+#     """
+#     获取单只港股的历史数据并保存到CSV
+#     """
+#     # 获取历史数据
+#     df = get_hk_stock_history(stock_code, start_date, end_date, adjust_type)
+#
+#     if not df.empty:
+#         try:
+#             # 获取股票名称
+#             stock_name = df['stock_name'].iloc[0]
+#
+#             # 获取日期范围并格式化
+#             start_date_formatted = df['date'].min().strftime('%Y%m%d')
+#             end_date_formatted = df['date'].max().strftime('%Y%m%d')
+#
+#             # 确保输出目录存在
+#             output_path = os.path.join(stock_data_root, output_dir)
+#             os.makedirs(output_path, exist_ok=True)
+#
+#             # 保存到CSV
+#             csv_name = f"{stock_code}_{stock_name}_{start_date_formatted}_{end_date_formatted}.csv"
+#             filename = os.path.join(output_path, csv_name)
+#             save_to_csv(df.round(2), filename)
+#
+#             logger.info(f"数据已成功保存至: {filename}")
+#             return True, csv_name
+#         except Exception as e:
+#             logger.error(f"保存港股 {stock_code} 数据时出错: {str(e)}")
+#             return False, None
+#     else:
+#         logger.warning(f"未能获取港股 {stock_code} 的数据")
+#         return False, None
 
 def get_hk_stock_history(stock_code: str, start_date: str, end_date: str, adjust_type: str = 'qfq') -> DataFrame:
     """
@@ -18,25 +100,56 @@ def get_hk_stock_history(stock_code: str, start_date: str, end_date: str, adjust
     """
     try:
         logger.info(f"开始获取({stock_code}.HK)历史数据...")
+        logger.info(f"请求时间范围: {start_date} 至 {end_date}")
 
-        # 尝试获取港股历史数据
-        df = ak.stock_hk_hist(
-            symbol=stock_code,
-            period="daily",
-            start_date=start_date,
-            end_date=end_date,
-            adjust=adjust_type  # 前复权
-        )
+        # 尝试使用 stock_hk_hist 接口，直接指定日期范围
+        try:
+            logger.info("尝试使用 stock_hk_hist 接口...")
+            df = ak.stock_hk_hist(
+                symbol=stock_code,
+                period="daily",
+                start_date=start_date,
+                end_date=end_date,
+                adjust=adjust_type
+            )
+            logger.info(f"stock_hk_hist 接口获取数据共 {len(df)} 条记录")
+        except Exception as e:
+            logger.error(f"stock_hk_hist 接口失败: {str(e)}")
+            df = pd.DataFrame()
 
+        # 如果 stock_hk_hist 失败或返回空数据，尝试使用 stock_hk_daily 接口
         if df.empty:
-            logger.warning("未能获取到数据，尝试备用方法...")
-            # 尝试备用方法
-            df = ak.stock_hk_daily(symbol=stock_code)
-            # 日期过滤
-            if not df.empty and '日期' in df.columns:
-                df['日期'] = pd.to_datetime(df['日期'])
-                mask = (df['日期'] >= start_date) & (df['日期'] <= end_date)
-                df = df.loc[mask]
+            logger.warning("stock_hk_hist 接口未能获取到数据，尝试使用 stock_hk_daily 接口...")
+            try:
+                df = ak.stock_hk_daily(symbol=stock_code)
+                logger.info(f"stock_hk_daily 接口获取原始数据共 {len(df)} 条记录")
+                logger.info(f"数据列名: {list(df.columns)}")
+
+                # 尝试识别日期列
+                date_column = None
+                possible_date_columns = ['日期', 'date', 'Date', '交易日期', 'trading_date']
+
+                for col in possible_date_columns:
+                    if col in df.columns:
+                        date_column = col
+                        break
+
+                if date_column:
+                    logger.info(f"识别到日期列: {date_column}")
+                    # 确保日期格式正确
+                    df[date_column] = pd.to_datetime(df[date_column])
+                    # 确保 start_date 和 end_date 也是 datetime 格式
+                    start_dt = pd.to_datetime(start_date)
+                    end_dt = pd.to_datetime(end_date)
+                    # 执行日期过滤
+                    mask = (df[date_column] >= start_dt) & (df[date_column] <= end_dt)
+                    df = df.loc[mask]
+                    logger.info(f"日期过滤后数据共 {len(df)} 条记录")
+                else:
+                    logger.warning("数据中没有日期列，无法进行日期过滤")
+            except Exception as e:
+                logger.error(f"stock_hk_daily 接口失败: {str(e)}")
+                df = pd.DataFrame()
 
         if not df.empty:
             # 使用简单的股票名称格式
@@ -45,9 +158,18 @@ def get_hk_stock_history(stock_code: str, start_date: str, end_date: str, adjust
             # 标准化数据格式
             df = standardize_stock_data(df, stock_code, stock_name, 'HK')
 
-            logger.info(f"成功获取{stock_name}历史数据，共 {len(df)} 条记录")
+            # 再次进行日期过滤，确保数据严格按照指定时间范围
+            if not df.empty and 'date' in df.columns:
+                start_dt = pd.to_datetime(start_date)
+                end_dt = pd.to_datetime(end_date)
+                mask = (df['date'] >= start_dt) & (df['date'] <= end_dt)
+                df = df.loc[mask]
+                logger.info(f"最终过滤后数据共 {len(df)} 条记录")
+
+            # 再次确认日期范围
             if not df.empty:
-                logger.info(f"数据时间范围: {df['date'].min()} 至 {df['date'].max()}")
+                logger.info(f"成功获取{stock_name}历史数据，共 {len(df)} 条记录")
+                logger.info(f"实际数据时间范围: {df['date'].min()} 至 {df['date'].max()}")
 
             return df
         else:
@@ -203,8 +325,8 @@ if __name__ == "__main__":
     )
 
     # 示例2：获取标普500 ETF(IVV)数据
-    get_single_us_history(
-        stock_code="IVV",  # 标普500 ETF
-        start_date=start_time,
-        end_date=end_date
-    )
+    # get_single_us_history(
+    #     stock_code="IVV",  # 标普500 ETF
+    #     start_date=start_time,
+    #     end_date=end_date
+    # )

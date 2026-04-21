@@ -173,9 +173,8 @@
                     </div>
                 </div>
             </div>
-
-            
-
+        </div>
+    </div>
     <div id="notification" class="notification"></div>
 
     <script>
@@ -227,8 +226,6 @@
             document.getElementById('endDate').value = formatDate(today);
             document.getElementById('endDate').max = formatDate(today);
 
-            document.getElementById('strategyCount').textContent = {{ strategies|length }};
-
             const hash = window.location.hash;
             if (hash) {
                 updateNavActiveState(hash);
@@ -267,7 +264,6 @@
             } else if (dataSource === 'akshare') {
                 marketSelect.add(new Option('港股', 'hk'));
                 marketSelect.add(new Option('美股', 'us'));
-                marketSelect.add(new Option('A股', 'cn'));
             }
         });
 

@@ -301,8 +301,8 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
 /* Pagination */
 .modern-pagination { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-top: 1px solid var(--border-color); margin-top: 20px; }
 .pagination-info { color: var(--text-secondary); font-size: 13px; }
-.pagination-controls { display: flex; align-items: center; gap: 8px; }
-#pagination { display: flex; align-items: center; gap: 8px; }
+.pagination-controls { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+#pagination, #execPagination { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
 .pagination-controls .page-btn { min-width: 36px; height: 36px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--surface-color); color: var(--text-color); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; font-size: 13px; }
 .pagination-controls .page-btn:hover:not(.disabled):not(.active) { background: var(--hover-color); border-color: var(--accent-color); }
 .pagination-controls .page-btn.active { background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); border-color: var(--accent-color); color: white; }
@@ -660,8 +660,9 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
     .form-section { padding: 15px; }
     .action-btn { padding: 5px 8px; font-size: 11px; }
     .task-table thead.thead-dark th, .task-table td { padding: 10px 8px !important; font-size: 12px; }
-    .modern-pagination { flex-direction: column; gap: 15px; }
-    .pagination-controls { flex-wrap: wrap; justify-content: center; }
+    .modern-pagination { flex-direction: row; gap: 15px; }
+    .pagination-controls { flex-wrap: nowrap; justify-content: flex-end; }
+    .pagination-controls .page-btn { min-width: 32px; height: 32px; font-size: 12px; }
     .action-cards { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
     .form-grid .col-span-2 { grid-column: span 1; }

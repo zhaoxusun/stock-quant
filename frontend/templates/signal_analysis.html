@@ -356,16 +356,6 @@
             document.getElementById('selectedFileCount').textContent = checked;
         }
 
-        function resetFilters() {
-            document.getElementById('stockFilter').value = '';
-            document.getElementById('sourceFilter').value = '';
-            document.getElementById('strategyFilter').value = '';
-            document.getElementById('modeFilter').value = '';
-            document.getElementById('dateFilterStart').value = '';
-            document.getElementById('dateFilterEnd').value = '';
-            loadRecords(1);
-        }
-
         function resetSignalFilters() {
             document.getElementById('strategyFilter').value = '';
             document.getElementById('stockFilter').value = '';

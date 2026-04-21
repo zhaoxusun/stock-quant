@@ -103,6 +103,10 @@
                                                 </button>
                                             </div>
                                         </div>
+                                        <div id="stockCodeError" class="result-message error d-none" style="margin-top: 8px;">
+                                            <i class="fas fa-times-circle"></i>
+                                            <span></span>
+                                        </div>
                                     </div>
                                     <div class="stock-table-wrapper">
                                         <table class="data-table" id="stockEntitiesTable">
@@ -394,6 +398,9 @@
 
             document.getElementById('newDataSource').dispatchEvent(new Event('change'));
             document.getElementById('addStockButton').addEventListener('click', addStockEntity);
+            document.getElementById('newStockCode').addEventListener('input', function() {
+                document.getElementById('stockCodeError').classList.add('d-none');
+            });
 
             document.getElementById('taskForm').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -518,7 +525,9 @@
             }
             
             if (!isValidPrefix) {
-                showNotification(`股票代码格式错误，${market === 'us' ? '美股' : market === 'hk' ? '港股' : 'A股'}股票代码必须以${expectedPrefix}开头`, 'error');
+                const errorDiv = document.getElementById('stockCodeError');
+                errorDiv.classList.remove('d-none');
+                errorDiv.querySelector('span').textContent = `${market === 'us' ? '美股' : market === 'hk' ? '港股' : 'A股'}股票代码必须以${expectedPrefix}开头`;
                 return;
             }
 
@@ -529,10 +538,13 @@
             );
 
             if (exists) {
-                showNotification('该股票实体已存在', 'error');
+                const errorDiv = document.getElementById('stockCodeError');
+                errorDiv.classList.remove('d-none');
+                errorDiv.querySelector('span').textContent = '该股票实体已存在';
                 return;
             }
 
+            document.getElementById('stockCodeError').classList.add('d-none');
             stockEntities.push({
                 market: market,
                 data_source: dataSource,

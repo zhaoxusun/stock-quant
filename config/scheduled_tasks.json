@@ -27,7 +27,7 @@
     },
     "id": "task_20251121172103",
     "create_time": "2025-11-20 17:21:03",
-    "update_time": "2026-04-21 18:59:48"
+    "update_time": "2026-04-21 19:14:01"
   },
   {
     "name": "恒生科技互联网",
@@ -105,7 +105,7 @@
     },
     "id": "task_20260302180714",
     "create_time": "2026-03-02 18:07:14",
-    "update_time": "2026-04-21 18:59:48"
+    "update_time": "2026-04-21 19:14:01"
   },
   {
     "name": "test",
@@ -129,7 +129,7 @@
     },
     "id": "task_20260421182806",
     "create_time": "2026-04-21 18:28:06",
-    "update_time": "2026-04-21 18:59:48"
+    "update_time": "2026-04-21 19:14:01"
   },
   {
     "name": "test",
@@ -159,6 +159,30 @@
     },
     "id": "task_20260421185853",
     "create_time": "2026-04-21 18:58:53",
-    "update_time": "2026-04-21 18:59:48"
+    "update_time": "2026-04-21 19:14:01"
+  },
+  {
+    "name": "1",
+    "type": "backtest",
+    "description": "恒生科技互联网",
+    "schedule_time": "0 8 * * 1-5",
+    "enabled": false,
+    "target_stocks": [
+      {
+        "market": "hk",
+        "data_source": "akshare",
+        "stock_code": "HK.00700",
+        "adjust_type": "qfq"
+      }
+    ],
+    "backtest_config": {
+      "strategy": "SingleVolumeStrategy",
+      "init_cash": 5000000,
+      "during": 1460,
+      "backtest_mode": "BACKTEST"
+    },
+    "id": "task_20260421191401",
+    "create_time": "2026-04-21 19:14:01",
+    "update_time": "2026-04-21 19:14:01"
   }
 ]

@@ -129,11 +129,6 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
 .price-down { color: var(--danger-color); font-weight: bold; }
 .price-neutral { color: var(--text-color); }
 
-/* Stats card */
-.stats-card { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 20px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); margin-bottom: 16px; }
-.stats-card .stat-value { font-size: 28px; font-weight: 700; margin: 5px 0; }
-.stats-card .stat-label { font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
-
 /* Loading */
 .loading { display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(255, 255, 255, 0.1); border-top: 3px solid var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -169,22 +164,6 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
 .result-container { background-color: var(--card-bg); border-radius: 6px; padding: 20px; margin-top: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
 .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
 .result-title { font-size: 20px; font-weight: 600; color: var(--text-color); }
-
-/* Chart */
-.chart-container { background-color: var(--card-bg); border-radius: 6px; padding: 20px; margin: 20px 0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
-
-/* Tooltip */
-.tooltip { position: relative; display: inline-block; }
-.tooltip .tooltiptext { visibility: hidden; width: 200px; background-color: var(--surface-color); color: var(--text-color); text-align: center; border-radius: 4px; padding: 10px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -100px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); }
-.tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
-
-/* Switch */
-.switch { position: relative; display: inline-block; width: 44px; height: 22px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 22px; }
-.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: var(--accent-color); }
-input:checked + .slider:before { transform: translateX(22px); }
 
 /* Focus */
 button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color) !important; outline-offset: 2px; }
@@ -260,13 +239,6 @@ button:focus, select:focus, input:focus { outline: 2px solid var(--accent-color)
 .task-form-card, .task-list-card { background: linear-gradient(145deg, var(--card-bg), #1a1a1a); border: 1px solid var(--border-color); position: relative; overflow: hidden; }
 .task-form-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary-color), var(--accent-color), var(--secondary-color)); }
 .task-list-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--success-color), var(--info-color), var(--accent-color)); }
-
-/* Result Card */
-.result-card { background: linear-gradient(145deg, var(--card-bg), #1a1a1a); border: 1px solid var(--border-color); position: relative; overflow: hidden; }
-.result-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--success-color), var(--info-color)); }
-.result-card-header { background: transparent; border-bottom: 1px solid var(--border-color); padding: 15px 20px; }
-.result-card-header h5 { margin: 0; font-weight: 600; color: var(--text-color); display: flex; align-items: center; gap: 10px; }
-.result-card-header h5 i { color: var(--success-color); }
 
 /* Schedule */
 .schedule-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }

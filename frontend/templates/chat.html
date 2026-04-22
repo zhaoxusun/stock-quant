@@ -3,28 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 股票分析助手 - 股票量化回测系统</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>AI 股票分析助手 - QuantX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>" type="image/svg+xml">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <div class="container-fluid p-0">
-        {% include 'navbar.html' %}
-        
-        <div class="content pt-4">
-            <div class="page-header page-header-gradient mb-4">
-                <div>
-                    <div class="page-title"><i class="fas fa-robot"></i>AI 股票分析助手</div>
-                    <div class="page-subtitle">智能对话，深度分析股票市场趋势与量化策略</div>
+    {% include 'navbar.html' %}
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-robot"></i>
+                        AI 股票分析助手
+                    </h1>
+                    <p class="page-subtitle">智能对话，深度分析股票市场趋势与量化策略</p>
                 </div>
             </div>
 
             <div class="chat-container">
                 <div class="chat-header">
-                    <h5><i class="fas fa-brain"></i>股票分析助手</h5>
+                    <h3 class="chat-title">
+                        <i class="fas fa-brain"></i>
+                        股票分析助手
+                    </h3>
                     <select class="model-select" id="modelSelect">
                         <option value="gpt-4o-mini" selected>gpt-4o-mini</option>
                         <option value="gpt-4o">gpt-4o</option>
@@ -37,7 +41,7 @@
                     <div class="chat-message ai">
                         <div class="message-bubble">
                             <div>你好！我是股票分析助手，可以帮你分析股票市场数据、消息和趋势。请输入你的问题，例如：</div>
-                            <ul>
+                            <ul style="margin-top: var(--space-sm);">
                                 <li>分析近期科技股的走势</li>
                                 <li>解读最新的宏观经济政策对股市的影响</li>
                                 <li>分析某只股票的放量情况</li>
@@ -57,7 +61,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <div id="notification" class="notification"></div>
 

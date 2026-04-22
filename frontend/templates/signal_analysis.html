@@ -3,37 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>信号分析 - 股票量化回测系统</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>信号分析 - QuantX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>" type="image/svg+xml">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
     {% include 'navbar.html' %}
 
-    <div class="content pt-4">
-        <div class="page-header page-header-gradient mb-4">
-            <div>
-                <div class="page-title"><i class="fas fa-chart-line"></i>信号分析</div>
-                <div class="page-subtitle">深度分析交易信号，挖掘市场规律与投资机会</div>
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-bolt"></i>
+                        信号分析
+                    </h1>
+                    <p class="page-subtitle">深度分析交易信号，挖掘市场规律与投资机会</p>
+                </div>
             </div>
-        </div>
 
-        <div class="filter-bar-custom">
-            <div class="filter-bar-row">
-                <div class="filter-item-custom">
+            <div class="filter-bar">
+                <div class="filter-group">
                     <label><i class="fas fa-brain"></i></label>
                     <select class="filter-select" id="strategyFilter">
                         <option value="">策略</option>
                     </select>
                 </div>
-                <div class="filter-item-custom">
+                <div class="filter-group">
                     <label><i class="fas fa-search"></i></label>
                     <input type="text" class="filter-input" id="stockFilter" placeholder="股票代码或名称">
                 </div>
-                <div class="filter-item-custom">
+                <div class="filter-group">
                     <label><i class="fas fa-rocket"></i></label>
                     <select class="filter-select" id="modeFilter">
                         <option value="">模式</option>
@@ -41,161 +42,165 @@
                         <option value="BACKTEST">回测</option>
                     </select>
                 </div>
-                <div class="filter-item-custom date-range">
+                <div class="filter-group date-range">
                     <label><i class="fas fa-clock"></i></label>
                     <input type="date" class="filter-input" id="fileCreateStartDate">
-                    <span class="date-separator">至</span>
+                    <span style="color: var(--text-tertiary);">至</span>
                     <input type="date" class="filter-input" id="fileCreateEndDate">
                 </div>
                 <button class="filter-btn reset" onclick="resetSignalFilters()">
                     <i class="fas fa-undo"></i> 重置
                 </button>
             </div>
-        </div>
 
-        <div class="signal-files-wrapper mt-4">
-            <div class="signal-files-container">
-                <div class="signal-files-header">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="selectAllFiles" checked>
-                                <label class="form-check-label" for="selectAllFiles">全选</label>
-                            </div>
-                            <span class="text-secondary">|</span>
-                            <span class="filter-result-count">
-                                已筛选 <strong id="filteredFileCount">0</strong> 条
-                            </span>
-                            <span class="text-secondary">|</span>
-                            <span class="selected-info">
-                                已勾选 <strong id="selectedFileCount">0</strong> 条
-                            </span>
+            <div class="card" style="margin-bottom: var(--space-lg);">
+                <div class="card-header">
+                    <h3 class="card-header-title">
+                        <i class="fas fa-file-alt"></i>
+                        信号文件
+                    </h3>
+                    <div style="display: flex; align-items: center; gap: var(--space-md);">
+                        <span class="text-secondary">|</span>
+                        <span>已筛选 <strong id="filteredFileCount" style="color: var(--accent-success);">0</strong> 条</span>
+                        <span class="text-secondary">|</span>
+                        <span>已勾选 <strong id="selectedFileCount" style="color: var(--accent-primary);">0</strong> 条</span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="signal-files-list" id="signalFilesContainer" style="max-height: 350px;">
+                        <div class="signal-files-empty">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>加载信号文件中...</p>
                         </div>
                     </div>
                 </div>
-                <div class="signal-files-list" id="signalFilesContainer">
-                    <div class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin me-2"></i>加载信号文件中...</div>
-                </div>
-            </div>
-            <div class="signal-files-stats">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                    <div class="d-flex align-items-center gap-3">
+                <div class="signal-files-stats">
+                    <div style="display: flex; align-items: center; gap: var(--space-lg); flex-wrap: wrap;">
                         <div class="filter-item-inline">
                             <span class="filter-label">信号类型：</span>
-                            <select class="form-select form-select-sm" id="signalTypeFilter">
+                            <select class="form-select form-select-sm" id="signalTypeFilter" style="width: auto; min-width: 120px;">
                                 <option value="">全部类型</option>
                             </select>
                         </div>
                         <div class="filter-item-inline">
                             <span class="filter-label">筛选信号时间区间：</span>
-                            <input type="date" class="form-control form-control-sm" id="startDate">
+                            <input type="date" class="form-input" id="startDate" style="padding: 6px 10px; font-size: 0.85rem; width: auto;">
                             <span class="text-muted mx-1">至</span>
-                            <input type="date" class="form-control form-control-sm" id="endDate">
+                            <input type="date" class="form-input" id="endDate" style="padding: 6px 10px; font-size: 0.85rem; width: auto;">
                         </div>
                     </div>
-                    <button class="btn btn-primary analyze-btn" onclick="analyzeSelectedSignals()">
-                        <i class="fas fa-chart-bar me-1"></i>分析信号
+                    <button class="btn btn-primary" onclick="analyzeSelectedSignals()">
+                        <i class="fas fa-chart-bar"></i> 分析信号
                     </button>
                 </div>
             </div>
-        </div>
 
-        <div id="analysisSummaryCard" class="card form-panel mt-4 mb-4" style="display: none;">
-            <div class="form-panel-header">
-                <h5><i class="fas fa-chart-pie"></i>分析摘要</h5>
-                <button id="downloadHtmlBtn" class="download-btn" style="display: none;">
-                    <i class="fas fa-download"></i>下载报告
-                </button>
+            <div id="analysisSummaryCard" class="card d-none">
+                <div class="card-header">
+                    <h3 class="card-header-title">
+                        <i class="fas fa-chart-pie"></i>
+                        分析摘要
+                    </h3>
+                    <button id="downloadHtmlBtn" class="btn btn-sm d-none" style="background: var(--gradient-primary); color: white;">
+                        <i class="fas fa-download"></i> 下载报告
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat-card primary">
+                            <div class="stat-card-icon"><i class="fas fa-list"></i></div>
+                            <div class="stat-card-label">总信号数</div>
+                            <div class="stat-card-value" id="totalSignals">0</div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="stat-card-icon"><i class="fas fa-arrow-up"></i></div>
+                            <div class="stat-card-label">买入信号</div>
+                            <div class="stat-card-value" id="buySignals">0</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="stat-card-icon"><i class="fas fa-arrow-down"></i></div>
+                            <div class="stat-card-label">卖出信号</div>
+                            <div class="stat-card-value" id="sellSignals">0</div>
+                        </div>
+                        <div class="stat-card info">
+                            <div class="stat-card-icon"><i class="fas fa-chart-bar"></i></div>
+                            <div class="stat-card-label">股票数</div>
+                            <div class="stat-card-value" id="uniqueStocks">0</div>
+                        </div>
+                        <div class="stat-card purple">
+                            <div class="stat-card-icon"><i class="fas fa-brain"></i></div>
+                            <div class="stat-card-label">策略数</div>
+                            <div class="stat-card-value" id="uniqueStrategies">0</div>
+                        </div>
+                        <div class="stat-card info">
+                            <div class="stat-card-icon"><i class="fas fa-database"></i></div>
+                            <div class="stat-card-label">数据源数</div>
+                            <div class="stat-card-value" id="uniqueSources">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-icon"><i class="fas fa-rocket"></i></div>
+                            <div class="stat-card-label">运行模式</div>
+                            <div class="stat-card-value" id="uniqueModes">-</div>
+                        </div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: var(--space-md); border-radius: var(--radius-lg); margin-top: var(--space-lg);">
+                        <div style="display: flex; align-items: center; gap: var(--space-sm); color: var(--text-secondary);">
+                            <i class="fas fa-calendar-alt" style="color: var(--accent-primary);"></i>
+                            <span>信号时间范围：<strong id="dateRange" style="color: var(--text-primary);">-</strong></span>
+                        </div>
+                    </div>
+                    <div style="margin-top: var(--space-lg);">
+                        <h5 style="color: var(--text-primary); margin-bottom: var(--space-md); display: flex; align-items: center; gap: var(--space-sm);">
+                            <i class="fas fa-chart-pie" style="color: var(--accent-primary);"></i>
+                            信号类型分布
+                        </h5>
+                        <div class="distribution-bars" id="distributionBars"></div>
+                    </div>
+                </div>
             </div>
-            <div class="form-panel-body">
-                <div class="stats-grid">
-                    <div class="stat-card primary">
-                        <div class="stat-card-icon"><i class="fas fa-list"></i></div>
-                        <div class="stat-card-label">总信号数</div>
-                        <div class="stat-card-value" id="totalSignals">0</div>
-                    </div>
-                    <div class="stat-card success">
-                        <div class="stat-card-icon"><i class="fas fa-arrow-up"></i></div>
-                        <div class="stat-card-label">买入信号</div>
-                        <div class="stat-card-value" id="buySignals">0</div>
-                    </div>
-                    <div class="stat-card danger">
-                        <div class="stat-card-icon"><i class="fas fa-arrow-down"></i></div>
-                        <div class="stat-card-label">卖出信号</div>
-                        <div class="stat-card-value" id="sellSignals">0</div>
-                    </div>
-                    <div class="stat-card info">
-                        <div class="stat-card-icon"><i class="fas fa-chart-bar"></i></div>
-                        <div class="stat-card-label">股票数</div>
-                        <div class="stat-card-value" id="uniqueStocks">0</div>
-                    </div>
-                    <div class="stat-card strategy">
-                        <div class="stat-card-icon"><i class="fas fa-brain"></i></div>
-                        <div class="stat-card-label">策略数</div>
-                        <div class="stat-card-value" id="uniqueStrategies">0</div>
-                    </div>
-                    <div class="stat-card info">
-                        <div class="stat-card-icon"><i class="fas fa-database"></i></div>
-                        <div class="stat-card-label">数据源数</div>
-                        <div class="stat-card-value" id="uniqueSources">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-card-icon"><i class="fas fa-rocket"></i></div>
-                        <div class="stat-card-label">运行模式</div>
-                        <div class="stat-card-value" id="uniqueModes">-</div>
-                    </div>
+
+            <div id="analysisResultCard" class="card d-none">
+                <div class="card-header">
+                    <h3 class="card-header-title">
+                        <i class="fas fa-table"></i>
+                        信号分析结果
+                    </h3>
                 </div>
-                <div class="analysis-extra-info">
-                    <div class="extra-info-item">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>信号时间范围：<strong id="dateRange">-</strong></span>
+                <div class="card-body" style="padding: 0;">
+                    <div class="table-container" style="border: none; border-radius: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>日期</th>
+                                    <th>信号类型</th>
+                                    <th>描述</th>
+                                    <th>股票信息</th>
+                                    <th>数据源</th>
+                                    <th>策略</th>
+                                </tr>
+                            </thead>
+                            <tbody id="signalsTable"></tbody>
+                        </table>
                     </div>
-                </div>
-                <div class="signal-type-distribution" id="signalTypeDistribution">
-                    <div class="distribution-title">信号类型分布</div>
-                    <div class="distribution-bars" id="distributionBars"></div>
+
+                    <div class="pagination">
+                        <div class="pagination-info">
+                            共 <strong id="totalSignalResults">0</strong> 条记录
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="page-btn" id="prevPageBtn" onclick="changePage(-1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div id="pagination" style="display: flex; gap: 4px;"></div>
+                            <button class="page-btn" id="nextPageBtn" onclick="changePage(1)">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div id="analysisResultCard" class="card form-panel mt-4" style="display: none;">
-            <div class="form-panel-header">
-                <h5><i class="fas fa-table"></i>信号分析结果</h5>
-            </div>
-            <div class="form-panel-body">
-                <div class="data-table-wrapper">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>日期</th>
-                                <th>信号类型</th>
-                                <th>描述</th>
-                                <th>股票信息</th>
-                                <th>数据源</th>
-                                <th>策略</th>
-                            </tr>
-                        </thead>
-                        <tbody id="signalsTable"></tbody>
-                    </table>
-                </div>
-
-                <div class="pagination-custom" id="paginationContainer">
-                    <div class="pagination-info-custom">
-                        共 <strong id="totalSignalResults">0</strong> 条记录
-                    </div>
-                    <div class="pagination-controls-custom">
-                        <button class="page-btn-custom" id="prevPageBtn" onclick="changePage(-1)">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <div id="pagination"></div>
-                        <button class="page-btn-custom" id="nextPageBtn" onclick="changePage(1)">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    </main>
 
     <div id="notification" class="notification"></div>
 
@@ -216,7 +221,22 @@
             document.getElementById('endDate').value = today.toISOString().split('T')[0];
 
             loadSignalFiles();
+            initDateInputs();
         });
+
+        function initDateInputs() {
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                input.style.cursor = 'pointer';
+                input.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (this.showPicker) {
+                        this.showPicker();
+                    } else {
+                        this.focus();
+                    }
+                });
+            });
+        }
 
         function loadSignalFiles() {
             fetch('/api/backtest_records/get_all')
@@ -260,12 +280,6 @@
                 opt.value = t;
                 opt.textContent = t;
                 signalTypeSelect.appendChild(opt);
-            });
-
-            document.getElementById('selectAllFiles').addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('input[name="signalFile"]');
-                checkboxes.forEach(cb => cb.checked = this.checked);
-                updateFileCount();
             });
 
             document.getElementById('strategyFilter').addEventListener('change', filterSignalFiles);
@@ -325,8 +339,8 @@
 
             container.innerHTML = files.map(f => {
                 const modeLabel = f.backtest_mode === 'LIVE'
-                    ? '<span class="badge bg-warning text-dark">实盘</span>'
-                    : '<span class="badge bg-primary">回测</span>';
+                    ? '<span class="badge badge-warning">实盘</span>'
+                    : '<span class="badge badge-primary">回测</span>';
                 return `
                     <div class="signal-file-item">
                         <input type="checkbox" name="signalFile" value="${f.file_path}" checked onchange="updateFileCount()">
@@ -381,7 +395,7 @@
                 end_date: document.getElementById('endDate').value
             };
 
-            document.getElementById('analysisSummaryCard').style.display = 'block';
+            document.getElementById('analysisSummaryCard').classList.remove('d-none');
             document.getElementById('signalsTable').innerHTML = '<tr><td colspan="6" class="text-center py-5"><div class="loading-spinner mx-auto"></div></td></tr>';
 
             fetch('/analyze_signals', {
@@ -402,7 +416,7 @@
                     document.getElementById('uniqueSources').textContent = summary.unique_sources || 0;
                     document.getElementById('uniqueModes').textContent = summary.unique_modes || '-';
                     document.getElementById('dateRange').textContent = summary.date_range || '-';
-                    document.getElementById('downloadHtmlBtn').style.display = 'inline-flex';
+                    document.getElementById('downloadHtmlBtn').classList.remove('d-none');
                     document.getElementById('downloadHtmlBtn').onclick = downloadResultsAsHTML;
 
                     renderSignalDistribution(summary.signal_type_counts, summary.total_signals);
@@ -411,7 +425,7 @@
                     currentPage = 1;
                     renderPageData();
                     document.getElementById('totalSignalResults').textContent = summary.total_signals;
-                    document.getElementById('analysisResultCard').style.display = 'block';
+                    document.getElementById('analysisResultCard').classList.remove('d-none');
                     showNotification(`分析完成，共找到 ${summary.total_signals} 条信号`);
                 } else {
                     showNotification(data.message || '分析失败', 'error');
@@ -435,10 +449,10 @@
             }
 
             const typeColors = {
-                'normal_buy': 'color: #2ecc71;',
-                'strong_buy': 'color: #27ae60;',
-                'normal_sell': 'color: #e74c3c;',
-                'strong_sell': 'color: #c0392b;'
+                'normal_buy': 'color: var(--accent-success);',
+                'strong_buy': 'color: #059669;',
+                'normal_sell': 'color: var(--accent-danger);',
+                'strong_sell': 'color: #dc2626;'
             };
 
             tbody.innerHTML = data.map((s, i) => `
@@ -460,7 +474,7 @@
 
             for (let i = 1; i <= totalPages; i++) {
                 const pageItem = document.createElement('button');
-                pageItem.className = `page-btn-custom ${i === currentPage ? 'active' : ''}`;
+                pageItem.className = `page-btn ${i === currentPage ? 'active' : ''}`;
                 pageItem.textContent = i;
                 pageItem.onclick = () => {
                     currentPage = i;
@@ -485,10 +499,10 @@
         function renderSignalDistribution(typeCounts, total) {
             const container = document.getElementById('distributionBars');
             const typeColors = {
-                '普通买入': '#2ecc71',
-                '强势买入': '#27ae60',
-                '普通卖出': '#e74c3c',
-                '强势卖出': '#c0392b',
+                '普通买入': '#10b981',
+                '强势买入': '#059669',
+                '普通卖出': '#ef4444',
+                '强势卖出': '#dc2626',
             };
 
             container.innerHTML = '';
@@ -496,7 +510,7 @@
             const entries = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
             entries.forEach(([type, count]) => {
                 const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
-                const color = typeColors[type] || '#3498db';
+                const color = typeColors[type] || '#3b82f6';
 
                 const bar = document.createElement('div');
                 bar.className = 'distribution-bar';

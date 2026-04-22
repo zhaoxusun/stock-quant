@@ -3,45 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>策略代码查看 - 股票量化回测系统</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>策略代码管理 - QuantX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>" type="image/svg+xml">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/python.min.js"></script>
 </head>
 <body>
-    <div class="container-fluid p-0">
-        {% include 'navbar.html' %}
+    {% include 'navbar.html' %}
 
-        <div class="content pt-4">
-            <div class="page-header page-header-gradient mb-4">
-                <div>
-                    <div class="page-title"><i class="fas fa-code"></i>策略代码管理</div>
-                    <div class="page-subtitle">查看和管理交易策略与信号指标源代码</div>
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-code"></i>
+                        策略代码管理
+                    </h1>
+                    <p class="page-subtitle">查看和管理交易策略与信号指标源代码</p>
                 </div>
             </div>
 
-            <div class="card form-panel">
-                <div class="form-panel-header">
-                    <h5><i class="fas fa-file-code"></i>代码查看器</h5>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-header-title">
+                        <i class="fas fa-file-code"></i>
+                        代码查看器
+                    </h3>
                 </div>
-                <div class="form-panel-body">
-                    <div class="nav-tabs-modern mb-4">
-                        <button class="nav-tab-item active" id="strategyTypeTab" onclick="switchTab('strategy')">
-                            <i class="fas fa-robot me-2"></i>交易策略
+                <div class="card-body">
+                    <div class="nav-tabs">
+                        <button class="nav-tab active" id="strategyTypeTab" onclick="switchTab('strategy')">
+                            <i class="fas fa-robot"></i>
+                            交易策略
                         </button>
-                        <button class="nav-tab-item" id="indicatorTypeTab" onclick="switchTab('indicator')">
-                            <i class="fas fa-chart-line me-2"></i>信号指标
+                        <button class="nav-tab" id="indicatorTypeTab" onclick="switchTab('indicator')">
+                            <i class="fas fa-chart-line"></i>
+                            信号指标
                         </button>
                     </div>
 
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label"><i class="fas fa-list me-1"></i>选择代码</label>
+                    <div class="form-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: var(--space-lg);">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-list"></i>选择策略</label>
                             <select class="form-select" id="strategySelect" onchange="loadCode('strategy')">
                                 <option value="">请选择策略</option>
                                 {% for strategy in strategies %}
@@ -66,7 +72,7 @@
                         <div class="code-container">
                             <div class="code-header">
                                 <div>
-                                    <h5 class="mb-1" id="codeName"></h5>
+                                    <h5 class="mb-1" id="codeName" style="color: var(--text-primary); font-size: 1rem;"></h5>
                                     <small class="text-muted" id="filePath"></small>
                                 </div>
                                 <div class="code-tabs">
@@ -74,7 +80,7 @@
                                     <button class="code-tab" onclick="switchCodeTab('module', this)">完整模块</button>
                                 </div>
                                 <button class="code-copy-btn" onclick="copyCode()">
-                                    <i class="fas fa-copy me-1"></i>复制
+                                    <i class="fas fa-copy"></i> 复制
                                 </button>
                             </div>
                             <div id="classCode" class="code-content">
@@ -87,13 +93,13 @@
                     </div>
 
                     <div id="codeError" class="alert alert-danger mt-4 d-none">
-                        <h5><i class="fas fa-exclamation-triangle me-2"></i>加载失败</h5>
-                        <p id="errorMessage" class="mb-0"></p>
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span id="errorMessage"></span>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <div id="notification" class="notification"></div>
 
@@ -102,7 +108,7 @@
 
         function switchTab(type) {
             currentType = type;
-            document.querySelectorAll('.nav-tab-item').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
             document.getElementById(type === 'strategy' ? 'strategyTypeTab' : 'indicatorTypeTab').classList.add('active');
 
             document.getElementById('strategySelect').classList.toggle('d-none', type !== 'strategy');
@@ -162,10 +168,18 @@
 
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            notification.style.display = 'block';
-            setTimeout(() => notification.style.display = 'none', 3000);
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            notification.innerHTML = `
+                <div class="toast-content ${type}">
+                    <i class="fas ${icon} toast-icon"></i>
+                    <span class="toast-message">${message}</span>
+                </div>
+            `;
+            notification.className = `notification ${type} show`;
+            clearTimeout(notification.hideTimeout);
+            notification.hideTimeout = setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
         }
 
         document.addEventListener('DOMContentLoaded', function() {

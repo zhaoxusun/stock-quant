@@ -3,14 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>背景音乐</title>
+    <title>背景音乐 - QuantX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             width: 320px;
-            padding: 12px;
+            min-height: 420px;
+            padding: var(--space-md);
+            background: var(--bg-primary);
+            font-family: var(--font-sans);
+        }
+        .music-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border-primary);
+            margin-bottom: var(--space-md);
+        }
+        .music-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .minimize-btn {
+            padding: 4px 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .minimize-btn:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+        .music-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+        .music-cover {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        .music-details {
+            flex: 1;
+            overflow: hidden;
+        }
+        .music-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .music-artist {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+        .progress-container {
+            margin-bottom: var(--space-lg);
+        }
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-full);
+            width: 0%;
+            transition: width 0.1s;
+        }
+        .progress-time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-top: 6px;
+        }
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 50%;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .control-btn:hover {
+            background: var(--bg-elevated);
+            border-color: var(--accent-primary);
+        }
+        .control-btn.play-pause {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border: none;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35);
+        }
+        .control-btn.play-pause:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+        }
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+            padding: 0 var(--space-sm);
+        }
+        .volume-icon {
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .volume-icon:hover {
+            color: var(--accent-primary);
+        }
+        .volume-slider {
+            flex: 1;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+        }
+        .volume-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: var(--radius-full);
+            width: 70%;
+        }
+        .playlist {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        .playlist-title {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-tertiary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .playlist-items {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: 10px var(--space-md);
+            cursor: pointer;
+            transition: background var(--transition-fast);
+            border-bottom: 1px solid var(--border-primary);
+        }
+        .playlist-item:last-child {
+            border-bottom: none;
+        }
+        .playlist-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        .playlist-item.active {
+            background: rgba(59, 130, 246, 0.15);
+        }
+        .playlist-item.active .item-name {
+            color: var(--accent-primary);
+        }
+        .item-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-tertiary);
+        }
+        .playlist-item.active .item-icon {
+            color: var(--accent-primary);
+        }
+        .sound-waves {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 14px;
+        }
+        .sound-wave {
+            width: 3px;
+            background: var(--text-tertiary);
+            border-radius: 2px;
+            animation: soundWave 1s ease-in-out infinite;
+        }
+        .sound-wave:nth-child(1) { height: 40%; animation-delay: 0s; }
+        .sound-wave:nth-child(2) { height: 70%; animation-delay: 0.1s; }
+        .sound-wave:nth-child(3) { height: 50%; animation-delay: 0.2s; }
+        .sound-wave:nth-child(4) { height: 80%; animation-delay: 0.3s; }
+        .playlist-item.active .sound-wave {
+            background: var(--accent-primary);
+        }
+        @keyframes soundWave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.5); }
+        }
+        .item-name {
+            flex: 1;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     </style>
 </head>
@@ -18,9 +251,9 @@
     <audio id="audioPlayer" loop preload="auto"></audio>
 
     <div class="music-header">
-        <h3>背景音乐</h3>
+        <h3><i class="fas fa-music" style="color: var(--accent-primary); margin-right: 8px;"></i>背景音乐</h3>
         <button class="minimize-btn" onclick="window.close()">
-            <i class="fas fa-minus"></i> 最小化
+            <i class="fas fa-minus"></i> 关闭
         </button>
     </div>
 
@@ -55,7 +288,7 @@
     </div>
 
     <div class="playlist">
-        <div class="playlist-title">播放列表</div>
+        <div class="playlist-title"><i class="fas fa-list"></i> 播放列表</div>
         <div class="playlist-items" id="playlistItems"></div>
     </div>
 
@@ -176,6 +409,7 @@
 
         function notifyParent(playing) {
             if (window.opener) window.opener.postMessage({ type: 'musicState', isPlaying: playing }, '*');
+            localStorage.setItem('musicIsPlaying', playing);
         }
 
         function bindEvents() {

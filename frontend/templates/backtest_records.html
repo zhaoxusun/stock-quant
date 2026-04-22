@@ -3,69 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>回测记录 - 股票量化回测系统</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>回测记录 - QuantX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>" type="image/svg+xml">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <div class="container-fluid p-0">
-        {% include 'navbar.html' %}
+    {% include 'navbar.html' %}
 
-        <div class="content pt-4">
-            <div class="page-header page-header-gradient mb-4">
-                <div>
-                    <h1 class="page-title"><i class="fas fa-history"></i>回测记录</h1>
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-history"></i>
+                        回测记录
+                    </h1>
                     <p class="page-subtitle">查看历史回测记录、筛选分析结果、点击查看详情或跳转到回测报表</p>
                 </div>
             </div>
 
-            <div class="filter-bar-custom">
-                <div class="filter-bar-row">
-                    <div class="filter-item-custom">
-                        <label><i class="fas fa-search"></i></label>
-                        <input type="text" class="filter-input" id="stockFilter" placeholder="股票名称" oninput="debounceFilter()">
-                    </div>
-                    <div class="filter-item-custom">
-                        <label><i class="fas fa-database"></i></label>
-                        <select class="filter-select" id="sourceFilter" onchange="applyFilters()">
-                            <option value="">数据源</option>
-                            <option value="akshare">akshare</option>
-                            <option value="baostock">baostock</option>
-                            <option value="futu">futu</option>
-                        </select>
-                    </div>
-                    <div class="filter-item-custom">
-                        <label><i class="fas fa-brain"></i></label>
-                        <select class="filter-select" id="strategyFilter" onchange="applyFilters()">
-                            <option value="">策略</option>
-                            <option value="EnhancedVolumeStrategy">EnhancedVolumeStrategy</option>
-                            <option value="SingleVolumeStrategy">SingleVolumeStrategy</option>
-                        </select>
-                    </div>
-                    <div class="filter-item-custom">
-                        <label><i class="fas fa-rocket"></i></label>
-                        <select class="filter-select" id="modeFilter" onchange="applyFilters()">
-                            <option value="">模式</option>
-                            <option value="LIVE">实盘</option>
-                            <option value="BACKTEST">回测</option>
-                        </select>
-                    </div>
-                    <div class="filter-item-custom date-range">
-                        <label><i class="fas fa-calendar"></i></label>
-                        <input type="date" class="filter-input" id="dateFilterStart" placeholder="开始日期">
-                        <span class="date-separator">至</span>
-                        <input type="date" class="filter-input" id="dateFilterEnd" placeholder="结束日期">
-                    </div>
-                    <button class="filter-btn" onclick="applyFilters()">
-                        <i class="fas fa-search"></i> 搜索
-                    </button>
-                    <button class="filter-btn reset" onclick="resetFilters()">
-                        <i class="fas fa-undo"></i> 重置
-                    </button>
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label><i class="fas fa-search"></i></label>
+                    <input type="text" class="filter-input" id="stockFilter" placeholder="股票名称" oninput="debounceFilter()">
                 </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-database"></i></label>
+                    <select class="filter-select" id="sourceFilter" onchange="applyFilters()">
+                        <option value="">数据源</option>
+                        <option value="akshare">akshare</option>
+                        <option value="baostock">baostock</option>
+                        <option value="futu">futu</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-brain"></i></label>
+                    <select class="filter-select" id="strategyFilter" onchange="applyFilters()">
+                        <option value="">策略</option>
+                        <option value="EnhancedVolumeStrategy">EnhancedVolumeStrategy</option>
+                        <option value="SingleVolumeStrategy">SingleVolumeStrategy</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-rocket"></i></label>
+                    <select class="filter-select" id="modeFilter" onchange="applyFilters()">
+                        <option value="">模式</option>
+                        <option value="LIVE">实盘</option>
+                        <option value="BACKTEST">回测</option>
+                    </select>
+                </div>
+                <div class="filter-group date-range">
+                    <label><i class="fas fa-calendar"></i></label>
+                    <input type="date" class="filter-input" id="dateFilterStart" placeholder="开始日期">
+                    <span style="color: var(--text-tertiary);">至</span>
+                    <input type="date" class="filter-input" id="dateFilterEnd" placeholder="结束日期">
+                </div>
+                <button class="filter-btn" onclick="applyFilters()">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+                <button class="filter-btn reset" onclick="resetFilters()">
+                    <i class="fas fa-undo"></i> 重置
+                </button>
             </div>
 
             <div class="stats-row">
@@ -77,7 +76,7 @@
                     </div>
                 </div>
                 <div class="mini-stat">
-                    <div class="mini-stat-icon green"><i class="fas fa-database"></i></div>
+                    <div class="mini-stat-icon green"><i class="fas fa-server"></i></div>
                     <div>
                         <div class="mini-stat-value" id="totalSources">-</div>
                         <div class="mini-stat-label">数据源</div>
@@ -106,18 +105,18 @@
                 </div>
             </div>
 
-            <div class="table-responsive">
-                <table class="data-table-custom">
+            <div class="table-container">
+                <table class="data-table">
                     <thead>
                         <tr>
-                            <th><i class="fas fa-hashtag me-1"></i>序号</th>
-                            <th><i class="fas fa-chart-bar me-1"></i>股票</th>
-                            <th><i class="fas fa-database me-1"></i>数据源</th>
-                            <th><i class="fas fa-brain me-1"></i>策略</th>
-                            <th><i class="fas fa-rocket me-1"></i>模式</th>
-                            <th><i class="fas fa-coins me-1"></i>初始资金</th>
-                            <th><i class="fas fa-clock me-1"></i>执行时间</th>
-                            <th><i class="fas fa-cog me-1"></i>操作</th>
+                            <th><i class="fas fa-hashtag"></i>序号</th>
+                            <th><i class="fas fa-chart-bar"></i>股票</th>
+                            <th><i class="fas fa-database"></i>数据源</th>
+                            <th><i class="fas fa-brain"></i>策略</th>
+                            <th><i class="fas fa-rocket"></i>模式</th>
+                            <th><i class="fas fa-coins"></i>初始资金</th>
+                            <th><i class="fas fa-clock"></i>执行时间</th>
+                            <th><i class="fas fa-cog"></i>操作</th>
                         </tr>
                     </thead>
                     <tbody id="recordsTable">
@@ -125,33 +124,32 @@
                 </table>
             </div>
 
-            <div id="noResults" class="empty-state-custom d-none">
+            <div id="noResults" class="empty-state d-none">
                 <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
                 <div class="empty-title">暂无回测记录</div>
                 <div class="empty-text">执行一次回测后，记录将显示在这里</div>
             </div>
 
-            <div class="pagination-custom" id="paginationContainer">
-                <div class="pagination-info-custom">
+            <div class="pagination" id="paginationContainer">
+                <div class="pagination-info">
                     共 <strong id="totalResults">0</strong> 条记录
                 </div>
-                <div class="pagination-controls-custom">
-                    <button class="page-btn-custom" id="prevPage" onclick="goToPage(currentPage - 1)">
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevPage" onclick="goToPage(currentPage - 1)">
                         <i class="fas fa-chevron-left"></i>
                     </button>
-                    <div id="pagination"></div>
-                    <button class="page-btn-custom" id="nextPage" onclick="goToPage(currentPage + 1)">
+                    <div id="pagination" style="display: flex; gap: 4px;"></div>
+                    <button class="page-btn" id="nextPage" onclick="goToPage(currentPage + 1)">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <div id="notification" class="notification"></div>
 
     <script>
-        
         let filteredRecords = [];
         let currentPage = 1;
         let totalPages = 1;
@@ -163,6 +161,13 @@
             clearTimeout(filterTimeout);
             filterTimeout = setTimeout(applyFilters, 500);
         }
+
+        document.querySelectorAll('.filter-group.date-range .fa-calendar').forEach(icon => {
+            icon.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('input[type="date"]');
+                if (input) input.showPicker ? input.showPicker() : input.focus();
+            });
+        });
 
         function loadRecords(page = 1) {
             currentPage = page;
@@ -231,8 +236,8 @@
                     const afterData = record.after_data || {};
                     const stockName = initData.stock_name || initData.stock_code || '-';
                     const modeLabel = initData.backtest_mode === 'LIVE' 
-                        ? '<span class="badge bg-warning text-dark">实盘</span>' 
-                        : '<span class="badge bg-primary">回测</span>';
+                        ? '<span class="badge badge-warning">实盘</span>' 
+                        : '<span class="badge badge-primary">回测</span>';
                     const resultPath = afterData.result_html_relative_path || '';
 
                     const row = document.createElement('tr');
@@ -282,7 +287,7 @@
 
             for (let i = startPage; i <= endPage; i++) {
                 const pageItem = document.createElement('button');
-                pageItem.className = 'page-btn-custom' + (i === currentPage ? ' active' : '');
+                pageItem.className = 'page-btn' + (i === currentPage ? ' active' : '');
                 pageItem.textContent = i;
                 pageItem.onclick = () => goToPage(i);
                 pagination.appendChild(pageItem);
@@ -317,14 +322,20 @@
         }
 
         function viewRecord(recordId) {
+            console.log('viewRecord called with:', recordId);
             fetch('/api/backtest_records/' + recordId)
                 .then(response => response.json())
                 .then(data => {
+                    console.log('API response:', data);
                     if (data.success && data.data) {
                         showRecordModal(data.data);
                     } else {
                         showNotification('获取记录失败', 'error');
                     }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    showNotification('获取记录失败: ' + error.message, 'error');
                 });
         }
 
@@ -337,57 +348,65 @@
             const riskStats = afterData.risk_stats || {};
 
             const modalHtml = `
-                <div class="modal fade" id="recordModal" tabindex="-1">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content record-modal-content">
-                            <div class="modal-header record-modal-header">
-                                <h5 class="modal-title text-white">回测记录详情 - ${(initData.stock_name || initData.stock_code) || '-'}</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">初始化数据</h6>
-                                        <table class="table table-sm">
-                                            <tr><td>股票代码</td><td>${initData.stock_code || '-'}</td></tr>
-                                            <tr><td>股票名称</td><td>${initData.stock_name || '-'}</td></tr>
-                                            <tr><td>数据源</td><td>${initData.data_source || '-'}</td></tr>
-                                            <tr><td>策略</td><td>${initData.strategy || '-'}</td></tr>
-                                            <tr><td>运行模式</td><td>${initData.backtest_mode || '-'}</td></tr>
-                                            <tr><td>初始资金</td><td>${initData.init_cash ? initData.init_cash.toLocaleString() : '-'}</td></tr>
-                                        </table>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">回测数据</h6>
-                                        <table class="table table-sm">
-                                            <tr><td>开始日期</td><td>${beforeData.start_date || '-'}</td></tr>
-                                            <tr><td>结束日期</td><td>${beforeData.end_date || '-'}</td></tr>
-                                            <tr><td>数据天数</td><td>${beforeData.data_days || '-'}</td></tr>
-                                            <tr><td>市场</td><td>${beforeData.market || '-'}</td></tr>
-                                            <tr><td>佣金率</td><td>${beforeData.commission_rate ? beforeData.commission_rate + '%' : '-'}</td></tr>
-                                            <tr><td>滑点</td><td>${beforeData.slippage || '-'}</td></tr>
-                                        </table>
-                                    </div>
+                <div class="modal-overlay" id="recordModal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">回测记录详情 - ${(initData.stock_name || initData.stock_code) || '-'}</h3>
+                            <button class="modal-close" onclick="closeModal()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-lg);">
+                                <div>
+                                    <h6 style="color: var(--accent-primary); margin-bottom: var(--space-md); font-size: 0.9rem;">
+                                        <i class="fas fa-cog"></i> 初始化数据
+                                    </h6>
+                                    <table class="data-table">
+                                        <tr><td>股票代码</td><td>${initData.stock_code || '-'}</td></tr>
+                                        <tr><td>股票名称</td><td>${initData.stock_name || '-'}</td></tr>
+                                        <tr><td>数据源</td><td>${initData.data_source || '-'}</td></tr>
+                                        <tr><td>策略</td><td>${initData.strategy || '-'}</td></tr>
+                                        <tr><td>运行模式</td><td>${initData.backtest_mode || '-'}</td></tr>
+                                        <tr><td>初始资金</td><td>${initData.init_cash ? initData.init_cash.toLocaleString() : '-'}</td></tr>
+                                    </table>
                                 </div>
-                                <div class="row mt-3">
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">信号统计</h6>
-                                        <table class="table table-sm">
-                                            <tr><td>买入信号</td><td>${signalStats.buy_signals || 0}</td></tr>
-                                            <tr><td>卖出信号</td><td>${signalStats.sell_signals || 0}</td></tr>
-                                            <tr><td>实际买入</td><td>${signalStats.executed_buys || 0}</td></tr>
-                                            <tr><td>实际卖出</td><td>${signalStats.executed_sells || 0}</td></tr>
-                                        </table>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">收益统计</h6>
-                                        <table class="table table-sm">
-                                            <tr><td>总收益率</td><td class="${returnStats.total_return > 0 ? 'text-success' : returnStats.total_return < 0 ? 'text-danger' : ''}">${returnStats.total_return ? returnStats.total_return.toFixed(2) + '%' : '-'}</td></tr>
-                                            <tr><td>年化收益</td><td>${returnStats.annual_return ? returnStats.annual_return.toFixed(2) + '%' : '-'}</td></tr>
-                                            <tr><td>最终资金</td><td>${returnStats.final_cash ? returnStats.final_cash.toLocaleString() : '-'}</td></tr>
-                                            <tr><td>最大回撤</td><td class="text-danger">${riskStats.max_drawdown ? riskStats.max_drawdown.toFixed(2) + '%' : '-'}</td></tr>
-                                        </table>
-                                    </div>
+                                <div>
+                                    <h6 style="color: var(--accent-primary); margin-bottom: var(--space-md); font-size: 0.9rem;">
+                                        <i class="fas fa-database"></i> 回测数据
+                                    </h6>
+                                    <table class="data-table">
+                                        <tr><td>开始日期</td><td>${beforeData.start_date || '-'}</td></tr>
+                                        <tr><td>结束日期</td><td>${beforeData.end_date || '-'}</td></tr>
+                                        <tr><td>数据天数</td><td>${beforeData.data_days || '-'}</td></tr>
+                                        <tr><td>市场</td><td>${beforeData.market || '-'}</td></tr>
+                                        <tr><td>佣金率</td><td>${beforeData.commission_rate ? beforeData.commission_rate + '%' : '-'}</td></tr>
+                                        <tr><td>滑点</td><td>${beforeData.slippage || '-'}</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); margin-top: var(--space-lg);">
+                                <div>
+                                    <h6 style="color: var(--accent-purple); margin-bottom: var(--space-md); font-size: 0.9rem;">
+                                        <i class="fas fa-bolt"></i> 信号统计
+                                    </h6>
+                                    <table class="data-table">
+                                        <tr><td>买入信号</td><td>${signalStats.buy_signals || 0}</td></tr>
+                                        <tr><td>卖出信号</td><td>${signalStats.sell_signals || 0}</td></tr>
+                                        <tr><td>实际买入</td><td>${signalStats.executed_buys || 0}</td></tr>
+                                        <tr><td>实际卖出</td><td>${signalStats.executed_sells || 0}</td></tr>
+                                    </table>
+                                </div>
+                                <div>
+                                    <h6 style="color: var(--accent-success); margin-bottom: var(--space-md); font-size: 0.9rem;">
+                                        <i class="fas fa-chart-line"></i> 收益统计
+                                    </h6>
+                                    <table class="data-table">
+                                        <tr><td>总收益率</td><td class="${returnStats.total_return > 0 ? 'text-success' : returnStats.total_return < 0 ? 'text-danger' : ''}">${returnStats.total_return ? returnStats.total_return.toFixed(2) + '%' : '-'}</td></tr>
+                                        <tr><td>年化收益</td><td>${returnStats.annual_return ? returnStats.annual_return.toFixed(2) + '%' : '-'}</td></tr>
+                                        <tr><td>最终资金</td><td>${returnStats.final_cash ? returnStats.final_cash.toLocaleString() : '-'}</td></tr>
+                                        <tr><td>最大回撤</td><td class="text-danger">${riskStats.max_drawdown ? riskStats.max_drawdown.toFixed(2) + '%' : '-'}</td></tr>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -396,12 +415,23 @@
             `;
 
             document.body.insertAdjacentHTML('beforeend', modalHtml);
-            const modal = new bootstrap.Modal(document.getElementById('recordModal'));
-            modal.show();
-
-            document.getElementById('recordModal').addEventListener('hidden.bs.modal', function() {
-                this.remove();
+            
+            setTimeout(() => {
+                const modal = document.getElementById('recordModal');
+                if (modal) modal.classList.add('show');
+            }, 10);
+            
+            document.getElementById('recordModal').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
             });
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('recordModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 300);
+            }
         }
 
         function showNotification(message, type = 'success') {
@@ -418,7 +448,29 @@
             notification.hideTimeout = setTimeout(() => notification.classList.remove('show'), 3000);
         }
 
-        document.addEventListener('DOMContentLoaded', () => loadRecords(1));
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRecords(1);
+            initDateInputs();
+        });
+
+        function initDateInputs() {
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                input.style.cursor = 'pointer';
+                input.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (this.showPicker) {
+                        this.showPicker();
+                    } else {
+                        this.focus();
+                        try {
+                            document.execCommand('ShowDatePicker', false, null);
+                        } catch (e) {
+                            // Fallback for browsers that don't support showPicker
+                        }
+                    }
+                });
+            });
+        }
     </script>
 </body>
 </html>

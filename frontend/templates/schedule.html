@@ -3,346 +3,356 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>定时任务管理 - 股票量化回测系统</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>定时任务管理 - QuantX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>" type="image/svg+xml">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <div class="container-fluid p-0">
-        {% include 'navbar.html' %}
+    {% include 'navbar.html' %}
 
-        <div class="content pt-4">
-            <div class="page-header page-header-gradient mb-4">
-                <div>
-                    <div class="page-title"><i class="fas fa-clock"></i>定时任务管理</div>
-                    <div class="page-subtitle">自动化执行股票数据获取、回测分析，定期生成投资报告</div>
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-clock"></i>
+                        定时任务管理
+                    </h1>
+                    <p class="page-subtitle">自动化执行股票数据获取、回测分析，定期生成投资报告</p>
                 </div>
             </div>
 
-            <div class="row g-4">
-                <div class="col-12">
-                    <div class="card task-form-card" id="task-form">
-                        <div class="card-header">
-                            <div class="schedule-header">
-                                <span id="form-title"><i class="fas fa-calendar-plus me-2"></i>创建定时任务</span>
+            <div class="card" id="task-form" style="margin-bottom: var(--space-lg);">
+                <div class="card-header">
+                    <h3 class="card-header-title">
+                        <i class="fas fa-calendar-plus"></i>
+                        <span id="form-title">创建定时任务</span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form id="taskForm">
+                        <input type="hidden" id="taskId" name="taskId">
+
+                        <div class="form-section">
+                            <h4 class="form-section-title">
+                                <i class="fas fa-info-circle"></i>
+                                基础信息
+                            </h4>
+                            <div class="form-grid" style="grid-template-columns: repeat(4, 1fr);">
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-tag"></i>任务名称</label>
+                                    <input type="text" class="form-input" id="taskName" name="taskName" placeholder="请输入任务名称" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-tasks"></i>任务类型</label>
+                                    <select class="form-select" id="taskType" name="taskType" required>
+                                        <option value="">请选择任务类型</option>
+                                        <option value="backtest">股票数据获取+回测+信号检查</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-align-left"></i>描述</label>
+                                    <input type="text" class="form-input" id="description" name="description" placeholder="请输入任务描述" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-clock"></i>定时表达式 
+                                        <a href="javascript:void(0)" onclick="showCronHelp()" title="点击查看Cron格式说明" style="color: var(--accent-info);">
+                                            <i class="fas fa-question-circle"></i>
+                                        </a>
+                                    </label>
+                                    <input type="text" class="form-input" id="scheduleTime" name="scheduleTime" placeholder="如: 0 8 * * 1-5" required>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <form id="taskForm">
-                                <input type="hidden" id="taskId" name="taskId">
 
-                                <div class="form-section">
-                                    <div class="form-section-title">
-                                        <i class="fas fa-info-circle"></i>
-                                        基础信息
+                        <div class="form-section" id="stockEntitiesContainer">
+                            <h4 class="form-section-title">
+                                <i class="fas fa-chart-line"></i>
+                                目标股票
+                            </h4>
+                            <div style="background: var(--bg-tertiary); padding: var(--space-lg); border-radius: var(--radius-lg); margin-bottom: var(--space-md);">
+                                <div class="form-grid" style="grid-template-columns: repeat(5, 1fr);">
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-database"></i>数据源</label>
+                                        <select class="form-select" id="newDataSource">
+                                            <option value="akshare">akshare</option>
+                                            <option value="baostock">baostock</option>
+                                            <option value="futu">futu</option>
+                                        </select>
                                     </div>
-                                    <div class="row g-3 align-items-center">
-                                        <div class="col-md-3">
-                                            <label class="form-label"><i class="fas fa-tag"></i>任务名称</label>
-                                            <input type="text" class="form-control" id="taskName" name="taskName" placeholder="请输入任务名称" required>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label"><i class="fas fa-tasks"></i>任务类型</label>
-                                            <select class="form-select" id="taskType" name="taskType" required>
-                                                <option value="">请选择任务类型</option>
-                                                <option value="backtest">股票数据获取+回测+信号检查</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label"><i class="fas fa-align-left"></i>描述</label>
-                                            <input type="text" class="form-control" id="description" name="description" placeholder="请输入任务描述" required>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label"><i class="fas fa-clock"></i>定时表达式 <a href="javascript:void(0)" onclick="showCronHelp()" title="点击查看Cron格式说明"><i class="fas fa-question-circle text-info"></i></a></label>
-                                            <input type="text" class="form-control" id="scheduleTime" name="scheduleTime" placeholder="如: 0 8 * * 1-5" required>
-                                        </div>
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-globe"></i>市场</label>
+                                        <select class="form-select" id="newMarket">
+                                            <option value="us">美股</option>
+                                            <option value="cn">A股</option>
+                                            <option value="hk">港股</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-code"></i>股票代码</label>
+                                        <input type="text" class="form-input" id="newStockCode" placeholder="如: US.IVV">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-adjust"></i>复权类型</label>
+                                        <select class="form-select" id="newAdjustType">
+                                            <option value="qfq">前复权</option>
+                                            <option value="hfq">后复权</option>
+                                            <option value="None">不复权</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="button" class="btn btn-primary" id="addStockButton">
+                                            <i class="fas fa-plus"></i> 添加
+                                        </button>
                                     </div>
                                 </div>
+                                <div id="stockCodeError" class="alert alert-danger d-none" style="margin-top: var(--space-md);"></div>
+                            </div>
+                            
+                            <div class="table-container">
+                                <table class="data-table" id="stockEntitiesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>数据源</th>
+                                            <th>市场</th>
+                                            <th>股票代码</th>
+                                            <th>复权类型</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stockEntitiesTableBody"></tbody>
+                                </table>
+                            </div>
+                            <div id="noStockEntities" class="empty-state d-none">
+                                <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                                <div class="empty-text">暂无股票实体，请添加至少一个</div>
+                            </div>
+                            <div id="stockEntitiesHint" style="text-align: center; padding: var(--space-md); background: rgba(59, 130, 246, 0.1); border: 1px dashed var(--accent-primary); border-radius: var(--radius-md); color: var(--accent-primary); font-size: 0.9rem;">
+                                <i class="fas fa-info-circle"></i> 请在上方添加股票实体后创建任务
+                            </div>
+                        </div>
 
-                                <div class="form-section" id="stockEntitiesContainer">
-                                    <div class="form-section-title">
-                                        <i class="fas fa-chart-line"></i>
-                                        目标股票
-                                    </div>
-                                    <div class="stock-add-form">
-                                        <div class="row g-3 align-items-end">
-                                            <div class="col-md-3">
-                                                <label class="form-label"><i class="fas fa-database"></i>数据源</label>
-                                                <select class="form-select" id="newDataSource">
-                                                    <option value="akshare">akshare</option>
-                                                    <option value="baostock">baostock</option>
-                                                    <option value="futu">futu</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label"><i class="fas fa-globe"></i>市场</label>
-                                                <select class="form-select" id="newMarket">
-                                                    <option value="us">美股</option>
-                                                    <option value="cn">A股</option>
-                                                    <option value="hk">港股</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label"><i class="fas fa-code"></i>股票代码</label>
-                                                <input type="text" class="form-control" id="newStockCode" placeholder="如: US.IVV">
-                                            </div>
-                                            <div class="col-md-2">
-                                                <label class="form-label"><i class="fas fa-adjust"></i>复权类型</label>
-                                                <select class="form-select" id="newAdjustType">
-                                                    <option value="qfq">前复权</option>
-                                                    <option value="hfq">后复权</option>
-                                                    <option value="None">不复权</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-auto">
-                                                <button type="button" class="btn btn-primary" id="addStockButton">
-                                                    <i class="fas fa-plus me-1"></i>添加
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div id="stockCodeError" class="result-message error d-none" style="margin-top: 8px;">
-                                            <i class="fas fa-times-circle"></i>
-                                            <span></span>
-                                        </div>
-                                    </div>
-                                    <div class="stock-table-wrapper">
-                                        <table class="data-table" id="stockEntitiesTable">
-                                            <thead>
-                                                <tr>
-                                                    <th>数据源</th>
-                                                    <th>市场</th>
-                                                    <th>股票代码</th>
-                                                    <th>复权类型</th>
-                                                    <th>操作</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="stockEntitiesTableBody"></tbody>
-                                        </table>
-                                        <div id="noStockEntities" class="empty-state d-none">
-                                            <div class="empty-state-icon"><i class="fas fa-inbox"></i></div>
-                                            <div class="empty-state-text">暂无股票实体，请添加至少一个</div>
-                                        </div>
-                                        <div id="stockEntitiesHint" style="text-align: center; padding: 12px; background: rgba(41, 128, 185, 0.15); border: 1px dashed var(--accent-color); border-radius: 8px; color: var(--accent-color); font-size: 12px;">
-                                            <i class="fas fa-info-circle me-1"></i>请在上方添加股票实体后创建任务
-                                        </div>
-                                    </div>
+                        <div class="form-section">
+                            <h4 class="form-section-title">
+                                <i class="fas fa-cogs"></i>
+                                回测配置
+                            </h4>
+                            <div class="form-grid" style="grid-template-columns: repeat(4, 1fr);">
+                                <div class="form-group" id="strategyField">
+                                    <label class="form-label"><i class="fas fa-brain"></i>策略选择</label>
+                                    <select class="form-select" id="strategy" name="strategy" required>
+                                        <option value="">请选择策略</option>
+                                        {% for strategy_name in strategies %}
+                                        <option value="{{ strategy_name }}">{{ strategy_name }}</option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
+                                <div class="form-group" id="initCashField">
+                                    <label class="form-label"><i class="fas fa-coins"></i>初始资金</label>
+                                    <input type="number" class="form-input" id="initCash" name="initCash" value="5000000" required>
+                                </div>
+                                <div class="form-group" id="duringField">
+                                    <label class="form-label"><i class="fas fa-calendar"></i>回测周期(天)</label>
+                                    <input type="number" class="form-input" id="during" name="during" value="1460" max="1460" required>
+                                </div>
+                                <div class="form-group" id="backtestModeField">
+                                    <label class="form-label"><i class="fas fa-rocket"></i>运行模式</label>
+                                    <select class="form-select" id="backtestMode" name="backtestMode">
+                                        <option value="BACKTEST">回测模式</option>
+                                        <option value="LIVE">实盘模式</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
 
-                                <div class="form-section">
-                                    <div class="form-section-title">
-                                        <i class="fas fa-cogs"></i>
-                                        回测配置
-                                    </div>
-                                    <div class="row g-3 align-items-center">
-                                        <div class="col-md-3" id="strategyField">
-                                            <label class="form-label"><i class="fas fa-brain"></i>策略选择</label>
-                                            <select class="form-select" id="strategy" name="strategy" required>
-                                                <option value="">请选择策略</option>
-                                                {% for strategy_name in strategies %}
-                                                <option value="{{ strategy_name }}">{{ strategy_name }}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3" id="initCashField">
-                                            <label class="form-label"><i class="fas fa-coins"></i>初始资金</label>
-                                            <input type="number" class="form-control" id="initCash" name="initCash" value="5000000" required>
-                                        </div>
-                                        <div class="col-md-3" id="duringField">
-                                            <label class="form-label"><i class="fas fa-calendar"></i>回测周期(天)</label>
-                                            <input type="number" class="form-control" id="during" name="during" value="1460" max="1460" required>
-                                        </div>
-                                        <div class="col-md-3" id="backtestModeField">
-                                            <label class="form-label"><i class="fas fa-rocket"></i>运行模式</label>
-                                            <select class="form-select" id="backtestMode" name="backtestMode">
-                                                <option value="BACKTEST">回测模式</option>
-                                                <option value="LIVE">实盘模式</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div style="display: flex; gap: var(--space-md); justify-content: flex-end; margin-top: var(--space-lg);">
+                            <button type="button" class="btn btn-secondary" id="cancelButton">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="submitButton">
+                                <i class="fas fa-check"></i> 创建任务
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-                                <div class="d-flex gap-3 justify-content-end mt-4">
-                                    <button type="button" class="btn btn-secondary" id="cancelButton">
-                                        <i class="fas fa-times me-1"></i>取消
-                                    </button>
-                                    <button type="submit" class="btn btn-primary" id="submitButton">
-                                        <i class="fas fa-check me-1"></i>创建任务
-                                    </button>
-                                </div>
-                            </form>
+            <div class="card" id="task-list" style="margin-bottom: var(--space-lg);">
+                <div class="card-header">
+                    <h3 class="card-header-title">
+                        <i class="fas fa-list"></i>
+                        定时任务列表
+                    </h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div id="loading" class="loading-overlay d-none">
+                        <div class="loading-container">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-lg">加载中...</p>
+                        </div>
+                    </div>
+
+                    <div id="taskTableContainer">
+                        <div class="table-container" style="border: none; border-radius: 0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>任务ID</th>
+                                        <th>任务名称</th>
+                                        <th>任务类型</th>
+                                        <th>定时表达式</th>
+                                        <th>状态</th>
+                                        <th>创建时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="taskTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="noTasks" class="empty-state d-none">
+                        <div class="empty-icon"><i class="fas fa-calendar-times"></i></div>
+                        <div class="empty-title">暂无定时任务</div>
+                        <div class="empty-text">创建您的第一个定时任务，开始自动化回测</div>
+                    </div>
+
+                    <div class="pagination" id="paginationContainer">
+                        <div class="pagination-info">
+                            共 <span id="totalItems" class="fw-bold">0</span> 条记录
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="page-btn nav-btn" id="prevPage" onclick="goToPage(currentPage - 1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div id="pagination" style="display: flex; gap: 4px;"></div>
+                            <button class="page-btn nav-btn" id="nextPage" onclick="goToPage(currentPage + 1)">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-12">
-                    <div class="card task-list-card" id="task-list">
-                        <div class="card-header">
-                            <div class="schedule-header">
-                                <span><i class="fas fa-list me-2"></i>定时任务列表</span>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div id="loading" class="loading-overlay d-none">
-                                <div class="loading-container">
-                                    <div class="loading-spinner"></div>
-                                    <p class="mt-3">加载中...</p>
-                                </div>
-                            </div>
-
-                            <div id="taskTableContainer">
-                                <div class="data-table-wrapper">
-                                    <table class="data-table">
-                                        <thead>
-                                            <tr>
-                                                <th>任务ID</th>
-                                                <th>任务名称</th>
-                                                <th>任务类型</th>
-                                                <th>定时表达式</th>
-                                                <th>状态</th>
-                                                <th>创建时间</th>
-                                                <th>操作</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="taskTableBody"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div id="noTasks" class="empty-state d-none">
-                                <div class="empty-state-icon"><i class="fas fa-calendar-times"></i></div>
-                                <div class="empty-state-title">暂无定时任务</div>
-                                <div class="empty-state-text">创建您的第一个定时任务，开始自动化回测</div>
-                            </div>
-
-                            <div class="modern-pagination" id="paginationContainer">
-                                <div class="pagination-info">
-                                    共 <span id="totalItems" class="fw-bold">0</span> 条记录
-                                </div>
-                                <div class="pagination-controls">
-                                    <button class="page-btn nav-btn" id="prevPage" onclick="goToPage(currentPage - 1)">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </button>
-                                    <div id="pagination"></div>
-                                    <button class="page-btn nav-btn" id="nextPage" onclick="goToPage(currentPage + 1)">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </button>
-                                </div>
-                            </div>
+            <div class="card" id="execution-list">
+                <div class="card-header">
+                    <h3 class="card-header-title">
+                        <i class="fas fa-history"></i>
+                        执行记录
+                    </h3>
+                    <button class="btn btn-sm" onclick="loadExecutions()" style="background: var(--bg-tertiary); color: var(--text-secondary);">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div id="executionTableContainer">
+                        <div class="table-container" style="border: none; border-radius: 0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>执行ID</th>
+                                        <th>任务名称</th>
+                                        <th>状态</th>
+                                        <th>开始时间</th>
+                                        <th>耗时</th>
+                                        <th>处理结果</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="executionTableBody"></tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
 
-                <div class="col-12">
-                    <div class="card task-list-card mt-4" id="execution-list">
-                        <div class="card-header">
-                            <div class="schedule-header">
-                                <span><i class="fas fa-history me-2"></i>执行记录</span>
-                                <button class="status-badge enabled" onclick="loadExecutions()" style="cursor: pointer;">
-                                    <i class="fas fa-sync-alt me-1"></i>刷新
-                                </button>
-                            </div>
+                    <div id="noExecutions" class="empty-state d-none">
+                        <div class="empty-icon"><i class="fas fa-clock"></i></div>
+                        <div class="empty-title">暂无执行记录</div>
+                        <div class="empty-text">定时任务执行后将显示在这里</div>
+                    </div>
+
+                    <div class="pagination" id="executionPaginationContainer">
+                        <div class="pagination-info">
+                            共 <span id="totalExecutions" class="fw-bold">0</span> 条记录
                         </div>
-                        <div class="card-body">
-                            <div id="executionTableContainer">
-                                <div class="data-table-wrapper">
-                                    <table class="data-table">
-                                        <thead>
-                                            <tr>
-                                                <th>执行ID</th>
-                                                <th>任务名称</th>
-                                                <th>状态</th>
-                                                <th>开始时间</th>
-                                                <th>耗时</th>
-                                                <th>处理结果</th>
-                                                <th>操作</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="executionTableBody"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div id="noExecutions" class="empty-state d-none">
-                                <div class="empty-state-icon"><i class="fas fa-clock"></i></div>
-                                <div class="empty-state-title">暂无执行记录</div>
-                                <div class="empty-state-text">定时任务执行后将显示在这里</div>
-                            </div>
-
-                            <div class="modern-pagination" id="executionPaginationContainer">
-                                <div class="pagination-info">
-                                    共 <span id="totalExecutions" class="fw-bold">0</span> 条记录
-                                </div>
-                                <div class="pagination-controls">
-                                    <button class="page-btn nav-btn" id="execPrevPage" onclick="goToExecPage(currentExecPage - 1)">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </button>
-                                    <div id="execPagination"></div>
-                                    <button class="page-btn nav-btn" id="execNextPage" onclick="goToExecPage(currentExecPage + 1)">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </button>
-                                </div>
-                            </div>
+                        <div class="pagination-controls">
+                            <button class="page-btn nav-btn" id="execPrevPage" onclick="goToExecPage(currentExecPage - 1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div id="execPagination" style="display: flex; gap: 4px;"></div>
+                            <button class="page-btn nav-btn" id="execNextPage" onclick="goToExecPage(currentExecPage + 1)">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <div id="notification" class="notification"></div>
 
-    <div id="cronHelpModal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content" style="background: var(--surface-color); border: 1px solid var(--border-color);">
-                <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
-                    <h5 class="modal-title text-white"><i class="fas fa-clock me-2"></i>Cron 定时表达式说明</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <div class="modal-overlay" id="cronHelpModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header" style="background: var(--gradient-card);">
+                <h3 class="modal-title">
+                    <i class="fas fa-clock"></i> Cron 定时表达式说明
+                </h3>
+                <button class="modal-close" onclick="closeCronModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: var(--space-lg);">
+                    <h6 style="color: var(--accent-warning); margin-bottom: var(--space-sm);">
+                        <i class="fas fa-cog"></i> 格式
+                    </h6>
+                    <p style="color: var(--text-secondary); margin: 0;">分 时 日 月 周 (用空格分隔)</p>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <h6 class="text-warning"><i class="fas fa-cog me-1"></i>格式</h6>
-                        <p class="text-secondary mb-0">分 时 日 月 周 (用空格分隔)</p>
-                    </div>
-                    <div class="mb-3">
-                        <h6 class="text-warning"><i class="fas fa-asterisk me-1"></i>符号说明</h6>
-                        <p class="text-secondary mb-0">
-                            <code>*</code> 任意值 &nbsp;
-                            <code>/</code> 间隔 &nbsp;
-                            <code>,</code> 枚举 &nbsp;
-                            <code>-</code> 范围
-                        </p>
-                    </div>
-                    <div>
-                        <h6 class="text-warning"><i class="fas fa-list me-1"></i>常用示例</h6>
-                        <div class="row g-2">
-                            <div class="col-md-6"><code>0 8 * * 1-5</code> 工作日8点执行</div>
-                            <div class="col-md-6"><code>0 9 * * *</code> 每天9点执行</div>
-                            <div class="col-md-6"><code>0 0 * * *</code> 每天0点执行</div>
-                            <div class="col-md-6"><code>0 */4 * * *</code> 每4小时执行</div>
-                            <div class="col-md-6"><code>0 0 1 * *</code> 每月1号0点执行</div>
-                            <div class="col-md-6"><code>30 10 * * 1,3,5</code> 周一三五10:30执行</div>
-                            <div class="col-md-6"><code>0 30 9 * * 0</code> 每周日9:30执行</div>
-                            <div class="col-md-6"><code>0 15,18 * * *</code> 每天15点和18点执行</div>
-                        </div>
+                <div style="margin-bottom: var(--space-lg);">
+                    <h6 style="color: var(--accent-warning); margin-bottom: var(--space-sm);">
+                        <i class="fas fa-asterisk"></i> 符号说明
+                    </h6>
+                    <p style="color: var(--text-secondary); margin: 0;">
+                        <code>*</code> 任意值 &nbsp;
+                        <code>/</code> 间隔 &nbsp;
+                        <code>,</code> 枚举 &nbsp;
+                        <code>-</code> 范围
+                    </p>
+                </div>
+                <div>
+                    <h6 style="color: var(--accent-warning); margin-bottom: var(--space-md);">
+                        <i class="fas fa-list"></i> 常用示例
+                    </h6>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm);">
+                        <div><code>0 8 * * 1-5</code> 工作日8点执行</div>
+                        <div><code>0 9 * * *</code> 每天9点执行</div>
+                        <div><code>0 0 * * *</code> 每天0点执行</div>
+                        <div><code>0 */4 * * *</code> 每4小时执行</div>
+                        <div><code>0 0 1 * *</code> 每月1号0点执行</div>
+                        <div><code>30 10 * * 1,3,5</code> 周一三五10:30执行</div>
+                        <div><code>0 30 9 * * 0</code> 每周日9:30执行</div>
+                        <div><code>0 15,18 * * *</code> 每天15点和18点执行</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div id="confirmDialog" class="modern-dialog hidden">
-        <div class="modern-dialog-content">
-            <div class="modern-dialog-icon danger">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <h3 class="modern-dialog-title" id="confirmDialogTitle"></h3>
-            <p class="modern-dialog-message" id="confirmDialogMessage"></p>
-            <div class="modern-dialog-buttons">
-                <button class="btn btn-cancel" id="confirmDialogCancel">取消</button>
-                <button class="btn btn-confirm" id="confirmDialogConfirm">确认删除</button>
+
+    <div class="modal-overlay" id="confirmDialog">
+        <div class="modal-content" style="max-width: 400px;">
+            <div style="text-align: center; padding: var(--space-lg);">
+                <div class="dialog-icon danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="dialog-title" id="confirmDialogTitle"></h3>
+                <p class="dialog-message" id="confirmDialogMessage"></p>
+                <div class="dialog-buttons">
+                    <button class="btn btn-secondary" id="confirmDialogCancel">取消</button>
+                    <button class="btn btn-danger" id="confirmDialogConfirm">确认删除</button>
+                </div>
             </div>
         </div>
     </div>
@@ -405,12 +415,6 @@
             document.getElementById('taskForm').addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                if (!this.checkValidity()) {
-                    e.stopPropagation();
-                    this.classList.add('was-validated');
-                    return;
-                }
-
                 const scheduleTime = document.getElementById('scheduleTime').value;
                 const cronValidation = validateCronExpression(scheduleTime);
                 if (!cronValidation.isValid) {
@@ -425,7 +429,7 @@
                     hintDiv.offsetHeight;
                     hintDiv.style.cssText = 'text-align: center; padding: 12px; background: rgba(231, 76, 60, 0.15); border: 1px dashed var(--danger-color); border-radius: 8px; color: var(--danger-color); font-size: 12px; animation: flash 0.5s 1;';
                     setTimeout(() => {
-                        hintDiv.style.cssText = 'text-align: center; padding: 12px; background: rgba(41, 128, 185, 0.15); border: 1px dashed var(--accent-color); border-radius: 8px; color: var(--accent-color); font-size: 12px;';
+                        hintDiv.style.cssText = 'text-align: center; padding: 12px; background: rgba(59, 130, 246, 0.1); border: 1px dashed var(--accent-primary); border-radius: 8px; color: var(--accent-primary); font-size: 12px;';
                     }, 1500);
                     return;
                 }
@@ -466,36 +470,9 @@
 
         function validateCronExpression(cronExpression) {
             const parts = cronExpression.trim().split(/\s+/);
-
             if (parts.length !== 5) {
                 return { isValid: false, message: '定时表达式格式错误，应为：分 时 日 月 周' };
             }
-
-            const minuteRegex = /^(\*|\d{1,2}|\d{1,2}-\d{1,2}|\d{1,2}\/\d{1,2})$|^\d{1,2}(,\d{1,2})*$/;
-            if (!minuteRegex.test(parts[0])) {
-                return { isValid: false, message: '分钟格式错误，应为0-59之间的数字或通配符' };
-            }
-
-            const hourRegex = /^(\*|\d{1,2}|\d{1,2}-\d{1,2}|\d{1,2}\/\d{1,2})$|^\d{1,2}(,\d{1,2})*$/;
-            if (!hourRegex.test(parts[1])) {
-                return { isValid: false, message: '小时格式错误，应为0-23之间的数字或通配符' };
-            }
-
-            const dayRegex = /^(\*|\d{1,2}|\d{1,2}-\d{1,2}|\d{1,2}\/\d{1,2}|L|W|LW)$|^\d{1,2}(,\d{1,2})*$/;
-            if (!dayRegex.test(parts[2])) {
-                return { isValid: false, message: '日期格式错误，应为1-31之间的数字或通配符' };
-            }
-
-            const monthRegex = /^(\*|\d{1,2}|\d{1,2}-\d{1,2}|\d{1,2}\/\d{1,2})$|^\d{1,2}(,\d{1,2})*$/;
-            if (!monthRegex.test(parts[3])) {
-                return { isValid: false, message: '月份格式错误，应为1-12之间的数字或通配符' };
-            }
-
-            const weekRegex = /^(\*|[0-7]|[0-7]-[0-7]|[0-7]\/[1-7]|MON|TUE|WED|THU|FRI|SAT|SUN)$|^([0-7](,[0-7])*)$/i;
-            if (!weekRegex.test(parts[4])) {
-                return { isValid: false, message: '星期格式错误，应为0-7之间的数字或英文缩写(MON-SUN)或通配符' };
-            }
-
             return { isValid: true };
         }
 
@@ -527,7 +504,7 @@
             if (!isValidPrefix) {
                 const errorDiv = document.getElementById('stockCodeError');
                 errorDiv.classList.remove('d-none');
-                errorDiv.querySelector('span').textContent = `${market === 'us' ? '美股' : market === 'hk' ? '港股' : 'A股'}股票代码必须以${expectedPrefix}开头`;
+                errorDiv.innerHTML = `<i class="fas fa-times-circle"></i> ${market === 'us' ? '美股' : market === 'hk' ? '港股' : 'A股'}股票代码必须以${expectedPrefix}开头`;
                 return;
             }
 
@@ -540,7 +517,7 @@
             if (exists) {
                 const errorDiv = document.getElementById('stockCodeError');
                 errorDiv.classList.remove('d-none');
-                errorDiv.querySelector('span').textContent = '该股票实体已存在';
+                errorDiv.innerHTML = `<i class="fas fa-times-circle"></i> 该股票实体已存在`;
                 return;
             }
 
@@ -567,12 +544,14 @@
             const tableBody = document.getElementById('stockEntitiesTableBody');
             const noStockEntitiesDiv = document.getElementById('noStockEntities');
             const hintDiv = document.getElementById('stockEntitiesHint');
+            const table = document.getElementById('stockEntitiesTable');
 
             tableBody.innerHTML = '';
 
             if (stockEntities.length > 0) {
                 noStockEntitiesDiv.classList.add('d-none');
                 hintDiv.classList.add('d-none');
+                table.style.display = 'table';
                 stockEntities.forEach((entity, index) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -591,6 +570,7 @@
             } else {
                 noStockEntitiesDiv.classList.add('d-none');
                 hintDiv.classList.remove('d-none');
+                table.style.display = 'none';
             }
         }
 
@@ -643,7 +623,6 @@
                 .catch(error => {
                     showLoading(false);
                     showNotification('加载任务失败', 'error');
-                    console.error('Error loading tasks:', error);
                 });
         }
 
@@ -670,16 +649,15 @@
                     </td>
                     <td class="text-secondary">${formatDate(task.create_time)}</td>
                     <td>
-                        <div class="d-flex gap-2">
+                        <div style="display: flex; gap: var(--space-xs);">
                             <button class="action-btn edit" onclick="editTask('${task.id}')">
-                                <i class="fas fa-edit"></i> 编辑
+                                <i class="fas fa-edit"></i>
                             </button>
                             <button class="action-btn toggle" onclick="toggleTask('${task.id}', ${!task.enabled})">
                                 <i class="fas fa-toggle-${task.enabled ? 'off' : 'on'}"></i>
-                                ${task.enabled ? '禁用' : '启用'}
                             </button>
                             <button class="action-btn delete" onclick="deleteTask('${task.id}')">
-                                <i class="fas fa-trash"></i> 删除
+                                <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </td>
@@ -783,8 +761,8 @@
                         document.getElementById('strategy').value = task.strategy;
                     }
 
-                    document.getElementById('form-title').innerHTML = '<i class="fas fa-edit me-2"></i>编辑定时任务';
-                    document.getElementById('submitButton').innerHTML = '<i class="fas fa-save me-1"></i>更新任务';
+                    document.getElementById('form-title').innerHTML = '<i class="fas fa-edit"></i>编辑定时任务';
+                    document.getElementById('submitButton').innerHTML = '<i class="fas fa-save"></i>更新任务';
                     document.getElementById('task-form').scrollIntoView({ behavior: 'smooth' });
                 })
                 .catch(error => {
@@ -869,10 +847,9 @@
         function resetForm() {
             const form = document.getElementById('taskForm');
             form.reset();
-            form.classList.remove('was-validated');
             document.getElementById('taskId').value = '';
-            document.getElementById('form-title').innerHTML = '<i class="fas fa-calendar-plus me-2"></i>创建定时任务';
-            document.getElementById('submitButton').innerHTML = '<i class="fas fa-check me-1"></i>创建任务';
+            document.getElementById('form-title').innerHTML = '<i class="fas fa-calendar-plus"></i>创建定时任务';
+            document.getElementById('submitButton').innerHTML = '<i class="fas fa-check"></i>创建任务';
             stockEntities = [];
             renderStockEntities();
         }
@@ -888,11 +865,17 @@
 
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            notification.innerHTML = `
+                <div class="toast-content ${type}">
+                    <i class="fas ${icon} toast-icon"></i>
+                    <span class="toast-message">${message}</span>
+                </div>
+            `;
+            notification.className = `notification ${type} show`;
+            clearTimeout(notification.hideTimeout);
+            notification.hideTimeout = setTimeout(() => {
+                notification.classList.remove('show');
             }, 3000);
         }
 
@@ -900,12 +883,10 @@
             const dialog = document.getElementById('confirmDialog');
             document.getElementById('confirmDialogTitle').textContent = title;
             document.getElementById('confirmDialogMessage').textContent = message;
-            dialog.classList.remove('hidden');
-            setTimeout(() => dialog.classList.add('show'), 10);
+            dialog.classList.add('show');
 
             const closeDialog = () => {
                 dialog.classList.remove('show');
-                setTimeout(() => dialog.classList.add('hidden'), 300);
             };
 
             document.getElementById('confirmDialogConfirm').onclick = () => { closeDialog(); onConfirm(); };
@@ -919,8 +900,11 @@
         }
 
         function showCronHelp() {
-            const modal = new bootstrap.Modal(document.getElementById('cronHelpModal'));
-            modal.show();
+            document.getElementById('cronHelpModal').classList.add('show');
+        }
+
+        function closeCronModal() {
+            document.getElementById('cronHelpModal').classList.remove('show');
         }
 
         function formatDate(timestamp) {
@@ -1018,7 +1002,7 @@
 
         function getExecutionStatusBadge(status) {
             const statusMap = {
-                'running': '<span class="badge" style="background: #3498db;">运行中</span>',
+                'running': '<span class="badge badge-primary">运行中</span>',
                 'success': '<span class="badge badge-success">成功</span>',
                 'failed': '<span class="badge badge-danger">失败</span>',
                 'partial': '<span class="badge badge-warning">部分成功</span>'

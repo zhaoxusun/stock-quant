@@ -582,8 +582,8 @@ def create_trading_chart(chart_title_prefix, df, valid_signals, valid_trades, ho
             yanchor='top'  # 设置yanchor为top，确保y值从标题顶部开始计算
         ),
         height=1800,  # 调整高度，因为指标表格现在在图表下方
-        width=1600,
-        margin=dict(l=120, r=80, t=120, b=80),
+        autosize=True,
+        margin=dict(l=80, r=60, t=100, b=60),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -694,84 +694,91 @@ def save_and_show_chart(fig, file_name, output_dir=None, metrics=None):
     # 生成指标表格HTML
     metrics_table = ""
     if metrics:
+        # 动态设置颜色类
+        total_return_class = 'positive' if metrics['total_return'] >= 0 else 'negative'
+        annual_return_class = 'positive' if metrics['annual_return'] >= 0 else 'negative'
+        max_drawdown_class = 'negative'
+        win_rate_class = 'positive' if metrics['win_rate'] >= 50 else ''
+        
         metrics_table = f"""
-        <div class="card" style="margin: 20px 0;">
+        <div class="card" style="margin: 0;">
             <div class="card-header">
-                <h3 style="margin: 0; font-size: 1.2em;">策略绩效指标</h3>
+                <i class="fas fa-chart-pie"></i>
+                <h3 style="margin: 0; font-size: 1.1rem;">策略绩效指标</h3>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="padding: 0;">
                 <table class="table">
                     <thead>
                         <tr>
-                            <th style="text-align: left;">指标</th>
+                            <th style="text-align: left;"><i class="fas fa-bolt" style="margin-right: 6px;"></i>指标</th>
                             <th style="text-align: right;">值</th>
                             <th style="text-align: left;">说明</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>总收益率</td>
-                            <td style="text-align: right;">{metrics['total_return']:.2f}%</td>
+                            <td><i class="fas fa-percentage" style="color: var(--accent-info); margin-right: 8px;"></i>总收益率</td>
+                            <td class="{total_return_class}">{metrics['total_return']:.2f}%</td>
                             <td>策略整体盈利或亏损的百分比</td>
                         </tr>
                         <tr>
-                            <td>年化收益</td>
-                            <td style="text-align: right;">{metrics['annual_return']:.2f}%</td>
+                            <td><i class="fas fa-calendar-alt" style="color: var(--accent-info); margin-right: 8px;"></i>年化收益</td>
+                            <td class="{annual_return_class}">{metrics['annual_return']:.2f}%</td>
                             <td>按年计算的平均收益率</td>
                         </tr>
                         <tr>
-                            <td>最终资金</td>
-                            <td style="text-align: right;">{metrics['final_cash']:,.2f} 港元</td>
+                            <td><i class="fas fa-wallet" style="color: var(--accent-success); margin-right: 8px;"></i>最终资金</td>
+                            <td style="color: var(--accent-success);">{metrics['final_cash']:,.2f} 港元</td>
                             <td>回测结束时的资金总额</td>
                         </tr>
                         <tr>
-                            <td>最大回撤</td>
-                            <td style="text-align: right;">{metrics['max_drawdown']:.2f}%</td>
+                            <td><i class="fas fa-arrow-down" style="color: var(--accent-danger); margin-right: 8px;"></i>最大回撤</td>
+                            <td class="{max_drawdown_class}">{metrics['max_drawdown']:.2f}%</td>
                             <td>策略历史上最大的亏损幅度</td>
                         </tr>
                         <tr>
-                            <td>Calmar比率</td>
-                            <td style="text-align: right;">{metrics['calmar_ratio']:.2f}</td>
+                            <td><i class="fas fa-tachometer-alt" style="color: var(--accent-warning); margin-right: 8px;"></i>Calmar比率</td>
+                            <td>{metrics['calmar_ratio']:.2f}</td>
                             <td>年化收益与最大回撤的比值，衡量风险调整后的收益</td>
                         </tr>
                         <tr>
-                            <td>夏普比率</td>
-                            <td style="text-align: right;">{metrics.get('sharpe_ratio', 0):.2f}</td>
+                            <td><i class="fas fa-balance-scale" style="color: var(--accent-warning); margin-right: 8px;"></i>夏普比率</td>
+                            <td>{metrics.get('sharpe_ratio', 0):.2f}</td>
                             <td>超额收益与波动率的比值，衡量风险调整后的收益</td>
                         </tr>
                         <tr>
-                            <td>总交易次数</td>
-                            <td style="text-align: right;">{metrics['total_trades']}</td>
+                            <td><i class="fas fa-exchange-alt" style="color: var(--accent-primary); margin-right: 8px;"></i>总交易次数</td>
+                            <td>{metrics['total_trades']}</td>
                             <td>所有已平仓完整订单</td>
                         </tr>
                         <tr>
-                            <td>胜率</td>
-                            <td style="text-align: right;">{metrics['win_rate']:.2f}%</td>
+                            <td><i class="fas fa-trophy" style="color: var(--accent-warning); margin-right: 8px;"></i>胜率</td>
+                            <td class="{win_rate_class}">{metrics['win_rate']:.2f}%</td>
                             <td>平仓后净利润＞0 的交易占总交易次数的百分比</td>
                         </tr>
                         <tr>
-                            <td>盈亏比</td>
-                            <td style="text-align: right;">{metrics['profit_factor']:.2f}</td>
+                            <td><i class="fas fa-balance-scale-right" style="color: var(--accent-info); margin-right: 8px;"></i>盈亏比</td>
+                            <td>{metrics['profit_factor']:.2f}</td>
                             <td>平均盈利与平均亏损的比值</td>
                         </tr>
                         <tr>
-                            <td>买入信号</td>
-                            <td style="text-align: right;">{metrics['buy_signals_count']}</td>
+                            <td><i class="fas fa-arrow-up" style="color: var(--accent-success); margin-right: 8px;"></i>买入信号</td>
+                            <td style="color: var(--accent-success);">{metrics['buy_signals_count']}</td>
                             <td>策略生成的买入信号数量</td>
                         </tr>
                         <tr>
-                            <td>卖出信号</td>
-                            <td style="text-align: right;">{metrics['sell_signals_count']}</td>
+                            <td><i class="fas fa-arrow-down" style="color: var(--accent-danger); margin-right: 8px;"></i>卖出信号</td>
+                            <td style="color: var(--accent-danger);">{metrics['sell_signals_count']}</td>
                             <td>策略生成的卖出信号数量</td>
                         </tr>
                         <tr>
-                            <td>实际买入</td>
-                            <td style="text-align: right;">{metrics['executed_buys_count']}</td>
+                            <td><i class="fas fa-hand-pointer" style="color: var(--accent-success); margin-right: 8px;"></i>实际买入</td>
+                            <td style="color: var(--accent-success);">{metrics['executed_buys_count']}</td>
                             <td>实际执行的买入交易次数</td>
                         </tr>
                         <tr>
-                            <td>实际卖出</td>
-                            <td style="text-align: right;">{metrics['executed_sells_count']}</td>
+                            <td><i class="fas fa-hand-paper" style="color: var(--accent-danger); margin-right: 8px;"></i>实际卖出</td>
+                            <td style="color: var(--accent-danger);">{metrics['executed_sells_count']}</td>
                             <td>实际执行的卖出交易次数</td>
                         </tr>
                     </tbody>
@@ -789,22 +796,26 @@ def save_and_show_chart(fig, file_name, output_dir=None, metrics=None):
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>股票交易策略回测分析</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <style>
             :root {{
-                --primary-color: #0a4b78; /* 深蓝色主色调 */
-                --secondary-color: #165d8c; /* 辅助蓝色 */
-                --accent-color: #2980b9; /* 强调蓝色 */
-                --success-color: #2ecc71; /* 绿色（上涨） */
-                --danger-color: #e74c3c; /* 红色（下跌） */
-                --warning-color: #f39c12; /* 黄色（警告） */
-                --info-color: #3498db; /* 信息蓝色 */
-                --text-color: #e0e0e0; /* 主要文本颜色 */
-                --text-secondary: #a0a0a0; /* 次要文本颜色 */
-                --background-color: #121212; /* 深色背景 */
-                --surface-color: #1e1e1e; /* 表面颜色 */
-                --card-bg: #252525; /* 卡片背景 */
-                --border-color: #333333; /* 边框颜色 */
-                --hover-color: #353535; /* 悬停颜色 */
+                --bg-primary: #0a0c10;
+                --bg-secondary: #12151c;
+                --bg-tertiary: #1a1e28;
+                --bg-card: #151921;
+                --bg-elevated: #1e232f;
+                --text-primary: #f0f2f5;
+                --text-secondary: #8b95a5;
+                --text-tertiary: #5c6678;
+                --accent-primary: #3b82f6;
+                --accent-success: #10b981;
+                --accent-danger: #ef4444;
+                --accent-warning: #f59e0b;
+                --accent-info: #06b6d4;
+                --accent-purple: #8b5cf6;
+                --border-primary: rgba(255, 255, 255, 0.06);
+                --border-secondary: rgba(255, 255, 255, 0.1);
+                --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
             }}
 
             * {{
@@ -814,74 +825,161 @@ def save_and_show_chart(fig, file_name, output_dir=None, metrics=None):
             }}
 
             body {{
-                font-family: "Segoe UI", "Microsoft YaHei", "Arial", sans-serif;
-                background-color: var(--background-color);
-                color: var(--text-color);
+                font-family: 'Inter', 'Segoe UI', 'Microsoft YaHei', 'Arial', sans-serif;
+                background-color: var(--bg-primary);
+                background: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+                            radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 40%),
+                            linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+                color: var(--text-primary);
                 line-height: 1.6;
                 font-size: 14px;
+                min-height: 100vh;
             }}
 
             .container {{
                 max-width: 1600px;
-                margin: 20px auto;
-                padding: 0 20px;
+                margin: 0 auto;
+                padding: 24px;
+            }}
+
+            .page-header {{
+                text-align: center;
+                padding: 32px;
+                margin-bottom: 24px;
+                background: linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, transparent 100%);
+                border: 1px solid var(--border-primary);
+                border-radius: 14px;
+                position: relative;
+                overflow: hidden;
+            }}
+
+            .page-header::before {{
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: var(--gradient-primary);
+            }}
+
+            .page-header h1 {{
+                font-size: 1.75rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+            }}
+
+            .page-header h1 i {{
+                color: var(--accent-primary);
             }}
 
             .chart-container {{
-                background-color: var(--card-bg);
-                border-radius: 6px;
-                padding: 20px;
-                margin: 20px 0;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                background-color: var(--bg-card);
+                border: 1px solid var(--border-primary);
+                border-radius: 14px;
+                padding: 24px;
+                margin-bottom: 24px;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+                overflow-x: auto;
+                overflow-y: visible;
             }}
-
+            
+            .chart-container > div {{
+                min-width: 100%;
+                width: auto;
+            }}
+            
+.chart-container .plotly {{
+                width: 100% !important;
+                min-width: 100%;
+            }}
+            
+.js-plotly-plot .plotly .main-svg {{
+                width: 100% !important;
+            }}
+            
             .metrics-container {{
-                margin-top: 20px;
+                margin-top: 24px;
             }}
 
             .card {{
-                background-color: var(--card-bg);
-                color: var(--text-color);
-                border: 1px solid var(--border-color);
-                border-radius: 6px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-                transition: all 0.3s ease;
+                background-color: var(--bg-card);
+                color: var(--text-primary);
+                border: 1px solid var(--border-primary);
+                border-radius: 14px;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+                transition: all 0.25s ease;
                 overflow: hidden;
+            }}
+
+            .card::before {{
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             }}
 
             .card-header {{
-                background-color: var(--primary-color);
-                color: white;
+                background: linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, transparent 100%);
+                color: var(--text-primary);
                 font-weight: 600;
-                padding: 15px 20px;
-                border-bottom: 1px solid var(--border-color);
+                padding: 16px 24px;
+                border-bottom: 1px solid var(--border-primary);
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
+                gap: 10px;
+            }}
+
+            .card-header i {{
+                color: var(--accent-primary);
             }}
 
             .card-body {{
-                padding: 20px;
+                padding: 24px;
             }}
 
             .table {{
-                background-color: var(--card-bg);
-                border-radius: 6px;
+                background-color: var(--bg-card);
+                border-radius: 14px;
                 overflow: hidden;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
                 border-collapse: collapse;
                 width: 100%;
             }}
 
             .table thead {{
-                background-color: var(--primary-color);
-                color: white;
+                background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
             }}
 
-            .table th, .table td {{
-                padding: 12px 15px;
+            .table th {{
+                padding: 14px 18px;
                 text-align: left;
-                border-bottom: 1px solid var(--border-color);
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border-bottom: 1px solid var(--border-primary);
+            }}
+
+            .table td {{
+                padding: 14px 18px;
+                text-align: left;
+                border-bottom: 1px solid var(--border-primary);
+                color: var(--text-primary);
+            }}
+
+            .table td:nth-child(2) {{
+                text-align: right;
+                font-weight: 600;
+                font-family: 'JetBrains Mono', monospace;
             }}
 
             .table tbody tr {{
@@ -889,24 +987,27 @@ def save_and_show_chart(fig, file_name, output_dir=None, metrics=None):
             }}
 
             .table tbody tr:hover {{
-                background-color: var(--hover-color);
+                background-color: rgba(59, 130, 246, 0.05);
             }}
 
             .table tbody tr:last-child td {{
                 border-bottom: none;
             }}
 
-            h1 {{
-                color: var(--text-color);
-                text-align: center;
-                margin: 20px 0;
-                font-size: 2em;
+            .positive {{
+                color: var(--accent-success);
+            }}
+
+            .negative {{
+                color: var(--accent-danger);
             }}
         </style>
     </head>
     <body class="result-viewer">
         <div class="container">
-            <h1>股票交易策略回测分析</h1>
+            <div class="page-header">
+                <h1><i class="fas fa-chart-line"></i> 股票交易策略回测分析</h1>
+            </div>
             <div class="chart-container">
                 {chart_html}
             </div>

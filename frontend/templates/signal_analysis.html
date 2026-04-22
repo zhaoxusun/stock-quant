@@ -60,6 +60,12 @@
                         信号文件
                     </h3>
                     <div style="display: flex; align-items: center; gap: var(--space-md);">
+                        <button class="btn btn-sm" style="padding: 4px 10px; font-size: 0.75rem;" onclick="toggleSelectAll()">
+                            <i class="fas fa-check-square"></i> 全选
+                        </button>
+                        <button class="btn btn-sm" style="padding: 4px 10px; font-size: 0.75rem;" onclick="deselectAll()">
+                            <i class="fas fa-square"></i> 取消
+                        </button>
                         <span class="text-secondary">|</span>
                         <span>已筛选 <strong id="filteredFileCount" style="color: var(--accent-success);">0</strong> 条</span>
                         <span class="text-secondary">|</span>
@@ -368,6 +374,19 @@
             const allCheckboxes = document.querySelectorAll('input[name="signalFile"]');
             const checked = Array.from(allCheckboxes).filter(cb => cb.checked).length;
             document.getElementById('selectedFileCount').textContent = checked;
+        }
+
+        function toggleSelectAll() {
+            const allCheckboxes = document.querySelectorAll('input[name="signalFile"]');
+            const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+            allCheckboxes.forEach(cb => cb.checked = !allChecked);
+            updateFileCount();
+        }
+
+        function deselectAll() {
+            const allCheckboxes = document.querySelectorAll('input[name="signalFile"]');
+            allCheckboxes.forEach(cb => cb.checked = false);
+            updateFileCount();
         }
 
         function resetSignalFilters() {

@@ -110,6 +110,7 @@
                     <thead>
                         <tr>
                             <th><i class="fas fa-hashtag"></i>序号</th>
+                            <th><i class="fas fa-id-card"></i>回测ID</th>
                             <th><i class="fas fa-chart-bar"></i>股票</th>
                             <th><i class="fas fa-database"></i>数据源</th>
                             <th><i class="fas fa-brain"></i>策略</th>
@@ -248,6 +249,7 @@
 
                     row.innerHTML = `
                         <td class="text-secondary">#${(currentPage - 1) * pageSize + index + 1}</td>
+                        <td class="text-secondary">${record.record_id || '-'}</td>
                         <td>${stockCsvLink ? `<a href="${stockCsvLink}" target="_blank" class="stock-link">${stockName}</a>` : stockName}</td>
                         <td><span class="stock-badge">${dataSource}</span></td>
                         <td>${strategy ? `<a href="/strategy_code?strategy=${encodeURIComponent(strategy)}" target="_blank" class="strategy-link">${strategy}</a>` : '-'}</td>
